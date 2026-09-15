@@ -52,19 +52,3 @@ a manual merge step. Leave the branch in place after merge; do not delete it.
 The point of this workflow is that everything reaches `main` — a branch
 that never gets a PR opened, or a PR that never gets merged, is a failure
 of this rule, not a valid alternative to it. Don't let work sit stranded.
-
-## Memory — runtime infrastructure (references aesop-xi)
-
-The whole stack's runtime memory infrastructure (mem0, terrestrial-brain,
-OmniRoute, reasoning-bank, continual-harness) lives canonically in
-**aesop-xi** — see `~/repos/aesop-xi/CLAUDE.md` §Runtime memory stack.
-Not duplicated here.
-
-Every agent in this repo — regardless of harness (Claude Code, Codex, dsh,
-Prime Agent, Hermes) — reaches memory via one MCP endpoint:
-`http://localhost:20128/mcp` (OmniRoute). Never call mem0 or
-terrestrial-brain directly; that bypasses OmniRoute's async memory tap
-and the observation layer.
-
-**Bootstrap this repo**: `bash tools/bootstrap.sh` — thin wrapper that
-calls aesop-xi's canonical bootstrap first.
