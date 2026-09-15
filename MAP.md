@@ -1,5 +1,5 @@
 # MAP.md
 
-Repository: `novaexopia`
+Repository: `NovAExopia`
 
 Authority: NovÆxorpus Master Canon Specifications
