@@ -1,6 +1,6 @@
 # NovÆxopia — tools, harness, and engine layer
 
-Canon name: **NovÆxopia**. Repo name: `novaexopia`. See `novae-xorpus/NAMING-CANON.md`.
+Canon name: **NovÆxopia**. Repo name: `NovAExopia`. See `NovAExorpus/NAMING-CANON.md`.
 
 ## What this is
 
