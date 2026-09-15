@@ -42,9 +42,10 @@ Before doing anything else in this repo, read this CLAUDE.md and RESUME.md.
 Standing convention across the operator's repos for months — step one,
 every session, no exceptions.
 
-## Git workflow
+## Git workflow — push directly to main
 
-PR required. No direct pushes to main. CI runs gitleaks + structure check.
-Before every push, scan the diff for secrets/keys and refuse to push if any
-are found. On green CI, auto-merge into `main` immediately — do not wait for
-a manual merge step. Leave the branch in place after merge; do not delete it.
+Push directly to `main`. No feature branches, no PRs — operator directive
+2026-09-15, superseding the previous branch/PR-required convention (that
+workflow left work stranded on unmerged branches across sessions and
+devices instead of ever reaching a shared, cloneable state). Before every
+push, scan the diff for secrets/keys and refuse to push if any are found.
