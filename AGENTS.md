@@ -29,6 +29,7 @@ runtime definitions, and tool-skill wiring. Supersedes the earlier "Omni Claw"
 - `config/` holds cross-cutting settings (temperature defaults, token limits,
   routing rules).
 - `manifest.jsonl` is the machine-readable index.
+- `.claude-plugin/marketplace.json` is the `novaexopia` Claude Code plugin marketplace. Entries point at each plugin's own repository (`url` or `git-subdir` sources); no plugin code is stored here. Entries are generated with `~/local-plugins/make-entries.sh` on the operator's phone.
 
 ## Operator Rule 1 — no action without an explicit prompt
 
