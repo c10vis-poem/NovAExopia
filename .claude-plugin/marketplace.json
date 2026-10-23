@@ -1,0 +1,226 @@
+{
+  "name": "novaexopia",
+  "owner": {
+    "name": "c10vis-poem"
+  },
+  "metadata": {
+    "description": "NovÆxopia plugin marketplace: entries point at each plugin's own repository; no plugin code is stored here."
+  },
+  "plugins": [
+    {
+      "name": "gangsta",
+      "description": "AI agentic skills framework for spec-driven development — mafia-syndicate hierarchy with adversarial brainstorming, institutional memory, and governance guardrails",
+      "source": {
+        "source": "url",
+        "url": "https://github.com/kucherenko/gangsta.git"
+      }
+    },
+    {
+      "name": "gas-gauge",
+      "description": "A fuel gauge above the prompt: how much of your Claude plan is left, and when it refills.",
+      "source": {
+        "source": "git-subdir",
+        "url": "https://github.com/DJPalefaceSD/rostech-mods.git",
+        "path": "plugins/gas-gauge"
+      }
+    },
+    {
+      "name": "iceberg",
+      "description": "Apply Hemingway writing rules to technical documentation — inline, intentional, clean.",
+      "source": {
+        "source": "url",
+        "url": "https://github.com/gagoar/iceberg.git"
+      }
+    },
+    {
+      "name": "idle-compact",
+      "description": "Compacts an idle interactive session shortly before its prompt cache expires, so coming back later doesn't re-read the whole context uncached.",
+      "source": {
+        "source": "url",
+        "url": "https://github.com/davidar/claude-idle-compact.git"
+      }
+    },
+    {
+      "name": "idle-timing",
+      "description": "Inject hidden timing context and visible idle gap notes into Claude Code prompts.",
+      "source": {
+        "source": "url",
+        "url": "https://github.com/clankercode/claude-inject-idle-time.git"
+      }
+    },
+    {
+      "name": "jev",
+      "description": "Typed decisions as a noun: adds $.jev in the engine.create fold, so any plugin asks Jev a map of Choice, Score and Noul questions over one state and reads calibrated probabilities back — through the TypeSafe API, OpenRouter, Vercel AI Gateway, Cloudflare Workers AI, a LiteLLM proxy or any TypeSafe-compatible endpoint, set in the plugin's options or the environment.",
+      "source": {
+        "source": "url",
+        "url": "https://github.com/chrishan17/claude-jev-mod.git"
+      }
+    },
+    {
+      "name": "jevmem",
+      "description": "Say it once. jevmem saves the decisions, rules and failed approaches from your Claude Code chats to JEVMEM.md in your repo, brings the relevant ones back next session, and checks commands against your saved rules. Needs the jevmem CLI from npm and a TypeSafe API key. Opt-in per project.",
+      "source": {
+        "source": "git-subdir",
+        "url": "https://github.com/Avinash-jetwani/jevmem.git",
+        "path": "plugin"
+      }
+    },
+    {
+      "name": "learn-wiki",
+      "description": "Learning-first development with a global, agent-maintained wiki of what you know.",
+      "source": {
+        "source": "url",
+        "url": "https://github.com/bytorbix/learn-wiki.git"
+      }
+    },
+    {
+      "name": "llm-wiki",
+      "description": "Build a shared Markdown knowledge base with local hybrid search and an optional evidence-linked workflow to capture task lessons, evaluate skill improvements, and apply or roll back tested changes.",
+      "source": {
+        "source": "url",
+        "url": "https://github.com/praneybehl/llm-wiki-plugin.git"
+      }
+    },
+    {
+      "name": "modern-web-guidance",
+      "description": "Keep your coding agent up to date with the latest web best practices",
+      "source": {
+        "source": "url",
+        "url": "https://github.com/GoogleChrome/modern-web-guidance.git",
+        "sha": "b31dc0a43ff5d19bcf386a3476a216f3b39a6f55"
+      }
+    },
+    {
+      "name": "neocode",
+      "description": "Matrix-style ambience for Claude Code: code decays into upward-streaming digital rain as it scrolls toward the top of the screen. Display-only: reads on-screen text and your selection in memory only, never changes the transcript, and uses no network, files or processes. Scrolling or selecting clears the rain until you pause; /neocode toggles it.",
+      "source": {
+        "source": "url",
+        "url": "https://github.com/darrenjforde/neocode.git"
+      }
+    },
+    {
+      "name": "nvidia-skills",
+      "description": "Find the right NVIDIA skill for GPU acceleration, CUDA, AI agents, data loading, training, inference, robotics, Physical AI, Omniverse, simulation, and other NVIDIA-powered workflows.",
+      "source": {
+        "source": "git-subdir",
+        "url": "https://github.com/NVIDIA/skills.git",
+        "path": "plugins/nvidia-skills"
+      }
+    },
+    {
+      "name": "odometer",
+      "description": "An odometer above the prompt: how long this session has run and what it has cost.",
+      "source": {
+        "source": "git-subdir",
+        "url": "https://github.com/DJPalefaceSD/rostech-mods.git",
+        "path": "plugins/odometer"
+      }
+    },
+    {
+      "name": "plugin-manager",
+      "description": "Visual web UI for managing, toggling, and browsing Claude Code plugins. Opens as a standalone app window with Anthropic-styled interface.",
+      "source": {
+        "source": "url",
+        "url": "https://github.com/DVKolm/claude-plugin-manager.git"
+      }
+    },
+    {
+      "name": "prompt-enhancer",
+      "description": "Turn a rough prompt or coding task into a clear, ready-to-send prompt. Paste your draft, get one rewritten version. It never runs the task.",
+      "source": {
+        "source": "url",
+        "url": "https://github.com/bitcompool/prompt-enhancer-claude-plugin.git"
+      }
+    },
+    {
+      "name": "promptcolor",
+      "description": "/promptcolor changes the background color of your own prompt lines in the Claude Code transcript so they are easy to spot while scrolling back.",
+      "source": {
+        "source": "url",
+        "url": "https://github.com/jwhall/promptcolor.git"
+      }
+    },
+    {
+      "name": "reverse-engineering",
+      "description": "Reverse engineering skill for Claude Code and other AI coding agents.",
+      "source": {
+        "source": "url",
+        "url": "https://github.com/EncidXVII/claude-reverse-engineering-skill.git"
+      }
+    },
+    {
+      "name": "senior-engineering-partner",
+      "description": "A strict code reviewer, pair programmer, debugger, and mentor for Python, Bash, Google Apps Script, and JavaScript — a security-first, phase-aware engineering discipline with an enforced spec → plan → TDD → verify workflow.",
+      "source": {
+        "source": "url",
+        "url": "https://github.com/bjgreenberg/senior-engineering-partner.git"
+      }
+    },
+    {
+      "name": "signal-hunter",
+      "description": "AI-powered daily trend hunter. Aggregates 15+ sources (HN, GitHub, Reddit, YouTube, X/Twitter, newsletters, app stores), scores cross-source signals with newsletter mention tracking and velocity detection, generates Obsidian notes with business ideas and sends email digests.",
+      "source": {
+        "source": "url",
+        "url": "https://github.com/berkkorkmaz/signal-hunter.git"
+      }
+    },
+    {
+      "name": "skill-creator",
+      "description": "Create new skills, improve existing skills, and measure skill performance. Use when users want to create a skill from scratch, update or optimize an existing skill, run evals to test a skill, or benchmark skill performance with variance analysis.",
+      "source": {
+        "source": "git-subdir",
+        "url": "https://github.com/anthropics/claude-plugins-official.git",
+        "path": "plugins/skill-creator"
+      }
+    },
+    {
+      "name": "speedometer",
+      "description": "A speedometer above the prompt: how full the context window is, from 0 to MAX.",
+      "source": {
+        "source": "git-subdir",
+        "url": "https://github.com/DJPalefaceSD/rostech-mods.git",
+        "path": "plugins/speedometer"
+      }
+    },
+    {
+      "name": "supabase",
+      "description": "Official Supabase plugin for Claude Code with bundled Supabase skills and MCP access for project management, database work, auth, storage, and Postgres best practices.",
+      "source": {
+        "source": "url",
+        "url": "https://github.com/supabase-community/supabase-plugin.git"
+      }
+    },
+    {
+      "name": "supabase-expert",
+      "description": "Expert Supabase guidance for RLS policies, Auth flows, Storage setup, security auditing, and best practices. Helps build secure, performant Supabase applications.",
+      "source": {
+        "source": "url",
+        "url": "https://github.com/asim266/supabase-expert.git"
+      }
+    },
+    {
+      "name": "turbocharge",
+      "description": "Engineering team orchestration for Claude Code. 10 skills, 5 agents, 1 hook — single pipeline from brainstorm to shipped code.",
+      "source": {
+        "source": "url",
+        "url": "https://github.com/nicodiansk/turbocharge.git"
+      }
+    },
+    {
+      "name": "wiki-wonka",
+      "description": "A persistent LLM-maintained wiki for your knowledge base. Ingest sources, query your knowledge, and lint for consistency.",
+      "source": {
+        "source": "url",
+        "url": "https://github.com/cooperacode/wiki-wonka.git"
+      }
+    },
+    {
+      "name": "wizard",
+      "description": "Build AI spells for what you do. A meta-framework for turning any repeatable task into a reusable workflow. Works for researchers, founders, students, writers, devs - anyone.",
+      "source": {
+        "source": "url",
+        "url": "https://github.com/redhuntlabs/wizard.git"
+      }
+    }
+  ]
+}
