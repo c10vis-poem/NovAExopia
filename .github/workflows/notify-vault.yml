@@ -1,6 +1,8 @@
 name: Notify vault
-# On every push to main, ask NovAExorpus to refresh its live mirror of this repo
-# (repos/<name>/, built by the vault's master-files workflow).
+# On every push to main, ping NovAExorpus (repository_dispatch, event base-repo-updated).
+# Auth: the vault GitHub App mints a fresh 1-hour token on every run, so nothing
+# expires or needs renewing. Set up once with NovAExorpus tools/vault-app/setup.sh,
+# which stores vars.VAULT_APP_ID and secrets.VAULT_APP_PRIVATE_KEY here.
 on:
   push:
     branches: [main]
@@ -9,9 +11,30 @@ jobs:
   notify:
     runs-on: ubuntu-latest
     steps:
-      - name: Dispatch to NovAExorpus
+      - name: Check the vault app is configured
+        id: cfg
         env:
-          GH_TOKEN: ${{ secrets.VAULT_DISPATCH_TOKEN }}
+          APP_ID: ${{ vars.VAULT_APP_ID }}
+        run: |
+          if [ -z "$APP_ID" ]; then
+            echo "::notice::VAULT_APP_ID is not set; run NovAExorpus tools/vault-app/setup.sh. Skipping."
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Mint a token for NovAExorpus
+        if: steps.cfg.outputs.ready == 'true'
+        id: app
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ vars.VAULT_APP_ID }}
+          private-key: ${{ secrets.VAULT_APP_PRIVATE_KEY }}
+          owner: c10vis-poem
+          repositories: NovAExorpus
+      - name: Dispatch to NovAExorpus
+        if: steps.cfg.outputs.ready == 'true'
+        env:
+          GH_TOKEN: ${{ steps.app.outputs.token }}
         run: |
           gh api repos/c10vis-poem/NovAExorpus/dispatches \
             -f event_type=base-repo-updated \
