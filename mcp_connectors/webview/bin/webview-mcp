@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+# Start chrome-devtools-mcp (from the c10vis-poem fork clone) attached to the
+# phone's Chrome through the forwarded DevTools port. The server connects to
+# the browser lazily, on the first tool call, so it starts even when the link
+# is down; run bin/webview-connect first to bring the link up.
+set -euo pipefail
+
+FORK_DIR="${CHROME_DEVTOOLS_MCP_DIR:-$HOME/repos/NvAEx-chrome-devtools-mcp}"
+PORT="${CDP_PORT:-9222}"
+ENTRY="$FORK_DIR/build/src/bin/chrome-devtools-mcp.js"
+
+if [[ ! -f "$ENTRY" ]]; then
+  echo "webview-mcp: $ENTRY not found. Build the fork first (see README)." >&2
+  exit 1
+fi
+
+# Best effort: refresh the forward silently so a reconnected phone just works.
+bash "$(dirname "$0")/webview-connect" --quiet >/dev/null 2>&1 || true
+
+exec node "$ENTRY" --browser-url="http://127.0.0.1:${PORT}" "$@"
