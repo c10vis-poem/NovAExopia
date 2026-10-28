@@ -7,3 +7,9 @@ Durable cross-session backlog. Not rewritten each session — items persist unti
 
 ## 2026-10-23
 - Marketplace `novaexopia`: plugins not yet listed because no public source repo was found: cowork-plugin-management, obsidian-sync, shipwright (0.2.0). The remaining ~515 plugins from the operator's Drive `NewPlugins` folder are added in batches.
+
+## 2026-10-28 (wiki admin tools)
+- Store the Gemini key (`nvaex-secret set GEMINI_API_KEY`), install `google-genai` (the install did not finish in 280 s), run one live `gemini_infer.py draft`. Confirm the default model ids in `gemini_infer.py` against Google's model list.
+- Not built: Gemini profile YAML, housekeeper, chunker (needs chunk schema decision E6), semantic half of lint. Operator decides E6 (chunk schema) and E10 (frontmatter schema).
+- After merge: link `skills/wiki-admin-core/*` into `~/wiki-admin/.claude/skills` and run the skills in a `wiki-admin` session.
+- Read the operator's full wiki-admin file set (140 to 200 files; location to confirm) before wiring further.
