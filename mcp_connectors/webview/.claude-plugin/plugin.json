@@ -1,0 +1,5 @@
+{
+  "name": "webview",
+  "version": "0.1.0",
+  "description": "Drive the phone's own Chrome (with its logged-in sessions) from an agent, through chrome-devtools-mcp over an adb-forwarded DevTools socket"
+}

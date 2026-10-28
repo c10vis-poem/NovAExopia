@@ -1,0 +1,27 @@
+﻿I literally just typed forward slash config the fact that it auto loaded the session is interesting 
+
+
+The session that was auto loaded was somewhat intentional.. my other accounts session in projects>claude code ai >cloud session was broken (similar to the aesopxi hook glitch fable re wrote recently) after promoting it to create and then load a custom mod mid session the ability to post comments from anthropics end completely broke and devoured the remainder of session allowance.
+Before ending the session I had it export what was supposed to be the multiple threads from that session 
+
+
+This sessions concerns-yes i need to disconnect a multitude of plugins. I loaded them to be within my uploaded plug ins not actually all installed at once, and I need a complete list \ url link doc to all of them for my files and for running my deep config analysis i need. 
+You can disable all of the ones that are the recent anthropics community plugins i added in the past 10 days but i need an extensive list of all the plug-ins including the ones that are already pre loaded from before then
+
+
+What i was intending with my previous threads builds- 
+* Webview socket\chromeDevtool\ browser use ability \android or node js mcp capable web interface tool kit . Basically wanting a rev   eng’d  playwright and perplexity mcp mod. Something that could utilize the chrome Dev tools, search, type and interact with my on device browser, run headless webview browser for on device claw capabilities and also run Inference with openrouter and my other cloud api tools as well as my gcp, my Gemini pro and claude pro accounts and utilize the cloud connectors and the on device adb debug loopback bridge process and the webview unix websocket from the terminal based apk and on device assistant agent that is going to be on the device I RECENTLY FORKED A BUNCH OF USEFUL ASSETS TO CREATE THIS
+
+
+* Plugins mod- a button above the prompt bar that would list attached number of skills attached like 4\28 if i had 28 available and 4 active for example 
+* Hitting the button opens up an expandable side panel that would have a full list of the plugins and clicking one would open up its contents like agents skills tools and context 
+* Environments customization side panel (needs a lot more context) this installed as another above bar button \ clapsable side panel it operates very similar to how the environments settings tile does but allows full access to multiple things. 1. The claude settings, session !
+ Not only the global but also account settings and repositories basically every root directory or anything else we're configurations can be made as well as marketplaces and any assets or tools
+
+
+* In obsidian style file tree with drop-down at maps out every configuration mentioned above as well as full list WITH EXPLANATIONS of skills, Tools, scripts,hooks, commands, orchestrations styles or output styles or agent packages plugins you name it
+* AND ABOVE THE BAR visible gauge for seeing how much token window is left how much contact has been taken up basically everything that the bottom right wheel shows in cloud code visible throughout the session and an additional cash prompt TTL bar 
+
+
+We also need to reestablish the hooks that need to be persistent. Get some actual helpful plugins utilized right now. 
+So do a quick inventory of all available skills not only in this environment but account wide including the anthropic marketplace plugins that are disconnected and everything I have and drive I said in Drive and throughout GitHub as far as plug-ins and as well as our base repositories and then let's come up with a quick list of what we need to enact and plug in and get going so that we can continue to build follow through on fables branches start my main rev.eng.ify project rollout

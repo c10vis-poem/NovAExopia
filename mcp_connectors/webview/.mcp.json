@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "webview": {
+      "command": "bash",
+      "args": ["${CLAUDE_PLUGIN_ROOT}/bin/webview-mcp"],
+      "env": {
+        "CHROME_DEVTOOLS_MCP_NO_USAGE_STATISTICS": "1",
+        "CHROME_DEVTOOLS_MCP_NO_UPDATE_CHECKS": "1"
+      }
+    }
+  }
+}
