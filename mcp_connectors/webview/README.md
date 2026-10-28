@@ -41,6 +41,29 @@ Install the plugin locally: `claude --plugin-dir ~/repos/NovAExopia/mcp_connecto
 
 Settings (environment): `CHROME_DEVTOOLS_MCP_DIR` (fork path, default `~/repos/NvAEx-chrome-devtools-mcp`), `CDP_PORT` (9222), `CDP_SOCKET` (`chrome_devtools_remote`), `ADB_SERIAL`.
 
+## Other MCP clients
+
+Any stdio MCP client can run the same server. Generic config (replace the path):
+
+```json
+{
+  "mcpServers": {
+    "webview": {
+      "command": "bash",
+      "args": ["/path/to/mcp_connectors/webview/bin/webview-mcp"]
+    }
+  }
+}
+```
+
+`bin/webview-mcp` prints the link status to stderr, never stdout.
+
+## Not yet
+
+- Headless or own-Chromium mode for the Hyperion-XI and AEthX-AEsc app WebViews. Their sockets are named `webview_devtools_remote_<pid>`; `bin/webview-connect --list` shows them, but the pid changes per launch and nothing maps it to `CDP_SOCKET` yet.
+- A search tool.
+- A marketplace entry (pending the marketplace branch).
+
 ## Limits
 
 - Chrome must be running on the phone for the socket to exist.

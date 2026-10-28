@@ -40,6 +40,16 @@ if [[ -n "$ADB_TARGET" ]]; then
   adb connect "$ADB_TARGET" >/dev/null 2>&1
 fi
 
+if [[ -z "${ADB_SERIAL:-}" ]]; then
+  NDEV="$(adb devices | awk 'NR>1 && $2=="device"' | wc -l)"
+  if [[ "$NDEV" -gt 1 ]]; then
+    say "Several adb devices are attached and ADB_SERIAL is not set:"
+    say "$(adb devices | awk 'NR>1 && $2=="device" {print "  " $1}')"
+    say "Set ADB_SERIAL=<serial> and rerun."
+    exit 3
+  fi
+fi
+
 if ! "${ADB[@]}" get-state >/dev/null 2>&1; then
   say "No adb device. Pair once with wireless debugging, then connect:"
   say "  Settings > Developer options > Wireless debugging: ON"
