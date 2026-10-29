@@ -1,6 +1,9 @@
 # MEMORY.md — NovAExopia
 Durable facts about this repo. Dated; newest first. Updated at session wrap-up.
 
+## 2026-10-28 (wiki admin tools)
+- **Wiki admin tools** in `tools/wiki-admin/` (converter with empty/failed-file report, independent `verify.py` over the vault's `tools/check.py`, `manifest.py` with full sha256 and per-tier JSONL, `gemini_infer.py` with privacy filter, dry-run and an MCP server, `audit_staging.py` six checks, `promote.py` named-approver promotion). Skills in `skills/wiki-admin-core/`: wiki-reference-router, w5h-extraction, and one merged skill per overlapping job (ingest, query, lint, repo-docs). `selftest.sh` passes. The agent itself is NovusAExenti `executor-core/file-administrator/`.
+- **Stack decision (operator, 2026-10-28):** OpenWiki TUI/CLI dropped; OpenWiki for Claude Code + llm-wiki-nocode + obsidian-wiki + openwiki-skills, overlaps customized into one. Inference on Gemini/Google.
 ## 2026-10-28
 - **Claw tools live here permanently** (operator): web view, browser tooling, mods. APK repos (AEthX-AEsc, Hyperion-XI) get pre-compiled packages plus marketplace plugins/connectors pointing here.
 - **`mcp_connectors/webview/`**: Claude Code plugin wrapping the fork `NvAEx-chrome-devtools-mcp` to drive the phone's own Chrome over the Chrome DevTools Protocol. Android only exposes Chrome's DevTools socket through adb (wireless debugging, loopback); Termux cannot open the abstract socket directly ("Permission denied"). `bin/webview-connect` sets up `adb forward` and checks `/json/version`; `bin/webview-mcp` starts the server and reports link state on stderr. Not tested end to end yet (no device paired; server start blocked by the auto-mode safety classifier).
