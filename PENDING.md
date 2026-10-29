@@ -13,3 +13,7 @@ Durable cross-session backlog. Not rewritten each session — items persist unti
 - Not built: Gemini profile YAML, housekeeper, chunker (needs chunk schema decision E6), semantic half of lint. Operator decides E6 (chunk schema) and E10 (frontmatter schema).
 - After merge: link `skills/wiki-admin-core/*` into `~/wiki-admin/.claude/skills` and run the skills in a `wiki-admin` session.
 - Read the operator's full wiki-admin file set (140 to 200 files; location to confirm) before wiring further.
+## 2026-10-28
+- Web view tool: operator pairs wireless debugging, then `bash mcp_connectors/webview/bin/webview-connect --adb 127.0.0.1:<port>`; then finish the fork build (`node scripts/post-build.ts` in `NvAEx-chrome-devtools-mcp`) and test that the server lists its tools. Both were blocked by the auto-mode safety classifier.
+- Web view tool, later: headless / own-Chromium mode for Hyperion-XI and AEthX-AEsc app WebViews, a search tool, a marketplace entry (after `feat/marketplace-batch-2` lands).
+- Mods (see `mods/`): plugins panel with active/available count, environments/agent-configs side panel, Obsidian-style config file tree, context and cache-TTL gauge, browser choice cards with a prompt bar, Jev side panel. Only the old plugins-panel exists (in NvAEx-Recaps); move it here when mods work starts.

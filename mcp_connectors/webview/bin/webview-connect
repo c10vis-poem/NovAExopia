@@ -1,0 +1,81 @@
+#!/usr/bin/env bash
+# Bring up the DevTools link to the phone's Chrome and prove it answers.
+#
+#   webview-connect                 forward + verify (default socket: Chrome)
+#   webview-connect --adb HOST:PORT adb connect first (wireless debugging port)
+#   webview-connect --list          list DevTools sockets on the device
+#   webview-connect --quiet         no output, exit code only
+#
+# Env: CDP_PORT (9222), CDP_SOCKET (chrome_devtools_remote), ADB_SERIAL.
+# Exit codes: 0 CDP answered, 2 no adb, 3 no device, 4 forward failed,
+# 5 forward up but CDP silent.
+set -uo pipefail
+
+PORT="${CDP_PORT:-9222}"
+SOCKET="${CDP_SOCKET:-chrome_devtools_remote}"
+QUIET=0
+LIST=0
+ADB_TARGET=""
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --quiet) QUIET=1 ;;
+    --list) LIST=1 ;;
+    --adb) ADB_TARGET="${2:?--adb needs HOST:PORT}"; shift ;;
+    -h|--help) sed -n '2,12p' "$0"; exit 0 ;;
+    *) echo "unknown option: $1" >&2; exit 64 ;;
+  esac
+  shift
+done
+
+say() { [[ $QUIET -eq 1 ]] || echo "$@"; }
+
+command -v adb >/dev/null || { say "adb not found: pkg install android-tools"; exit 2; }
+
+ADB=(adb)
+[[ -n "${ADB_SERIAL:-}" ]] && ADB+=(-s "$ADB_SERIAL")
+
+if [[ -n "$ADB_TARGET" ]]; then
+  say "adb connect $ADB_TARGET"
+  adb connect "$ADB_TARGET" >/dev/null 2>&1
+fi
+
+if [[ -z "${ADB_SERIAL:-}" ]]; then
+  NDEV="$(adb devices | awk 'NR>1 && $2=="device"' | wc -l)"
+  if [[ "$NDEV" -gt 1 ]]; then
+    say "Several adb devices are attached and ADB_SERIAL is not set:"
+    say "$(adb devices | awk 'NR>1 && $2=="device" {print "  " $1}')"
+    say "Set ADB_SERIAL=<serial> and rerun."
+    exit 3
+  fi
+fi
+
+if ! "${ADB[@]}" get-state >/dev/null 2>&1; then
+  say "No adb device. Pair once with wireless debugging, then connect:"
+  say "  Settings > Developer options > Wireless debugging: ON"
+  say "  'Pair device with pairing code' (use split screen with Termux):"
+  say "    adb pair 127.0.0.1:<pairing-port> <6-digit-code>"
+  say "  then, with the port shown on the Wireless debugging screen:"
+  say "    $(basename "$0") --adb 127.0.0.1:<port>"
+  exit 3
+fi
+
+if [[ $LIST -eq 1 ]]; then
+  "${ADB[@]}" shell grep -a devtools_remote /proc/net/unix | sed 's/.*@//' | sort -u
+  exit 0
+fi
+
+if ! "${ADB[@]}" forward "tcp:$PORT" "localabstract:$SOCKET" >/dev/null 2>&1; then
+  say "adb forward tcp:$PORT localabstract:$SOCKET failed"
+  exit 4
+fi
+
+VERSION="$(curl -s --max-time 5 "http://127.0.0.1:$PORT/json/version")"
+if [[ -z "$VERSION" ]]; then
+  say "Forward is up but CDP did not answer on :$PORT."
+  say "Open Chrome on the phone once (the socket exists only while it runs)."
+  exit 5
+fi
+
+say "$VERSION"
+exit 0
