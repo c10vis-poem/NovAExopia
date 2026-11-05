@@ -1,0 +1,9 @@
+{"groups": {
+  "build":    {"kw": ["build","implement","write","add","create","refactor","fix","bug","code","script","function","test"], "skills": ["engineering skills (tdd, diagnosing-bugs, refactor-safely)", "honey"]},
+  "research": {"kw": ["research","find","search","compare","explain","why","how","investigate","read","docs"], "skills": ["deep-research", "explore-codebase"]},
+  "memory":   {"kw": ["remember","memory","resume","handoff","recap","decision","log"], "skills": ["memory-triage", "wrapup"]},
+  "wiki":     {"kw": ["wiki","ingest","corpus","vault","obsidian","markdown","convert"], "skills": ["wiki-admin-ingest", "corpus-verify"]},
+  "device":   {"kw": ["termux","android","adb","npu","apk","device","phone","install"], "skills": ["android-termux-operator", "termux-helper"]},
+  "review":   {"kw": ["review","audit","verify","check","diff","pr","merge","ci"], "skills": ["code-review", "task-auditor"]},
+  "plan":     {"kw": ["plan","design","architecture","spec","decide","strategy"], "skills": ["grilling", "decision-council"]}
+}}

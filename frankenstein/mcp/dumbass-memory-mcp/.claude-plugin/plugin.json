@@ -1,0 +1,9 @@
+{
+  "name": "dumbass-memory-mcp",
+  "version": "0.1.0",
+  "description": "Frankenstein MCP server: 4-stream memory (AST graph, topology, scoped episodic SQLite, SHA-256 CAS) with 5 memory.* tools.",
+  "author": {
+    "name": "The Builder"
+  },
+  "license": "MIT"
+}

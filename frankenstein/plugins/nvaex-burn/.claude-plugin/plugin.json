@@ -1,0 +1,7 @@
+{
+  "name": "nvaex-burn",
+  "version": "0.1.0",
+  "description": "Lean usage pacer: brake near the 5h/7d limit, burn pre-approved queue jobs near the weekly reset, keep the prompt cache warm during active sessions.",
+  "author": { "name": "The Builder" },
+  "license": "MIT"
+}

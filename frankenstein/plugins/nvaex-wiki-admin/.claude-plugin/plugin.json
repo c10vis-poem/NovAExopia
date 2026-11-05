@@ -1,0 +1,7 @@
+{
+  "name": "nvaex-wiki-admin",
+  "version": "0.1.0",
+  "description": "Corpus intake, verification and skill factory: 6-step pipeline (size gate, injection scan, crush, 25-file batches with a ledger, independent verify, skill factory), trimmed llm-wiki search/lint/stats/evolve, provenance and dedup. Staging only.",
+  "author": {"name": "The Builder"},
+  "license": "MIT"
+}

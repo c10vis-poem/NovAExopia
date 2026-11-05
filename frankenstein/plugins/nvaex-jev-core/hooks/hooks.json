@@ -1,0 +1,10 @@
+{
+  "hooks": {
+    "UserPromptSubmit": [{"hooks": [{"type": "command", "timeout": 5,
+      "command": "sh \"${CLAUDE_PLUGIN_ROOT}/scripts/killswitch.sh\" nvaex-jev-core route && exit 0; python3 \"${CLAUDE_PLUGIN_ROOT}/scripts/route.py\" || true"}]}],
+    "PostToolUse": [{"hooks": [{"type": "command", "timeout": 5,
+      "command": "sh \"${CLAUDE_PLUGIN_ROOT}/scripts/killswitch.sh\" nvaex-jev-core health && exit 0; python3 \"${CLAUDE_PLUGIN_ROOT}/scripts/health.py\" || true"}]}],
+    "Stop": [{"hooks": [{"type": "command", "timeout": 10,
+      "command": "sh \"${CLAUDE_PLUGIN_ROOT}/scripts/killswitch.sh\" nvaex-jev-core scorecard && exit 0; python3 \"${CLAUDE_PLUGIN_ROOT}/scripts/scorecard.py\" || true"}]}]
+  }
+}
