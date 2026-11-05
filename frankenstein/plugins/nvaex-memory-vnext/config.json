@@ -1,5 +1,4 @@
 {
   "recaps": "~/repos/NvAEx-Recaps",
-  "autoPromote": false,
   "snapshotMaxLines": 60
 }

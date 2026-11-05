@@ -31,6 +31,11 @@ export async function init($: EngineInterface) {
   await $.command.register({ name: 'env', description: 'Environment profiles: /env, /env use NAME, /env clear' })
 }
 
+export async function open($: EngineInterface) {
+  await refresh($)
+  await $.ui.open({ id: PANE, title: 'Environment' })
+}
+
 export const mount = (on: Parameters<Register>[0]) => {
   on('command.run', { command: 'env' }, async ($, e) => {
     if (await isOff($, MOD)) return { text: 'env-customizer-panel is switched off (kill switch).' }
@@ -38,8 +43,7 @@ export const mount = (on: Parameters<Register>[0]) => {
     if (verb === 'use' && name) await use($, name)
     else if (verb === 'clear') await use($, '(none)')
     else {
-      await refresh($)
-      await $.ui.open({ id: PANE, title: 'Environment' })
+      await open($)
     }
     return { text: note || scopes }
   })

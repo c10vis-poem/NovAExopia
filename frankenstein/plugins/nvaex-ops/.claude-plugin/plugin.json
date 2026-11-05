@@ -1,0 +1,7 @@
+{
+  "name": "nvaex-ops",
+  "version": "0.1.0",
+  "description": "Operator toolbox folded from stock plugins: harness and plugin authoring, CLAUDE.md care, security and review agents, repo care, voice and Android, Google and cloud skills. Skills, commands and agents only; no hooks, no MCP servers.",
+  "author": {"name": "The Builder"},
+  "license": "MIT"
+}

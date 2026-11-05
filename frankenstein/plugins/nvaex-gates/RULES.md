@@ -1,0 +1,68 @@
+# RULES: the ten rules
+
+**These ten rules override every older rule, in any file.** Old rule text in CLAUDE.md, AGENTS.md and elsewhere is superseded. Operator's orders, 2026-11-05: "the whole point of having Fable consolidate everything down into ten base rules is to override all that old bullshit", and "I want all the hooks and all the rules persistent everywhere." So: ten rules, every one on, on every device, session and cloud. Nothing starts off.
+
+Every hook serves a rule, and runs through `scripts/run-gate.sh`; `scripts/gates.tsv` is the wiring. They were merged, not dropped, because they depend on each other: `enforce-prompt` alone writes the check-in, wrap-up and push markers that rules 2, 6, 7 and 10 read.
+
+"Override" is what the operator types in a prompt: it counts for that prompt only, never from a subagent hand-back. "Revoke" is run by the operator (`! gate off ...`): the agent cannot run it.
+
+| # | Rule | Hooks that enforce it | Override | Revoke |
+|---|------|-----------------------|----------|--------|
+| 1 | Read RESUME.md before any other tool runs | resume-gate | `#skip-resume` | `gate off resume-gate` |
+| 2 | No state change before the operator checks in: `/ok`, `/ok 1-4`, `/defer N`, `/reject N`, `/write N text` | checkin-gate; enforce-prompt records the check-in | any check-in verb, or `#skip-checkin` | `gate off checkin-gate`, `gate off enforce-prompt` |
+| 3 | Secrets never printed unredacted; git hooks never skipped | secret-guard | `#show-secret <path>` for one call | `gate off secret-guard` |
+| 4 | The agent cannot edit settings, enforcement state or the off switches, cannot run `gate off/on`, and cannot set `disableAllHooks` true in any repo | guard | none for the agent; the operator uses a `!` line | `gate off guard` |
+| 5 | Questions: every menu has a write-in option; no turn ends on a yes/no or either/or question | answer-gate | `#skip-answer` | `gate off answer-gate` |
+| 6 | What the task requires gets done before other tools run, and still-owed work carries across prompts: the skills, tools and files in ENFORCEMENTS.md, build docs, a capable subagent | task-gate; enforce-prompt works out what each prompt requires | `#skip-enforce` | `gate off task-gate` |
+| 7 | A turn cannot end with required steps missing: skills, tools and reads still owed, opening and wrap-up steps, a subagent's plan and scope, and housekeeping when due (`/housekeeping`, or `#housekeeping-defer`) | stop-gate; session-start and observe-event feed it | `#skip-stop`, `/wrapup-defer N why: ...`; `observe-dismiss <id> "<reason>"` closes a friction event | `gate off stop-gate`, `gate off session-start`, `gate off observe-event` |
+| 8 | No "not found / doesn't exist" answer without a search this turn | answer-gate | `#skip-answer` | `gate off answer-gate` |
+| 9 | One session log: every repo touch, file write, commit, move, delete and script run. It is the recap that goes to NvAEx-Recaps. The scratchpad's files are saved on the device | session-log (never blocks) | n/a | `gate off session-log` |
+| 10 | Everything GitHub: forks synced before touching, no work on a branch behind main, nothing ships mid-session; it ships at the end, touched repos only, after `/ok push`, through secret scan, PR and CI. A pushed branch gets auto-merge right away and is deleted once merged, unless the operator types `#no-merge` or `#keep-branch <name>`. The Stop gate holds the turn until that is done | repo-gate (`#skip-repo`); push-gate (`#skip-git`, or "push now"; "hold push" revokes, `/wrapup` opens it); stop-gate; ship-session (`#no-ship`) | as listed | `gate off repo-gate`, `gate off push-gate`, `gate off ship-session` |
+
+## The 14 hooks
+
+Each is one switch. Some run several checks, which stay as separate files in `scripts/` so each can be tested alone.
+
+| Hook | Runs | What it does |
+|---|---|---|
+| resume-gate | itself | RESUME.md read first |
+| checkin-gate | itself | no changes until the operator checks in |
+| enforce-prompt | itself, classify | records check-ins and what each prompt requires |
+| secret-guard | itself | no secrets printed, no skipped git hooks |
+| guard | settings-guard, state-guard | settings, state and switches off limits |
+| answer-gate | menu-gate, absence-gate, question-gate | checks menus and the final answer |
+| task-gate | agent-type-gate, build-doc-gate, enforce-gate | required work first |
+| stop-gate | itself, subagent-stop-gate | no ending with required steps missing |
+| session-start | context-diff, housekeeping-check, staged-updates | what the session must know |
+| observe-event | itself | queues failures, denials and corrections |
+| session-log | change-log, session-ledger, carryover, archive-scratchpad | the one session log |
+| repo-gate | sync-on-use, branch-current-gate | repo synced and branch current |
+| push-gate | git-gate, ci-ready | no mid-session pushes, no auto-merge without CI |
+| ship-session | itself | ships at session end after `/ok push` |
+
+The yes/no check matches phrases, so it catches the common forms of a yes/no question, not every one.
+
+Not wired, not a hook on any event:
+- `extras/auditor/settings-snippet.json`: the Stop auditor is an agent-type hook. It cannot pass through run-gate or a kill switch (CONTRACT rule 4) and installing it means editing settings.json. Kept for the operator to decide.
+- `bin/plugin-fork-sync`: by hand. It updates plugins, so it was never wired.
+
+## Three guarantees every hook honors
+
+1. **Immutable to the agent.** Rule 4 stops the agent from touching settings, enforcement state and the switches.
+2. **Never a bare yes/no.** A block always names what was blocked, why, the override and the revoke. The operator picks.
+3. **Revocable any time, mid-session.** `gate off <hook>` creates `~/.claude/state/off/<hook>`; `gate on <hook>` removes it; `gate off all`, `gate on all`, `gate status`. No restart, no settings edit.
+
+## Switches, checked first
+
+`~/.nvaex-hooks-off` (everything), `~/.claude/state/off/nvaex-gates` (this package), `~/.claude/state/off/<hook>` and `~/.claude/state/off/nvaex-gates.<hook>` (one hook). `#hooks-off` in a prompt turns every hook off on this device, across sessions, until `#hooks-on`.
+
+## No hook can deadlock a session
+
+- A loose phrase (`scripts/override-phrases.txt`: "override", "go ahead", "I told you", "you can read it", "this is what I want", ...) lets every block through for that turn. Add words freely.
+- The same call blocked more than `AESOP_MAX_BLOCKS` (2) times yields; more than `AESOP_MAX_TURN_BLOCKS` (6) blocks from one agent in a turn yields. Logged `LOOP-BREAKER` in `~/.claude/state/hooks.log`. A new operator prompt resets the counts.
+- A hook that crashes or times out is allowed and logged. A script that is missing is allowed, logged `MISSING`, told to the agent and reported by `gate status`.
+- **Hard guards** (secret-guard, settings-guard, state-guard) are outside the phrases and the loop breaker. Each stops one named action, so the next call still runs; yielding on retry would let the agent reach the operator's settings or secrets by trying three times. The operator keeps `!` lines and `gate off`.
+
+## obs 0051, fixed
+
+resume-gate looped when subagents ran in other repos. It now keeps one record per agent and per RESUME path, compares content hashes, and never blocks Read. `tests/hooks/resume-gate.test.sh` runs 40 interleaved calls across three agents and three repos with no block.

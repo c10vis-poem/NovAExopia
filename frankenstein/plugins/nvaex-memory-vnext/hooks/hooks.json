@@ -5,6 +5,10 @@
         "hooks": [ { "type": "command", "timeout": 10,
           "command": "sh \"${CLAUDE_PLUGIN_ROOT}/scripts/killswitch.sh\" nvaex-memory-vnext session-start || python3 \"${CLAUDE_PLUGIN_ROOT}/scripts/vnext.py\" snapshot" } ] }
     ],
+    "PreCompact": [
+      { "hooks": [ { "type": "command", "timeout": 10,
+          "command": "sh \"${CLAUDE_PLUGIN_ROOT}/scripts/killswitch.sh\" nvaex-memory-vnext pre-compact || python3 \"${CLAUDE_PLUGIN_ROOT}/scripts/vnext.py\" export" } ] }
+    ],
     "Stop": [
       { "hooks": [ { "type": "command", "timeout": 10,
           "command": "sh \"${CLAUDE_PLUGIN_ROOT}/scripts/killswitch.sh\" nvaex-memory-vnext stop || python3 \"${CLAUDE_PLUGIN_ROOT}/scripts/vnext.py\" nudge" } ] }

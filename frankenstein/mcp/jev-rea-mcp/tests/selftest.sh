@@ -2,6 +2,17 @@
 # Real stdio round trip against server.py. Exit 0 only if every check passes.
 D=$(cd "$(dirname "$0")/.." && pwd)
 export JEV_JOBS_DIR="${TMPDIR:-/tmp}/jev-rea-selftest-$$"; unset JEV_AG_BRIDGE_URL
+# jev.remember data dir: tilde form under an isolated HOME proves expansion; cwd is an empty dir to prove nothing lands there
+TH="${TMPDIR:-/tmp}/jev-rea-home-$$"; mkdir -p "$TH/cwd"; export HOME="$TH"; export JEV_MEMORY_DIR="~/mem-test"; cd "$TH/cwd"
+python3 -I -c "import sys;sys.path.insert(0,'$D');import server" || { echo "FAIL import"; exit 1; }
+[ -z "$(ls -A "$TH/cwd")" ] && [ ! -e "$TH/mem-test" ] && echo "PASS import creates nothing" || { echo "FAIL import creates files"; exit 1; }
+printf '%s\n' '{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"jev.remember","arguments":{"action":"recall","query":"x"}}}' | python3 -I "$D/server.py" >/dev/null
+[ ! -e "$TH/mem-test" ] && [ -z "$(ls -A "$TH/cwd")" ] && echo "PASS recall on missing dir creates nothing" || { echo "FAIL recall created files"; exit 1; }
+env -u JEV_MEMORY_DIR python3 -I -c "
+import sys,os;sys.path.insert(0,'$D');import server
+sys.exit(0 if server.mem_dir()==os.path.join('$TH','.nvaex','jev-memory') else 1)" && echo "PASS default data dir is ~/.nvaex/jev-memory" || { echo "FAIL default data dir"; exit 1; }
+P="$D/../../plugins/nvaex-jev-core/skills/jev-router/tiers.json"
+if [ -f "$P" ]; then cmp -s "$P" "$D/data/tiers.json" && echo "PASS data/tiers.json matches nvaex-jev-core copy" || { echo "FAIL data/tiers.json differs from nvaex-jev-core copy"; exit 1; }; else echo "SKIP tiers sync check (plugin dir not beside server)"; fi
 S=$(date +%s%N 2>/dev/null)
 OUT=$(printf '%s\n' \
  '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"t","version":"0"}}}' \
@@ -11,6 +22,15 @@ OUT=$(printf '%s\n' \
  '{"jsonrpc":"2.0","id":4,"method":"tools/call","params":{"name":"jev.audit_gate","arguments":{"gate":"1","evidence":{"goal":"x"}}}}' \
  '{"jsonrpc":"2.0","id":5,"method":"tools/call","params":{"name":"rea.inspect_target","arguments":{"path":"'"$D"'"}}}' \
  '{"jsonrpc":"2.0","id":6,"method":"tools/call","params":{"name":"ag.cloud_dispatch","arguments":{"job":"demo","send":true}}}' \
+ '{"jsonrpc":"2.0","id":7,"method":"tools/call","params":{"name":"jev.remember","arguments":{"action":"recall","query":"sqlite"}}}' \
+ '{"jsonrpc":"2.0","id":8,"method":"tools/call","params":{"name":"jev.remember","arguments":{"action":"add","text":"State store is sqlite, not postgres. api_key=abc123SECRET","tags":["db","Storage"],"project":"demo"}}}' \
+ '{"jsonrpc":"2.0","id":9,"method":"tools/call","params":{"name":"jev.remember","arguments":{"action":"add","text":"State store is sqlite, not postgres. api_key=abc123SECRET","tags":["db"],"project":"demo"}}}' \
+ '{"jsonrpc":"2.0","id":10,"method":"tools/call","params":{"name":"jev.remember","arguments":{"action":"add","text":"Deploys go through the PR pipeline","tags":["ci"]}}}' \
+ '{"jsonrpc":"2.0","id":11,"method":"tools/call","params":{"name":"jev.remember","arguments":{"action":"recall","query":"which database sqlite","project":"demo"}}}' \
+ '{"jsonrpc":"2.0","id":12,"method":"tools/call","params":{"name":"jev.remember","arguments":{"action":"recall","tags":["ci"]}}}' \
+ '{"jsonrpc":"2.0","id":13,"method":"tools/call","params":{"name":"jev.remember","arguments":{"action":"recall","query":"kubernetes"}}}' \
+ '{"jsonrpc":"2.0","id":14,"method":"tools/call","params":{"name":"jev.remember","arguments":{"action":"add","text":"  "}}}' \
+ '{"jsonrpc":"2.0","id":15,"method":"tools/call","params":{"name":"jev.route_task","arguments":{"task":"please design the architecture and plan the roadmap for the next phase"}}}' \
  | python3 -I "$D/server.py") || { echo FAIL server; exit 1; }
 E_=$(date +%s%N 2>/dev/null)
 printf "%s\n" "$OUT" | python3 -I -c '
@@ -22,7 +42,7 @@ ok = []
 def chk(n, c): ok.append(c); print(("PASS " if c else "FAIL ") + n)
 chk("initialize", r[1]["result"]["serverInfo"]["name"] == "jev-rea-mcp")
 names = sorted(t["name"] for t in r[2]["result"]["tools"])
-chk("tools/list 4 tools", names == ["ag.cloud_dispatch","jev.audit_gate","jev.route_task","rea.inspect_target"])
+chk("tools/list 5 tools", names == ["ag.cloud_dispatch","jev.audit_gate","jev.remember","jev.route_task","rea.inspect_target"])
 chk("route_task L3", txt(3)["level"] == 3)
 g = txt(4)["gates"][0]
 chk("audit_gate incomplete, non-blocking", g["status"] == "incomplete" and txt(4)["blocking"] is False)
@@ -30,8 +50,23 @@ i = txt(5)
 chk("inspect_target read-only sees server.py", i["read_only"] and "server.py" in i["entrypoints"] + i["manifests"] + [""] or i["files_scanned"] > 0)
 d = txt(6)
 chk("cloud_dispatch writes job, does not send", d["sent"] is False and os.path.isfile(d["job_file"]))
+chk("route_task L3 -> fable tier", txt(3)["tier"]["model"] == "claude-fable-5-1")
+chk("route_task plan -> fable", txt(15)["tier"]["model"] == "claude-fable-5-1")
+chk("remember: recall on empty store is empty", txt(7)["count"] == 0)
+a = txt(8)
+chk("remember add: stored, secret redacted", a["stored"] is True and a["redacted"] == 1)
+chk("remember add: tilde expanded to HOME", a["path"] == os.path.expanduser("~/mem-test/memory.jsonl") and not a["path"].startswith("~"))
+chk("remember add: duplicate not stored twice", txt(9)["duplicate"] is True and txt(9)["id"] == a["id"])
+txt(10)
+rc = txt(11)
+chk("remember recall: query + project match", rc["count"] == 1 and "sqlite" in rc["memories"][0]["text"] and "abc123SECRET" not in rc["memories"][0]["text"] and rc["memories"][0]["tags"] == ["db","storage"])
+chk("remember recall: tag filter", txt(12)["count"] == 1 and txt(12)["memories"][0]["text"].startswith("Deploys"))
+chk("remember recall: no match is empty", txt(13)["count"] == 0)
+chk("remember add: empty text is an error", "error" in txt(14))
+chk("remember: file mode 0600, one line per add", oct(os.stat(a["path"]).st_mode & 0o777) == "0o600" and len(open(a["path"]).read().splitlines()) == 2)
+chk("remember: nothing written to cwd", os.listdir(os.getcwd()) == [])
 sys.exit(0 if all(ok) else 1)
 '; RC=$?
-rm -rf "$JEV_JOBS_DIR"
+rm -rf "$JEV_JOBS_DIR" "$TH"
 [ -n "$S" ] && echo "round-trip ms: $(( (E_-S)/1000000 ))"
 [ $RC -eq 0 ] && echo "SELFTEST OK" || echo "SELFTEST FAILED"; exit $RC

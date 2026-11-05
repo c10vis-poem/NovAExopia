@@ -17,8 +17,7 @@ wrong.
 1. Pick the **mode** (below).
 2. **Scan** the repo and build a model: layers, clusters, nodes (with real file citations),
    edges, and — optionally — flows, matrices, walkthroughs, notes.
-3. **Write `data.json`** conforming to [reference/schema.md](reference/schema.md). Imitate
-   the shape in [examples/architecture.json](examples/architecture.json).
+3. **Write `data.json`** conforming to [reference/schema.md](reference/schema.md).
 4. **Generate:**
    ```bash
    node ${CLAUDE_SKILL_DIR}/scripts/generate.mjs data.json <name>-map.html
@@ -69,5 +68,4 @@ step-through walkthrough player, matrices, and scan notes.
 - Don't add modes beyond `architecture` and `flow`.
 - Don't invent files — every citation must be real.
 
-See [reference/schema.md](reference/schema.md) for the full `data.json` contract and
-[examples/](examples/) for known-good inputs.
+See [reference/schema.md](reference/schema.md) for the full `data.json` contract.

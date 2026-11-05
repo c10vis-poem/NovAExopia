@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""jev-rea-mcp: stdlib stdio MCP server, 4 meta-tools. Newline-delimited JSON-RPC."""
+"""jev-rea-mcp: stdlib stdio MCP server, 5 tools. Newline-delimited JSON-RPC."""
 import csv, json, os, re, sys, time, urllib.request, uuid
 
 NAME, VERSION, PROTO = "jev-rea-mcp", "0.1.0", "2024-11-05"
@@ -8,6 +8,7 @@ HOME = os.path.expanduser("~")
 JOBS = os.environ.get("JEV_JOBS_DIR") or os.path.join(HOME, ".claude/state/jev-rea-mcp/jobs")
 CSV_PATH = os.environ.get("JEV_TAXONOMY_CSV") or os.path.join(HERE, "data/taxonomy.csv")
 BRIDGE = os.environ.get("JEV_AG_BRIDGE_URL", "")
+TIERS_PATH = os.environ.get("JEV_TIERS_JSON") or os.path.join(HERE, "data/tiers.json")
 
 GROUPS = {  # keyword -> domain group (built-in rules)
     "build": r"\b(implement|build|code|refactor|fix|bug|test|compile|apk|gradle|script)\b",
@@ -34,10 +35,26 @@ def route(task):
         elif n > 8: level, why = 1, ["single bounded task"]
         else: level, why = 0, ["short/trivial"]
     groups = [g for g, rx in GROUPS.items() if re.search(rx, t)][:3]
-    return {"level": level, "source": src, "groups": groups,
+    tier = tier_for(level, groups)
+    return {"level": level, "source": src, "groups": groups, "tier": tier,
             "rules": ["L0 inline", "L1 one skill", "L2 run audit_gate 1-5 + isolated subagents",
                       "L3 L2 plus operator confirmation before destructive steps"][level],
             "why": why, "taxonomy_csv_loaded": os.path.isfile(CSV_PATH)}
+
+def tier_for(level, groups):
+    """Model tier for a level + task types, from data/tiers.json (or JEV_TIERS_JSON). None if the file is absent or bad."""
+    try:
+        with open(os.path.expanduser(TIERS_PATH), encoding="utf-8") as f:
+            T = json.load(f)
+        order = T["order"]
+        t = T["levels"]["L%d" % level]["tier"]
+        if level > 0:
+            for g in groups:
+                m = T["task_types_min"].get(g)
+                if m in order and order.index(m) > order.index(t): t = m
+        return {"tier": t, "model": T["tiers"][t]["model"]}
+    except (OSError, ValueError, KeyError, TypeError):
+        return None
 
 _tax = None
 def taxonomy_match(t):
@@ -62,6 +79,76 @@ def taxonomy_match(t):
         s = len(w & words) / len(w)
         if s >= 0.4 and (best is None or s > best[0]): best = (s, lvl, label)
     return (best[1], best[2]) if best else None
+
+# ---- jev.remember: local project memory (replaces the jevmem CLI; no network, no key) ----
+MEM_FILE = "memory.jsonl"
+MAX_TEXT, MAX_TAGS = 2000, 12
+_SECRET = re.compile(r"(-----BEGIN [A-Z ]*PRIVATE KEY-----.*?-----END [A-Z ]*PRIVATE KEY-----"
+                     r"|\b(?:sk|pk|ghp|gho|ghs|github_pat|xox[abp]|AKIA|AIza|hf)[-_A-Za-z0-9]{16,}"
+                     r"|(?i:\b(?:password|passwd|secret|token|api[_-]?key)\b\s*[:=]\s*\S+))", re.S)
+
+def mem_dir():
+    """Resolved at call time, never at import: $JEV_MEMORY_DIR (~ expanded), else ~/.nvaex/jev-memory."""
+    d = os.environ.get("JEV_MEMORY_DIR") or "~/.nvaex/jev-memory"
+    return os.path.abspath(os.path.expanduser(os.path.expandvars(d)))
+
+def mem_read(path):
+    recs, bad = [], 0
+    try:
+        with open(path, encoding="utf-8") as f:
+            for line in f:
+                if not line.strip(): continue
+                try:
+                    r = json.loads(line)
+                    if isinstance(r, dict) and r.get("text"): recs.append(r)
+                    else: bad += 1
+                except ValueError: bad += 1
+    except FileNotFoundError:
+        pass
+    return recs, bad
+
+def _words(s): return set(re.findall(r"[a-z0-9]{2,}", s.lower()))
+
+def remember(a):
+    action = (a.get("action") or "").lower()
+    d = mem_dir(); path = os.path.join(d, MEM_FILE)
+    project = (a.get("project") or "").strip() or None
+    if action == "add":
+        text = (a.get("text") or "").strip()
+        if not text: return {"error": "add needs non-empty text"}
+        text, nred = _SECRET.subn("[REDACTED]", text)
+        text = text[:MAX_TEXT]
+        tags = sorted({str(t).strip().lower() for t in (a.get("tags") or []) if str(t).strip()})[:MAX_TAGS]
+        recs, _ = mem_read(path)
+        for r in recs:
+            if r["text"] == text and r.get("project") == project:
+                return {"stored": False, "duplicate": True, "id": r.get("id"), "path": path}
+        rec = {"id": uuid.uuid4().hex[:8], "created": time.strftime("%Y-%m-%dT%H:%M:%S%z"),
+               "project": project, "tags": tags, "text": text}
+        os.makedirs(d, mode=0o700, exist_ok=True)
+        fd = os.open(path, os.O_WRONLY | os.O_APPEND | os.O_CREAT, 0o600)
+        try: os.write(fd, (json.dumps(rec, ensure_ascii=False) + "\n").encode("utf-8"))
+        finally: os.close(fd)
+        return {"stored": True, "id": rec["id"], "redacted": nred, "path": path}
+    if action == "recall":
+        q = _words(a.get("query") or "")
+        want = {str(t).strip().lower() for t in (a.get("tags") or []) if str(t).strip()}
+        try: limit = max(1, min(50, int(a.get("limit") or 5)))
+        except (TypeError, ValueError): limit = 5
+        recs, bad = mem_read(path)
+        scored = []
+        for i, r in enumerate(recs):
+            if project and r.get("project") != project: continue
+            tg = set(r.get("tags") or [])
+            if want and not (want & tg): continue
+            s = len(q & _words(r["text"])) + 2 * len(q & tg)
+            if q and s == 0: continue
+            scored.append((s, i, r))
+        scored.sort(key=lambda x: (-x[0], -x[1]))  # score, then newest first
+        return {"count": len(scored), "returned": min(limit, len(scored)), "skipped_bad_lines": bad, "path": path,
+                "memories": [{"id": r["id"], "created": r.get("created"), "project": r.get("project"),
+                              "tags": r.get("tags", []), "text": r["text"]} for _, _, r in scored[:limit]]}
+    return {"error": "action must be 'add' or 'recall'"}
 
 GATES = {
     1: ("Pre-execution spec", ["goal", "files_in_scope", "done_test"]),
@@ -142,6 +229,11 @@ TOOLS = [
     ("ag.cloud_dispatch", "Write a job file for cloud work. Only POSTs if JEV_AG_BRIDGE_URL is set AND send=true.",
      {**S(job={"type": "string"}, payload={"type": "object"}, target={"type": "string"}, send={"type": "boolean"}), "required": ["job"]},
      lambda a: dispatch(a["job"], a.get("payload"), a.get("target"), bool(a.get("send")))),
+    ("jev.remember", "Local project memory (no network). action=add stores text with optional tags/project; action=recall returns the best matches for query/tags/project. Data dir: $JEV_MEMORY_DIR, default ~/.nvaex/jev-memory.",
+     {**S(action={"type": "string", "enum": ["add", "recall"]}, text={"type": "string", "description": "add: the memory (max 2000 chars; secret shapes are redacted)"},
+          tags={"type": "array", "items": {"type": "string"}}, project={"type": "string", "description": "optional scope; recall filters to it when given"},
+          query={"type": "string", "description": "recall: words to match"}, limit={"type": "integer", "description": "recall: 1-50, default 5"}),
+      "required": ["action"]}, remember),
 ]
 BY = {t[0]: t for t in TOOLS}
 

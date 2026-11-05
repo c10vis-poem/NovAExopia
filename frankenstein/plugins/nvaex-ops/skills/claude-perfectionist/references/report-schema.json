@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "claude perfectionist report",
+  "type": "object",
+  "required": ["mode", "overall_grade", "summary", "harness_map", "findings"],
+  "properties": {
+    "mode": { "type": "string", "enum": ["audit", "propose", "apply"] },
+    "overall_grade": { "type": "string", "enum": ["A", "B", "C", "D", "F", "unknown"] },
+    "summary": { "type": "string" },
+    "harness_map": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["surface", "load_class", "status"],
+        "properties": {
+          "surface": { "type": "string" },
+          "load_class": { "type": "string", "enum": ["always_on", "conditional", "isolated", "zero_context", "unknown"] },
+          "status": { "type": "string", "enum": ["inspected", "referenced_not_read", "missing", "unknown"] },
+          "notes": { "type": "string" }
+        }
+      }
+    },
+    "findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["severity", "class", "surface", "remediation"],
+        "properties": {
+          "severity": { "type": "string", "enum": ["critical", "major", "minor", "info"] },
+          "class": { "type": "string" },
+          "surface": { "type": "string" },
+          "evidence": { "type": "array", "items": { "type": "string" } },
+          "confidence": { "type": "string", "enum": ["high", "medium", "low", "unknown"] },
+          "remediation": { "type": "string", "enum": ["keep", "rewrite", "delete", "extract", "enforce", "investigate"] },
+          "target_surface": { "type": "string" },
+          "budget_impact": { "type": "string", "enum": ["saves_always_on", "maintainability_only", "none", "unknown"] },
+          "notes": { "type": "string" }
+        }
+      }
+    },
+    "recommended_changes": { "type": "array", "items": { "type": "string" } },
+    "runtime_validation": { "type": "array", "items": { "type": "string" } },
+    "open_questions": { "type": "array", "items": { "type": "string" } }
+  }
+}

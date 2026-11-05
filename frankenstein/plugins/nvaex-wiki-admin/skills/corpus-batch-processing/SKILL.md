@@ -92,13 +92,12 @@ keeps each subagent's context scoped to just its own files.
    skipped-sensitive / skipped-binary — list all that apply, a source can hit
    more than one) | one-line note. No prose report — a table only, so the
    orchestrator can scan results across all batches quickly.
-9. **Write a mem0 memory before finishing** (`mcp__mem0-mcp__add_memory`,
-   `agent_id: novaexorpus-corpus`) summarizing what this batch actually did:
-   which files were cleaned, which skills/tools were extracted, what got
-   skipped and why. This is in addition to the table report, not instead of
-   it — the table is for the orchestrator to read right now, the mem0 entry
-   is so a later session can query what happened without re-reading every
-   clean_md file.
+9. **Write a batch record before finishing**: append a short summary to
+   `audit/corpus-batch-<date>-<batch>.md` in the vault (which files were cleaned,
+   which skills/tools were extracted, what got skipped and why; no secret
+   values). This is in addition to the table report, not instead of it: the
+   table is for the orchestrator to read right now, the file is so a later
+   session can see what happened without re-reading every clean_md file.
 
 ## Known related tools
 

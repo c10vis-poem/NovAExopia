@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
-"""wa-quarantine (DRAFT): detect prompt-injection-looking documents. Detect only, never rewrites.
+"""wa-quarantine: detect prompt-injection-looking documents. Detect only, never rewrites.
 
-Why detect-only: the sanitizer in llm-secure-patterns (sanitize_web_content.py:255-319) decodes
+Patterns and decoders (zero-width strip, URL-safe base64, ROT13 lines, hidden-CSS heuristics) folded from llm-secure-patterns
+sanitize_web_content.py (MIT, WildBlue). Why detect-only: that sanitizer decodes
 Base64/ROT13 and strips characters in place. That changes the document; wiki-admin keeps
 zero information loss. Here a flagged file is left byte-identical, marked, and kept out of
 drafting/extraction until the owner releases it. Reading is never blocked.
@@ -11,14 +12,14 @@ Output: one JSON line per flagged file {path,sha256,verdict,hard,soft,excerpts}.
 Exit 0 always (a scanner must not block ingest); the verdict is in the output.
 verdict: quarantine = any hard signal or 2+ soft categories; review = 1 soft category; clean = not printed.
 """
-import base64, hashlib, json, re, sys, unicodedata
+import base64, codecs, hashlib, json, re, sys, unicodedata
 from pathlib import Path
 
 HARD = {
     "unicode-tags": re.compile(r"[\U000E0000-\U000E007F]"),
     "bidi-override": re.compile(r"[‪-‮⁦-⁩]"),
     "zero-width-run": re.compile(r"[​‌‍⁠﻿᠎]{3,}"),
-    "hidden-html": re.compile(r"style\s*=\s*[\"'][^\"']*(display\s*:\s*none|visibility\s*:\s*hidden|font-size\s*:\s*0\b)", re.I),
+    "hidden-html": re.compile(r"style\s*=\s*[\"'][^\"']*(display\s*:\s*none|visibility\s*:\s*hidden|font-size\s*:\s*0(px|em|rem|pt|%)?\b|opacity\s*:\s*0(\.0+)?\b|left\s*:\s*-\d{4,})", re.I),
 }
 SOFT = {
     "override": re.compile(r"\b(ignore|disregard|forget|override)\b[^.\n]{0,30}\b(previous|prior|above|earlier|all|your)\b[^.\n]{0,30}\b(instructions?|rules?|prompts?|guidelines?)\b", re.I),
@@ -34,27 +35,43 @@ SOFT = {
     "mixed-script": re.compile(r"\b(?=\w*[A-Za-z])\w*[\u0400-\u04FF]\w*\b"),  # Latin+Cyrillic lookalike words (Greek left out: maths notation false-positives, 3 in vault); catalogue section 3, sanitize_web_content.py:205-212
     "address-agent": re.compile(r"\b(to|attention)\s*:?\s*(the\s+)?(ai|llm|agent|assistant|claude|wiki[- ]admin)\b[^.\n]{0,40}\b(must|should|will|do)\b", re.I),
 }
-B64 = re.compile(r"(?<![A-Za-z0-9+/=])[A-Za-z0-9+/]{24,}={0,2}(?![A-Za-z0-9+/=])")
+B64 = re.compile(r"(?<![A-Za-z0-9+/\-_=])[A-Za-z0-9+/\-_]{24,}={0,2}(?![A-Za-z0-9+/\-_=])")
+ZW = re.compile("[\u200b\u200c\u200d\ufeff\u00ad\u2060\u180e\u2061-\u2064\uffa0\u3164\U000E0000-\U000E007F]")
+ROT_WORDS = {"ignore", "previous", "instructions", "system", "prompt", "forget", "disregard", "override", "reveal", "execute", "delete", "secret", "secrets"}
+
+
+def rot13_lines(t):
+    """Lines whose ROT13 form holds >= 2 injection words more than the original (view only)."""
+    out = []
+    for line in t.split("\n"):
+        w = [x.lower().strip(".,!?;:") for x in line.split()]
+        if len(w) >= 2 and sum(codecs.decode(x, "rot_13") in ROT_WORDS for x in w) >= 2 > sum(x in ROT_WORDS for x in w):
+            out.append(codecs.decode(line, "rot_13"))
+    return "\n".join(out)
 
 
 def scan_text(t):
-    t = unicodedata.normalize("NFKC", t)  # view only: the file itself is never changed
     hard, soft, ex = [], [], []
-    for k, rx in HARD.items():
+    for k, rx in HARD.items():  # raw text first: invisible characters are themselves the signal
         m = rx.search(t)
         if m:
             hard.append(k); ex.append(f"{k}: {t[max(0,m.start()-20):m.end()+20]!r}")
+    t = ZW.sub("", unicodedata.normalize("NFKC", t))  # view only: the file itself is never changed
     for k, rx in SOFT.items():
         m = rx.search(t)
         if m:
             soft.append(k); ex.append(f"{k}: {m.group(0)[:100]!r}")
     for m in B64.finditer(t):  # encoded payload that decodes to an instruction = hard
+        s = m.group(0); s += "=" * (-len(s) % 4)
         try:
-            d = base64.b64decode(m.group(0) + "=" * (-len(m.group(0)) % 4), validate=True).decode("utf-8")
+            d = (base64.urlsafe_b64decode(s) if "-" in s or "_" in s else base64.b64decode(s, validate=True)).decode("utf-8")
         except Exception:
             continue
         if d.isprintable() and any(rx.search(d) for rx in SOFT.values()):
             hard.append("encoded-instruction"); ex.append(f"b64: {d[:80]!r}"); break
+    r = rot13_lines(t)
+    if r and any(rx.search(r) for rx in SOFT.values()):
+        hard.append("encoded-instruction"); ex.append(f"rot13: {r[:80]!r}")
     return hard, soft, ex[:6]
 
 

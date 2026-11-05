@@ -15,7 +15,7 @@ It never edits RAW. It never judges its own output: run `verify.py` for that.
 
 Extractors (chosen to be disjoint from check.py's pypdf / zipfile / BeautifulSoup):
   .pdf  PyMuPDF (fitz)          .docx python-docx (paragraphs + tables, in order)
-  .html pandoc -t gfm-raw_html          .txt  read as UTF-8, wrapped in "# <stem>"
+  .html pandoc -t gfm-raw_html          .txt/.csv  read as UTF-8, wrapped in "# <stem>"
   .md   copied as is
 
 Usage: convert_raw_to_md.py RAW_DIR OUT_DIR [--report DIR] [--min-chars N] [--force]
@@ -69,6 +69,7 @@ CONVERTERS = {
     ".html": (convert_html, "pandoc"),
     ".htm": (convert_html, "pandoc"),
     ".txt": (convert_txt, "utf-8 read"),
+    ".csv": (convert_txt, "utf-8 read"),  # Drive Sheets export (gdrive_fetch.py)
     ".md": (lambda p: p.read_text(encoding="utf-8", errors="replace"), "copy"),
 }
 

@@ -20,11 +20,15 @@ export async function init($: EngineInterface) {
   await $.command.register({ name: 'config-tree', description: 'Searchable tree of skills, agents, commands, hooks and scripts, each explained in one line' })
 }
 
+export async function open($: EngineInterface, q = '') {
+  await load($, q)
+  await $.ui.open({ id: PANE, title: 'Config tree' })
+}
+
 export const mount = (on: Parameters<Register>[0]) => {
   on('command.run', { command: 'config-tree' }, async ($, e) => {
     if (await isOff($, MOD)) return { text: 'obsidian-config-tree is switched off (kill switch).' }
-    await load($, e.args.trim())
-    await $.ui.open({ id: PANE, title: 'Config tree' })
+    await open($, e.args.trim())
     return { text: `${lines.length} lines` + (query ? ` matching "${query}"` : '') }
   })
 

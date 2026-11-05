@@ -9,6 +9,8 @@ None. Custom-first: no donor code was copied.
 | server.py route_task | spec 4B server 3 (L0-L3 routing); group names and level semantics from sibling frankenstein/plugins/nvaex-jev-core/skills/jev-router (read only, own work) | keyword heuristic, no network |
 | server.py audit_gate | spec "5-Gate task auditing"; gate wording from nvaex-jev-core/skills/task-auditor | checklist only |
 | server.py inspect_target | spec "REA static repo inspection" | read-only stdlib walk; no NvAEx-rea code used |
+| server.py remember (`jev.remember`) | function of the jevmem plugin (`~/local-plugins/plugins/jevmem`, MIT, v0.7.6) which exposed search_memory/add_memory/list_memory/audit_memory via the `jevmem` npm CLI and the hosted api.typesafe.ai | no code copied; local JSONL add + recall only. audit_memory, the guard and always-on rules are not reproduced |
+| data/tiers.json | copy of `frankenstein/plugins/nvaex-jev-core/skills/jev-router/tiers.json` (own work); origins of each tier are recorded inside that file | kept identical by selftest; contract rule 1 forbids reading the sibling at runtime |
 | server.py cloud_dispatch | spec "ag.cloud_dispatch" | job-file writer; optional POST to JEV_AG_BRIDGE_URL |
 
 ## Missing (not on the phone; not invented)

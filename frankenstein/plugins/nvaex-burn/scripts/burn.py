@@ -9,7 +9,7 @@ import json, os, shlex, subprocess, sys, time, urllib.request
 H = os.path.expanduser("~")
 STATE = os.environ.get("BURN_STATE", f"{H}/.claude/state/nvaex-burn")
 QUEUE = os.environ.get("BURN_QUEUE", f"{H}/storage/shared/Documents/NovAExorpus/burn-queue.md")
-USAGE_FILE = os.environ.get("BURN_USAGE_FILE", f"{H}/.claude/heavy-usage/usage-live.json")
+USAGE_FILE = os.environ.get("BURN_USAGE_FILE", f"{STATE}/usage.json")  # written by the operator's usage display
 BRAKE5, BRAKE7 = 90, 95          # % used: 5h / 7d
 MIN_LEFT = 25                    # % unused needed to burn
 TIERS = [("inferno", 6), ("blaze", 24), ("smoulder", 72)]  # hottest first, hours before reset
@@ -31,7 +31,7 @@ def log(msg):
 
 def read_usage():
     """Pluggable reader. Returns {five_hour:{used_percentage,resets_at}, seven_day:{...}} or None (unknown).
-    BURN_USAGE_CMD prints that JSON; default reads the heavy-usage statusline capture file."""
+    BURN_USAGE_CMD prints that JSON; default reads STATE/usage.json (capturedAt in ms optional)."""
     try:
         cmd = os.environ.get("BURN_USAGE_CMD")
         if cmd:

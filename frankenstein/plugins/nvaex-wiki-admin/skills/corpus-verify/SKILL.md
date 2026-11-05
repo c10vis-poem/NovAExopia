@@ -49,17 +49,17 @@ There is no `Repos*` level and no `01-sources/`, `02-clean/`, `03-check/` any mo
 
 ## Invocation
 
-Run from the vault root:
+Run with the vault path in `VAULT` (the package copy of the checker is `${CLAUDE_PLUGIN_ROOT}/scripts/check.py`; without `VAULT` it falls back to the phone path):
 
 ```bash
 # Check every clean_md/*.md (POINTER.md excluded); writes audit/
-python3 tools/check.py
+VAULT=/path/to/vault python3 "${CLAUDE_PLUGIN_ROOT}/scripts/check.py"
 
 # Check named files only (any path; the file need not live in clean_md/)
-python3 tools/check.py clean_md/foo.md "some dir/bar.md"
+VAULT=/path/to/vault python3 "${CLAUDE_PLUGIN_ROOT}/scripts/check.py" clean_md/foo.md "some dir/bar.md"
 
 # Dry run: prints the roll-up to stdout, writes nothing
-python3 tools/check.py --dry-run [CLEAN_MD ...]
+VAULT=/path/to/vault python3 "${CLAUDE_PLUGIN_ROOT}/scripts/check.py" --dry-run [CLEAN_MD ...]
 ```
 
 Usage line: `check.py [--dry-run] [CLEAN_MD ...]`. The exit code is 1 when any file FAILs, else 0.
@@ -90,36 +90,6 @@ This is why the check works as RLVR. The cleaner read a file with one set of lib
 Type is sniffed from magic bytes, not the extension. In `check.py` anything starting with `PK` is read as DOCX, and XML-like markup that is not HTML is read as text.
 
 `clean.py` extractors raise on failure (mutool missing or non-zero exit, a DOCX python-docx cannot open, an unreadable HTML file). `main()` counts the file under Errors and writes no clean file, so an error string never becomes cleaned content. `clean.py` also skips any raw file that a `clean_md/` file already names in its `source:` line, so reruns no longer add `_N.md` copies.
-
----
-
-## Core algorithm
-
-### squash(s) and wordstream(s)
-
-`fold` maps Unicode to comparable ASCII (NFKC, invisible marks and the BOM dropped, ligatures such as Æ to AE, then NFKD with combining marks removed) and lowercases. `squash` then strips everything non-alphanumeric, so `CHIP SM8750` and `CHIPSM8750` both become `chipsm8750`. `wordstream` collapses separators to single spaces instead, which keeps word boundaries and shows whether a value survived as its own word or got fused to a neighbor.
-
-### find_atoms(lines)
-
-Extracts named values from the checker's read of the source (URLs, paths, versions, measurements, identifiers, dates; see `ATOM_RULES`). Each atom is looked for by containment in the clean text, squashed and as a wordstream.
-
-**Adjacency guard:** if the checker's own extractor produced an atom fused to its neighbor, the atom is set aside as unjudgeable and is not a finding. The checker cannot claim the clean file lost something it could not read cleanly itself.
-
-### Segment containment and chunk_split
-
-Each non-blank source line is a segment (lines over 300 characters are split at sentence ends); segments of at least `MIN_SEGMENT` squashed characters are checked for containment. A segment that fails goes to `chunk_split`, a greedy search for the longest sub-runs that do survive. The pieces that do not survive name the lost words, verbatim, with no score.
-
-### edge_check
-
-The first and last `EDGE_CHARS` (60) squashed characters of the source are tested chunk by chunk rather than as one run, because two PDF readers disagree about icon glyphs and line breaks at page ends. A piece found nowhere in the clean file means the start or end was lost.
-
-### furniture_class(line, kind)
-
-Says whether a source line missing from the clean file is furniture. The policy is transcribed by hand into `check.py` from `README.md` "The one job" (it is not read at runtime and not imported from `clean.py`): blank lines, browser or app chrome (`CHROME`: "Use code with caution", "Show more", "Sign in" and similar), and, for PDFs only, bare page numbers (`PAGE_NUMBER`). A line made of nothing but these fragments is furniture; anything else that went missing is a finding.
-
-### looks_truncated
-
-If the source itself stops mid-sentence, that is reported as an upstream defect, never repaired.
 
 ---
 
@@ -182,7 +152,7 @@ Constants at module level in `tools/check.py`; there are no CLI flags beyond `--
 2. Open the source and the clean file side by side.
 3. Confirm the finding is real.
 4. Fix by re-cleaning that source (delete or move the stale clean file first, since `clean.py` skips sources that already have one), or by patching the clean file directly when the cleaner cannot produce the right output.
-5. Rerun `python3 tools/check.py <clean file>`. The finding must be gone.
+5. Rerun `python3 "${CLAUDE_PLUGIN_ROOT}/scripts/check.py" <clean file>`. The finding must be gone.
 
 ### On NO-SOURCE
 
@@ -197,20 +167,3 @@ No action unless a warning escalates. BOM and respaced-value warnings are shape 
 Do not repair. The source was truncated before this repo touched it. Record it and leave it. If the operator later provides a complete source, rerun both clean and check on it.
 
 ---
-
-## Extension to other corpora
-
-1. Point `find_dirs()` in `tools/check.py` at the other corpus's source, clean, and audit folders.
-2. Re-transcribe the furniture policy (`CHROME`, `PAGE_NUMBER`) from that corpus's README by hand; do not import it from its cleaner.
-3. Confirm the cleaner there uses different extraction libraries from the ones listed above for `check.py`, or swap the checker's extractors so they stay disjoint.
-4. Run.
-
----
-
-## Known issues (2026-10-08)
-
-| Issue | Status |
-|---|---|
-| `clean_md/` holds `_N.md` copies from earlier `clean.py` runs; 82 files are exact duplicates of another (ignoring the `cleaned:` date). `clean.py` prints this count each run. | Open: not deleted, needs an operator decision |
-| `build_pairs()` in `check.py` is unused (left over from a splice) | Harmless |
-| A `PK` file that is a plain ZIP, not a DOCX, makes `check.py` crash (no `word/document.xml`) | Open |

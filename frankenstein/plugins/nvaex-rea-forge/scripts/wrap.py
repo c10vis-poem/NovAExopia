@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Wrap one CLI entrypoint of a harvested card as a shell shim + thin SKILL.md (mcp2cli fallback).
+"""Wrap one CLI entrypoint of a harvested card as a shell shim + thin SKILL.md (for MCP servers use mcp2cli.py).
 usage: wrap.py <CAPABILITY_CARD.json> [--index N] [--bin-dir DIR]
 Writes into <card dir>/wrap/ by default; --bin-dir installs the shim there (e.g. ~/.local/bin)."""
 import argparse, json, os, stat, sys

@@ -1,28 +1,38 @@
 #!/usr/bin/env sh
-# Real stdio round trip against bin/claw-mcp: initialize, tools/list, tools/call, kill switch.
-D="$(cd "$(dirname "$0")/.." && pwd)"; fail=0
-ck() { if [ "$2" = ok ]; then echo "PASS $1"; else echo "FAIL $1"; fail=1; fi; }
-out="$(printf '%s\n' \
- '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"t","version":"0"}}}' \
- '{"jsonrpc":"2.0","method":"notifications/initialized"}' \
- '{"jsonrpc":"2.0","id":2,"method":"tools/list"}' \
- '{"jsonrpc":"2.0","id":3,"method":"tools/call","params":{"name":"claw.workflows","arguments":{"action":"list"}}}' \
- '{"jsonrpc":"2.0","id":4,"method":"tools/call","params":{"name":"claw.search","arguments":{"query":"x"}}}' \
- | sh "$D/bin/claw-mcp")"
-echo "$out" | python3 -c '
-import sys, json
-r = {j["id"]: j for j in map(json.loads, sys.stdin)}
-names = sorted(t["name"] for t in r[2]["result"]["tools"])
-want = ["claw.browser","claw.device","claw.infer","claw.scrape","claw.search","claw.workflows"]
-chk = [("initialize", r[1]["result"]["serverInfo"]["name"].startswith("claw-mcp")),
-       ("tools/list has the 6 tools", names == want),
-       ("tools/call claw.workflows list", "phone-status" in r[3]["result"]["content"][0]["text"]),
-       ("search reports not-implemented", r[4]["result"].get("isError") and "not-implemented" in r[4]["result"]["content"][0]["text"])]
-for n, ok in chk: print("PASS" if ok else "FAIL", n)
-sys.exit(0 if all(ok for _, ok in chk) else 1)' || fail=1
-# kill switch: no output, exit 0
-t="$(mktemp -d)"; mkdir -p "$t/.claude/state/off"; : > "$t/.claude/state/off/claw-mcp"
-o="$(echo '{"jsonrpc":"2.0","id":1,"method":"tools/list"}' | HOME="$t" sh "$D/bin/claw-mcp")"; rc=$?
-[ -z "$o" ] && [ $rc -eq 0 ] && ck "kill switch silences server" ok || ck "kill switch silences server" no
-rm -rf "$t"
-[ $fail -eq 0 ] && echo "SELFTEST PASS" || echo "SELFTEST FAIL"; exit $fail
+# Each check says what proved it: [real] = the real thing on this phone, [fake] = a fake written for the test; bare PASS lines in check.mjs are the older
+# browser/search suite, which runs against tests/fake-cdp.mjs. CLAW_LIVE=1 adds tests/live.mjs (real network, read-only).
+# Leaves nothing running: all fakes die with this script; the adb binary is stubbed so no adb server can start; state goes in a temp dir.
+# NOT covered, listed again at the end: a real adbd, real phone Chrome, a real Aesc daemon, real Google.
+D="$(cd "$(dirname "$0")/.." && pwd)"; T="$(mktemp -d)"
+node "$D/tests/fake-cdp.mjs" > "$T/port" & FP=$!
+trap 'kill $FP 2>/dev/null; rm -rf "$T"' EXIT
+i=0; while [ ! -s "$T/port" ] && [ $i -lt 50 ]; do sleep 0.1; i=$((i+1)); done
+export FAKE="http://127.0.0.1:$(cat "$T/port")" CDP_PORT="$(cat "$T/port")"
+export CLAW_SEARCH_URL="$FAKE/search" CLAW_OPENROUTER_URL="$FAKE/infer" OPENROUTER_API_KEY=k
+export CLAW_LISTEN=off CLAW_STATE_DIR="$T/state"
+REAL_TERMUX_API=""; command -v termux-battery-status >/dev/null 2>&1 && REAL_TERMUX_API=1; export REAL_TERMUX_API
+export REALPATH="$PATH"
+mkdir -p "$T/bin"
+printf '#!/bin/sh\necho "STUB:$0 $*"\n' > "$T/bin/termux-toast"
+cat > "$T/bin/adb" <<'STUB'
+#!/bin/sh
+if [ "$1" = devices ]; then echo "List of devices attached"; [ -n "$ADB_STUB_DEVICES" ] && printf '%b\n' "$ADB_STUB_DEVICES"; exit 0; fi
+echo "STUBADB $*"
+STUB
+chmod +x "$T/bin/termux-toast" "$T/bin/adb"
+export STUBPATH="$T/bin"
+rc=0
+node "$D/tests/check.mjs" "$D" "$T" </dev/null || rc=1
+node "$D/tests/check2.mjs" "$D" "$T" </dev/null || rc=1
+# kill switch
+mkdir -p "$T/h/.claude/state/off"; : > "$T/h/.claude/state/off/claw-mcp"
+o="$(echo '{"jsonrpc":"2.0","id":1,"method":"tools/list"}' | HOME="$T/h" sh "$D/bin/claw-mcp")"; krc=$?
+if [ -z "$o" ] && [ $krc -eq 0 ]; then echo "PASS [real] kill switch silences server"; else echo "FAIL kill switch silences server"; rc=1; fi
+if [ -n "$CLAW_LIVE" ]; then
+  env -u CLAW_SEARCH_URL -u CLAW_OPENROUTER_URL -u OPENROUTER_API_KEY node "$D/tests/live.mjs" "$D" </dev/null || rc=1
+else echo "SKIPPED live network checks (set CLAW_LIVE=1)"; fi
+echo "UNTESTED real adbd (phone not paired; the client has only met tests/fake-adbd.mjs)"
+echo "UNTESTED real phone Chrome over CDP (only tests/fake-cdp.mjs)"
+echo "UNTESTED real Aesc daemon (only a fake peer on the real socket)"
+echo "UNTESTED real Google APIs (no credentials; only tests/fake-services.mjs)"
+[ $rc -eq 0 ] && echo "SELFTEST PASS" || echo "SELFTEST FAIL"; exit $rc

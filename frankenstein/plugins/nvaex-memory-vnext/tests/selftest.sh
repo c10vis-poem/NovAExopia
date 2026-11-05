@@ -91,5 +91,88 @@ else no "node missing for ccfind"; fi
 mkdir -p "$T/cw"; echo x > "$T/cw/PLAN.md"
 chk "cut-weight inventory runs" "python3 $P/skills/cut-weight/scripts/inventory.py $T/cw --out $T/inv.json >/dev/null 2>&1 && [ -s $T/inv.json ]"
 
+
+# hooks: exactly the four events, kill switch first in every command
+if python3 - "$P/hooks/hooks.json" <<'PY'
+import json, re, sys
+h = json.load(open(sys.argv[1]))["hooks"]
+assert sorted(h) == ["PreCompact", "SessionEnd", "SessionStart", "Stop"], sorted(h)
+for ev, v in h.items():
+    assert len(v) == 1 and len(v[0]["hooks"]) == 1, ev
+    assert re.match(r'^sh "\$\{CLAUDE_PLUGIN_ROOT\}/scripts/killswitch\.sh" nvaex-memory-vnext [a-z-]+ \|\| ', v[0]["hooks"][0]["command"]), ev
+PY
+then ok "hooks = 4 events, one entry each, killswitch first"; else no "hooks = 4 events, one entry each, killswitch first"; fi
+
+# commit so HEAD exists; then branch handoff note (handoff fold)
+git add -A >/dev/null; git commit -qm c; HEAD1=$(git rev-parse HEAD)
+git checkout -q -b feat/x; GC=$(git rev-parse --git-common-dir); mkdir -p $GC/handoffs
+printf '<!-- commit: %s -->\n## Goal\nship the widget\n' "$HEAD1" > $GC/handoffs/feat__x.md
+echo '{"cwd":"'"$T/repo"'","source":"startup"}' | $V snapshot > $T/s1.json
+chk "branch note loaded at startup" "grep -q 'ship the widget' $T/s1.json && ! grep -q STALE $T/s1.json"
+echo y >> a.txt; git commit -qam c2
+echo '{"cwd":"'"$T/repo"'","source":"startup"}' | $V snapshot > $T/s2.json
+chk "branch note flagged STALE after HEAD moves" "grep -q STALE $T/s2.json"
+echo '{"cwd":"'"$T/repo"'","source":"resume"}' | $V snapshot > $T/s3.json
+chk "branch note not loaded on resume" "! grep -q 'ship the widget' $T/s3.json"
+git checkout -q -b main 2>/dev/null || git checkout -q main; mkdir -p $GC/handoffs; printf '<!-- commit: x -->\nTRUNKNOTE\n' > $GC/handoffs/main.md
+echo '{"cwd":"'"$T/repo"'","source":"startup"}' | $V snapshot > $T/s4.json
+chk "trunk branch never loads a note" "! grep -q TRUNKNOTE $T/s4.json"
+git checkout -q feat/x
+
+# task state (cco-task fold)
+$V task add "wire widget" >/dev/null
+$V task patch '{"goal":"widget","next":"write test","scratch":"x"}' >/dev/null
+$V task patch '{"scratch":null}' >/dev/null
+chk "task patch sets and null deletes" "$V task state | python3 -c 'import sys,json;s=json.load(sys.stdin)[\"state\"];assert s==dict(goal=\"widget\",next=\"write test\"),s'"
+echo '{"cwd":"'"$T/repo"'","source":"compact"}' | $V snapshot > $T/s5.json
+chk "compact snapshot: active task + resume checklist" "grep -q 'write test' $T/s5.json && grep -q 'Resume checklist' $T/s5.json"
+chk "task over cap rejected, state unchanged" "! $V task patch '{\"big\":\"$(head -c 4500 /dev/zero | tr '\0' a)\"}' 2>/dev/null && $V task state | grep -q 'write test' && ! $V task state | grep -q aaaaaaaaaa"
+$V task done >/dev/null
+echo '{"cwd":"'"$T/repo"'","source":"startup"}' | $V snapshot > $T/s6.json
+chk "finished task not re-injected" "! grep -q 'write test' $T/s6.json"
+
+# pre-compact export through the real hook command (chat-autoexporter fold)
+HP=$(python3 -c "import json;print(json.load(open('$P/hooks/hooks.json'))['hooks']['PreCompact'][0]['hooks'][0]['command'])" | sed "s#\${CLAUDE_PLUGIN_ROOT}#$P#g")
+touch $HOME/.claude/state/off/nvaex-memory-vnext.pre-compact
+echo '{"transcript_path":"'"$T/tr.jsonl"'","session_id":"sess-abcdefgh"}' | sh -c "$HP"
+chk "export silent when killswitch file present" "[ ! -d $T/state/exports ]"
+rm -f $HOME/.claude/state/off/nvaex-memory-vnext.pre-compact
+echo '{"transcript_path":"'"$T/tr.jsonl"'","session_id":"sess-abcdefgh"}' | sh -c "$HP"
+X=$(ls $T/state/exports/*.txt 2>/dev/null | head -1)
+chk "export wrote readable transcript, secret redacted" "[ -n \"$X\" ] && grep -q '^\[user\] set up the thing' $X && grep -q '^\[assistant\] Done' $X && ! grep -q ghp_ $X"
+chk "export file is 0600" "[ \$(stat -c %a $X) = 600 ]"
+
+# weekly rollup (remember fold): finished weeks roll up, dailies stay, idempotent
+M=$T/recaps/memory
+printf '\n## 09:00 proj (aaaa)\nPrompts:\n- first thing\n- second thing\nLast answer: x\n' > $M/2026-01-05.md
+printf '\n## 10:00 proj (bbbb)\nPrompts:\n- other thing\nLast answer: y\n' > $M/2026-01-07.md
+echo '{"transcript_path":"'"$T/tr.jsonl"'","session_id":"sess-roll0001","cwd":"'"$T/repo"'"}' | $V recap
+chk "weekly file for finished week" "grep -q 'first thing' $M/weekly/2026-W02.md && grep -q 'other thing' $M/weekly/2026-W02.md && ! grep -q 'second thing' $M/weekly/2026-W02.md"
+chk "dailies kept, current week not rolled" "[ -f $M/2026-01-05.md ] && [ -f $D ] && [ \$(ls $M/weekly | wc -l) = 1 ]"
+echo SENTINEL >> $M/weekly/2026-W02.md
+echo '{"session_id":"nope"}' | $V recap
+chk "rollup does not overwrite an existing week" "grep -q SENTINEL $M/weekly/2026-W02.md"
+
+# ccfind show + trimmed commands gone
+SID=aaaaaaaa-1111-2222-3333-444444444444
+chk "ccfind show prints the session" "node $P/skills/ccfind/scripts/ccfind.mjs show $SID 2>&1 | grep -q 'set up the thing'"
+chk "ccfind stats works" "node $P/skills/ccfind/scripts/ccfind.mjs stats | grep -q '\"sessions\": 1'"
+
+# package hygiene: nothing unused left behind
+chk "no skill references a missing file" "python3 - <<PY
+import re,pathlib,sys
+bad=[]
+for f in pathlib.Path('$P/skills').rglob('SKILL.md'):
+    for m in re.findall(r'\]\(([^)#]+\.md)\)', f.read_text()):
+        if not (f.parent/m).is_file(): bad.append((str(f),m))
+sys.exit(1 if bad else 0)
+PY"
+chk "every skill has frontmatter name+description" "python3 - <<PY
+import pathlib,sys
+for f in pathlib.Path('$P/skills').rglob('SKILL.md'):
+    t=f.read_text().split('---')[1]
+    assert 'name:' in t and 'description:' in t, f
+PY"
+
 [ $fail = 0 ] && echo "SELFTEST PASS" || echo "SELFTEST FAIL"
 exit $fail

@@ -275,6 +275,18 @@
       "source": "./frankenstein/plugins/nvaex-ui-cockpit",
       "description": "Four swappable UI mods: plugins-panel, env-customizer-panel, obsidian-config-tree, token-cache-gauge",
       "version": "0.1.0"
+    },
+    {
+      "name": "nvaex-ops",
+      "source": "./frankenstein/plugins/nvaex-ops",
+      "description": "Operator toolbox folded from stock plugins: harness and plugin authoring, CLAUDE.md care, security and review agents, repo care, voice, Google and cloud skills.",
+      "version": "0.1.0"
+    },
+    {
+      "name": "nvaex-gates",
+      "source": "./frankenstein/plugins/nvaex-gates",
+      "description": "All ten rules and every other hook, on everywhere: one run-gate launcher, override and revoke named in every block, loop breaker, gate CLI, kill switches, cloud degrade.",
+      "version": "0.1.0"
     }
   ]
 }
