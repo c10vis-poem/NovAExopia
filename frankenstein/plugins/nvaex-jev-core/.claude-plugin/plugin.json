@@ -1,0 +1,7 @@
+{
+  "name": "nvaex-jev-core",
+  "version": "0.1.0",
+  "description": "System-1 router: Stage-0 STT readback (drunken-master), two-stage JEV skill router, 5-gate task auditor, non-blocking dark-pattern Stop scorecard.",
+  "author": {"name": "The Builder"},
+  "license": "MIT"
+}

@@ -1,0 +1,22 @@
+{
+  "name": "nvaex-ui-cockpit",
+  "version": "0.1.0",
+  "description": "Four swappable UI mods: plugins-panel, env-customizer-panel, obsidian-config-tree, token-cache-gauge",
+  "author": {
+    "name": "The Builder"
+  },
+  "license": "MIT",
+  "types": "./types/index.d.ts",
+  "userConfig": {
+    "cacheTtl": {
+      "type": "string",
+      "title": "Prompt cache TTL",
+      "description": "Cache countdown length for the gauge.",
+      "default": "5m",
+      "options": [
+        "5m",
+        "1h"
+      ]
+    }
+  }
+}

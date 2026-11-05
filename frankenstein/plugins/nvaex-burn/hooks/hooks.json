@@ -1,0 +1,14 @@
+{
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "sh \"${CLAUDE_PLUGIN_ROOT}/scripts/killswitch.sh\" nvaex-burn userpromptsubmit && exit 0; python3 \"${CLAUDE_PLUGIN_ROOT}/scripts/burn.py\" hook || exit 0"
+          }
+        ]
+      }
+    ]
+  }
+}

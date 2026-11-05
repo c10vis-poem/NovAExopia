@@ -1,0 +1,9 @@
+{
+  "name": "jev-rea-mcp",
+  "version": "0.1.0",
+  "description": "Frankenstein MCP server: JEV L0-L3 routing, 5-gate audit, read-only REA inspection, cloud dispatch to a job file (4 meta-tools).",
+  "author": {
+    "name": "The Builder"
+  },
+  "license": "MIT"
+}

@@ -1,0 +1,10 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {"matcher": "Read", "hooks": [{"type": "command", "command": "sh \"${CLAUDE_PLUGIN_ROOT}/hooks/quarantine.sh\"", "timeout": 10}]}
+    ],
+    "SubagentStop": [
+      {"matcher": ".*corpus-ingest.*", "hooks": [{"type": "command", "command": "sh \"${CLAUDE_PLUGIN_ROOT}/hooks/stop-gate.sh\"", "timeout": 10}]}
+    ]
+  }
+}

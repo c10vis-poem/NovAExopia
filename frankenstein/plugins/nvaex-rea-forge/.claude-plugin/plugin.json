@@ -1,0 +1,1 @@
+{"name":"nvaex-rea-forge","version":"0.1.0","description":"Fork harvester: /rea-harvest <repo> builds an AST map, extracts algorithms/prompts/CLI entrypoints, emits CAPABILITY_CARD.json and a CLI wrapper + SKILL.md; plus adversarial strip loop and fork patch sync.","author":{"name":"The Builder"},"license":"MIT"}

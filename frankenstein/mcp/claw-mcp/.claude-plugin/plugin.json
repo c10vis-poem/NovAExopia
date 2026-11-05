@@ -1,0 +1,9 @@
+{
+  "name": "claw-mcp",
+  "version": "0.1.0",
+  "description": "Frankenstein MCP server: device, browser, scrape, search, infer and workflows (6 claw.* tools). Python stdio shim today; Kotlin source included.",
+  "author": {
+    "name": "The Builder"
+  },
+  "license": "MIT"
+}
