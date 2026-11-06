@@ -1,7 +1,17 @@
 {
-  "name": "nvaex-jev-core",
-  "version": "0.1.0",
-  "description": "System-1 router: Stage-0 STT readback (drunken-master), two-stage JEV skill router, 5-gate task auditor, non-blocking dark-pattern Stop scorecard.",
-  "author": {"name": "The Builder"},
-  "license": "MIT"
+ "name": "nvaex-jev-core",
+ "version": "0.4.0",
+ "description": "System-1 router and discipline set: Stage-0 STT readback, JEV router that asks TypeSafe Jev for level and group (keyword rules as fallback) with decision memory, jev-rea-mcp server (3 tools), task auditor, verification/debug/plan/fail-loud skills, decision gate, spec check, delegation, backlog, peer sessions, 26-check non-blocking dark-pattern scorecard.",
+ "author": {
+  "name": "The Builder"
+ },
+ "license": "MIT",
+ "userConfig": {
+  "typesafe_api_key": {
+   "type": "string",
+   "title": "TypeSafe API key",
+   "description": "Key from console.typesafe.ai/keys, used by the JEV router. Kept in secure storage. Leave empty to use TYPESAFE_API_KEY from the environment, or to route with the local keyword rules only.",
+   "sensitive": true
+  }
+ }
 }

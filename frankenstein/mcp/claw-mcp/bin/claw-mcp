@@ -1,8 +1,5 @@
 #!/usr/bin/env sh
-# claw-mcp --stdio launcher. Prefers the Kotlin jar when built, else the Python shim.
-# Kill switch: exits 0 at once (server offers no tools) if the switch is set.
+# claw-mcp --stdio launcher (Node). Kill switch: exits 0 at once, server offers no tools.
 D="$(cd "$(dirname "$0")/.." && pwd)"
 sh "$D/bin/killswitch.sh" claw-mcp server && exit 0
-J="$D/kotlin/build/libs/claw-mcp-all.jar"
-if [ -f "$J" ] && command -v java >/dev/null 2>&1; then exec java -jar "$J" --stdio; fi
-exec python3 "$D/python/claw_mcp.py"
+exec node "$D/node/server.mjs"

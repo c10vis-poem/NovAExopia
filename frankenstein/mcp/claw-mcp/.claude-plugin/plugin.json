@@ -1,7 +1,7 @@
 {
   "name": "claw-mcp",
-  "version": "0.1.0",
-  "description": "Frankenstein MCP server: device, browser, scrape, search, infer and workflows (6 claw.* tools). Python stdio shim today; Kotlin source included.",
+  "version": "0.3.1",
+  "description": "Frankenstein MCP server: device (termux/aesc backends, built-in ADB, local Google REST), browser (CDP), scrape (crawl, video), search, infer and workflows (6 claw.* tools), Node stdio plus a local socket for Aesc. Plus 7 skills (browser, adb, Google, Gemini, phone control, Termux helper, Android/Termux operator).",
   "author": {
     "name": "The Builder"
   },

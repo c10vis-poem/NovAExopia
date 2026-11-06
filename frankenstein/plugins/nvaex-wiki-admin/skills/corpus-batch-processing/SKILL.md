@@ -1,6 +1,6 @@
 ---
 name: corpus-batch-processing
-description: Orchestrator+subagent workflow for converting a repo's raw/ dump into clean_md/ at scale. Use whenever a repo's raw/ folder has more source files than one agent should process serially (roughly 20+) inside project NovÆxorpus. Trigger on "process raw", "convert the dump", "run phase 1 on <repo>", or "clean up the raw sources for <repo>".
+description: Convert a repo's raw/ dump into clean_md/ with orchestrator and subagents. Use for 20+ files or 'process raw'.
 ---
 
 # Corpus Batch Processing (Phase 1: raw/ → clean_md/ + tools/)
@@ -92,13 +92,12 @@ keeps each subagent's context scoped to just its own files.
    skipped-sensitive / skipped-binary — list all that apply, a source can hit
    more than one) | one-line note. No prose report — a table only, so the
    orchestrator can scan results across all batches quickly.
-9. **Write a mem0 memory before finishing** (`mcp__mem0-mcp__add_memory`,
-   `agent_id: novaexorpus-corpus`) summarizing what this batch actually did:
-   which files were cleaned, which skills/tools were extracted, what got
-   skipped and why. This is in addition to the table report, not instead of
-   it — the table is for the orchestrator to read right now, the mem0 entry
-   is so a later session can query what happened without re-reading every
-   clean_md file.
+9. **Write a batch record before finishing**: append a short summary to
+   `audit/corpus-batch-<date>-<batch>.md` in the vault (which files were cleaned,
+   which skills/tools were extracted, what got skipped and why; no secret
+   values). This is in addition to the table report, not instead of it: the
+   table is for the orchestrator to read right now, the file is so a later
+   session can see what happened without re-reading every clean_md file.
 
 ## Known related tools
 

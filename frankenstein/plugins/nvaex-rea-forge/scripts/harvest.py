@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """rea-harvest: stage-2 triage of a repo -> CAPABILITY_CARD.json (stdlib only).
-usage: harvest.py <repo> [--out DIR] [--crg]"""
+usage: harvest.py <repo> [--out DIR]   (code-review-graph is always run; --crg accepted, no-op)"""
 import argparse, ast, hashlib, json, os, re, subprocess, sys, time
 
 SKIP = {".git", "node_modules", ".venv", "venv", "__pycache__", "dist", "build", ".code-review-graph"}
@@ -69,7 +69,7 @@ def manifests(root, entry):
 def crg(root, outdir):
     exe = subprocess.run(["sh", "-c", "command -v code-review-graph"], capture_output=True, text=True).stdout.strip()
     if not exe:
-        return {"backend": "python-ast", "note": "code-review-graph not on PATH"}
+        sys.exit("harvest: code-review-graph is required (part of the REA loop) and is not on PATH")
     data = os.path.join(outdir, "crg-data")
     try:
         subprocess.run([exe, "build", "--repo", root, "--data-dir", data, "-q", "--skip-flows"],
@@ -78,8 +78,8 @@ def crg(root, outdir):
                            capture_output=True, text=True, timeout=60)
         j = r.stdout[r.stdout.find("{"):]
         return {"backend": "code-review-graph", "status": json.loads(j), "data_dir": data}
-    except Exception as e:  # fail open: AST fallback still produced the card
-        return {"backend": "python-ast", "note": f"code-review-graph failed: {type(e).__name__}"}
+    except Exception as e:  # required step: fail loudly, never fall back silently
+        sys.exit(f"harvest: code-review-graph failed ({type(e).__name__}); no card written")
 
 
 def main():
@@ -112,7 +112,7 @@ def main():
             entry.append({"kind": "shell", "file": rel, "cmd": f"sh {rel}"})
     manifests(root, entry)
     algos.sort(key=lambda x: -x["lines"])
-    graph = crg(root, out) if a.crg else {"backend": "python-ast", "note": "pass --crg for Tree-sitter graph"}
+    graph = crg(root, out)  # always: the code graph is part of the REA loop (--crg kept as a no-op flag)
     gate = "mcp-core" if len(entry) == 0 and algos else \
            "cli-wrap" if entry else "skill"
     if not entry and not algos:

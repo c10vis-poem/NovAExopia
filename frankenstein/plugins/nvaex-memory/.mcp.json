@@ -1,0 +1,1 @@
+{"mcpServers":{"dumbass-memory":{"command":"python3","args":["-I","${CLAUDE_PLUGIN_ROOT}/mcp/dumbass-memory-mcp/server.py"],"env":{"DUMBASS_DATA_DIR":"~/.nvaex/memory"}}}}

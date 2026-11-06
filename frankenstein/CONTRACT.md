@@ -11,7 +11,7 @@ NovAExopia/frankenstein/
   mcp/<server>/               (one MCP server per folder)
   marketplace.fragment.json   (entries the root .claude-plugin/marketplace.json includes)
 ```
-Packages: `plugins/nvaex-jev-core`, `plugins/nvaex-memory-vnext`, `plugins/nvaex-wiki-admin`, `plugins/nvaex-rea-forge`, `plugins/nvaex-burn`, `plugins/nvaex-ui-cockpit`. Servers: `mcp/claw-mcp`, `mcp/dumbass-memory-mcp`, `mcp/jev-rea-mcp`.
+Packages: `plugins/nvaex-jev-core`, `plugins/nvaex-memory`, `plugins/nvaex-wiki-admin`, `plugins/nvaex-rea-forge`, `plugins/nvaex-burn`, `plugins/nvaex-ui-cockpit`. Standalone server: `mcp/claw-mcp`. Servers inside their package, installed with it: `jev-rea-mcp` (`plugins/nvaex-jev-core/mcp/`), `dumbass-memory-mcp` (`plugins/nvaex-memory/mcp/`), `rea-mcp` (`plugins/nvaex-rea-forge/mcp/`), `burn-mcp` (`plugins/nvaex-burn/mcp/`). There is no limit on servers. Runs code and an agent should call it = an MCP tool with one clear job; written how-to = a skill in the same package; must fire on an event = a hook. Servers are thin: the package's scripts hold the logic.
 
 ## Hot-swap rules (every package)
 1. **Self-contained.** Everything the package needs is inside its folder. Paths use `${CLAUDE_PLUGIN_ROOT}`. No package reads another package's files; shared code is only `frankenstein/shared/`, vendored into the package at build time by `bin/vendor-shared.sh` if needed.

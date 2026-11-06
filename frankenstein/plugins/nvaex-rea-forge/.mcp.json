@@ -1,0 +1,1 @@
+{"mcpServers":{"rea-mcp":{"command":"python3","args":["-I","${CLAUDE_PLUGIN_ROOT}/mcp/rea-mcp/server.py"]}}}

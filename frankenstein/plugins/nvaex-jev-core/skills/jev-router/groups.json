@@ -1,9 +1,12 @@
 {"groups": {
-  "build":    {"kw": ["build","implement","write","add","create","refactor","fix","bug","code","script","function","test"], "skills": ["engineering skills (tdd, diagnosing-bugs, refactor-safely)", "honey"]},
-  "research": {"kw": ["research","find","search","compare","explain","why","how","investigate","read","docs"], "skills": ["deep-research", "explore-codebase"]},
-  "memory":   {"kw": ["remember","memory","resume","handoff","recap","decision","log"], "skills": ["memory-triage", "wrapup"]},
-  "wiki":     {"kw": ["wiki","ingest","corpus","vault","obsidian","markdown","convert"], "skills": ["wiki-admin-ingest", "corpus-verify"]},
-  "device":   {"kw": ["termux","android","adb","npu","apk","device","phone","install"], "skills": ["android-termux-operator", "termux-helper"]},
-  "review":   {"kw": ["review","audit","verify","check","diff","pr","merge","ci"], "skills": ["code-review", "task-auditor"]},
-  "plan":     {"kw": ["plan","design","architecture","spec","decide","strategy"], "skills": ["grilling", "decision-council"]}
+  "build":    {"desc": "Write new code or features: implement, add, create, refactor or script something that does not exist yet.", "kw": ["build","implement","write","add","create","refactor","code","script","function","test","compile","gradle"], "skills": ["writing-plans", "simplify-process"]},
+  "debug":    {"desc": "Something is broken: find the cause of an error, crash, failing test or regression and fix it.", "kw": ["fix","bug","error","fail","failing","broken","crash","traceback","exception","regression"], "skills": ["systematic-debugging", "fail-loud-escalate", "research-on-failure"]},
+  "review":   {"desc": "Check finished work: review a diff or pull request, audit, verify a claim, confirm that something is done.", "kw": ["review","audit","verify","check","diff","pr","merge","ci","done","lint"], "skills": ["verify-before-done", "spec-check"]},
+  "plan":     {"desc": "Decide before building: design, architecture, strategy, a spec, a roadmap, or an approval to ship.", "kw": ["plan","design","architecture","spec","decide","strategy","approve","ship","roadmap"], "skills": ["writing-plans", "decision-gate"]},
+  "coordinate": {"desc": "Organise several agents or sessions: delegate work, run workers in parallel, hold a debate between peers.", "kw": ["agent","agents","worker","workers","delegate","parallel","peer","session","sessions","debate","discussion"], "skills": ["delegate", "peer-sessions"]},
+  "tasks":    {"desc": "Manage the task list: backlog, to-do items, what comes next, picking up a handoff.", "kw": ["backlog","todo","task","tasks","next","handoff","resume"], "skills": ["backlog"]},
+  "memory":   {"desc": "Store or recall what was decided or claimed before: remember a fact, write a recap, read project memory.", "kw": ["memory","remember","recap","claim"], "skills": ["anchor-memory", "memory-bank"]},
+  "research": {"desc": "Find something out: look up facts or docs, compare options, explain how or why, map an unfamiliar codebase.", "kw": ["research","find","search","compare","explain","why","how","investigate","docs","survey","lookup"], "skills": ["research-on-failure", "code-map", "wiki-admin-query"]},
+  "wiki":     {"desc": "Work on the document corpus: wiki pages, the vault, Obsidian notes, ingesting or converting documents.", "kw": ["wiki","ingest","corpus","vault","obsidian","markdown","convert","note"], "skills": ["wiki-admin-ingest", "corpus-verify"]},
+  "device":   {"desc": "Touch the phone or its runtime: Termux, Android, adb, the NPU, an APK, installing something on the device.", "kw": ["termux","android","adb","npu","apk","device","phone","install"], "skills": ["phone-control", "android-adb", "android-termux-operator", "termux-helper"]}
 }}

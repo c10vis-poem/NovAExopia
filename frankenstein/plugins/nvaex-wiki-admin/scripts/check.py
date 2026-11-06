@@ -12,13 +12,18 @@ The tool that cleaned a file does not get a vote on whether the cleaning was goo
 import datetime, difflib, os, re, sys, unicodedata
 
 def find_dirs():
-    docs = "/storage/emulated/0/Documents"
-    for e in os.listdir(docs):
-        if "xorpus" in e.lower():
-            novae = os.path.join(docs, e)
-            break
-    else:
-        raise FileNotFoundError("NovAExorpus dir not found")
+    # nvaex-wiki-admin change: the VAULT env var wins; the phone path below is the fallback.
+    novae = os.environ.get("VAULT", "").strip()
+    if novae and not os.path.isdir(novae):
+        raise FileNotFoundError(f"VAULT is set but is not a directory: {novae}")
+    if not novae:
+        docs = "/storage/emulated/0/Documents"
+        for e in os.listdir(docs):
+            if "xorpus" in e.lower():
+                novae = os.path.join(docs, e)
+                break
+        else:
+            raise FileNotFoundError("NovAExorpus dir not found (set VAULT to the vault path)")
     # The old Repos/ level is gone: raw_database/, clean_md/, audit/ sit at the vault root.
     raw_db = os.path.join(novae, "raw_database")
     return (novae, os.path.join(raw_db, "raw"), os.path.join(raw_db, "02_MY_ORIGINALS"),

@@ -1,6 +1,6 @@
 ---
 name: wiki-admin-query
-description: Answer a question from the corpus wiki using only wiki pages, with every claim cited. Use when the operator asks "what do we know about X", "where is Y decided", or any question the wiki should answer. Read-only on the wiki; the answer is saved for review, not filed as truth.
+description: Answer from wiki pages only, with every claim cited. Use for 'what do we know about X' or 'where is Y decided'.
 ---
 
 # wiki-admin query
@@ -22,3 +22,8 @@ Save the answer to `questions_pending/<date>-<slug>.md` with the pages read and 
 
 ## Built from (credit) and what this replaces
 llm-wiki-nocode `/llmwiki-query` (rules, page budget, pending/approved), obsidian-wiki `wiki-query` (index -> section -> full read order), OpenWiki for Claude Code `/openwiki:ask` (repo questions via `openwiki/`). Replaces for the wiki admin: `/llmwiki-query`, obsidian-wiki `/wiki-query`, `/openwiki:ask`, llm-wiki-compiler `/wiki-query`.
+
+## Deltas from wiki-wonka (MIT, Coopera Code)
+- **Restate the question and the expected coverage first** (covered / partial / gap) before opening pages; list the pages you will read before reading them.
+- Follow wikilinks at most 2 levels deep. **Contradictions between pages are reported with both citations, no side picked.** Gaps are named ("the wiki does not yet cover X"), never filled from memory; an uncitable claim is written "not in wiki".
+- After answering, offer to file the answer as a page (with a `Source question` block); filing goes through `wiki-admin-ingest`, never straight into the wiki.

@@ -53,9 +53,25 @@ PY
 WH=$!; sleep 1
 BURN_WEBHOOK_URL=http://127.0.0.1:18765/ python3 "$B" notify hello | grep -q sent; grep -q hello "$T/hook.json"; ok "notify POSTs webhook" $? 0
 
-# kill switch
-mkdir -p "$HOME/.claude/state/off"; touch "$HOME/.claude/state/off/nvaex-burn"
-sh "$R/scripts/killswitch.sh" nvaex-burn userpromptsubmit; ok "killswitch honoured" $? 0
-rm "$HOME/.claude/state/off/nvaex-burn"; sh "$R/scripts/killswitch.sh" nvaex-burn userpromptsubmit; ok "killswitch off by default" $? 1
+# registered hook, run exactly as the harness runs it
+export CLAUDE_PLUGIN_ROOT="$R"
+HC="$(python3 -c "import json;print(json.load(open('$R/hooks/hooks.json'))['hooks']['UserPromptSubmit'][0]['hooks'][0]['command'])")"
+usage 95 50 60
+echo '{}' | sh -c "$HC" | grep -q 'BRAKE'; ok "registered hook injects BRAKE under brake" $? 0
+echo 'not json{' | sh -c "$HC" >/dev/null; ok "hook exits 0 on garbage stdin" $? 0
+[ "$(python3 -c "import json;print(sum(len(v) for v in json.load(open('$R/hooks/hooks.json'))['hooks'].values()))")" = 1 ]; ok "exactly one hook entry" $? 0
+case "$HC" in *killswitch.sh*burn.py*) r=0;; *) r=1;; esac; ok "killswitch runs before burn.py" $r 0
+mkdir -p "$HOME/.claude/state/off"
+for k in "$HOME/.nvaex-hooks-off" "$HOME/.claude/state/off/nvaex-burn" "$HOME/.claude/state/off/nvaex-burn.userpromptsubmit"; do
+  touch "$k"; o="$(echo '{}' | sh -c "$HC")"; ok "hook silent under switch $(basename "$k")" "${o:-}" ""; rm "$k"
+done
+sh "$R/scripts/killswitch.sh" nvaex-burn userpromptsubmit; ok "killswitch off by default" $? 1
+# default usage source is STATE/usage.json, not heavy-usage
+unset BURN_USAGE_FILE; usage 10 50 60; cp "$T/usage.json" "$BURN_STATE/usage.json"; ok "default usage path" "$(mode)" burn
+[ ! -d "$R/commands" ] && ! grep -rqi 'heavy-usage/usage-live' "$R/scripts"; ok "no stale heavy-usage path" $? 0
+[ -s "$R/licenses/notify.LICENSE" ]; ok "notify LICENSE kept" $? 0
 python3 -c "import json;json.load(open('$R/hooks/hooks.json'));json.load(open('$R/.claude-plugin/plugin.json'))"; ok "manifests parse" $? 0
+# MCP server, real stdio round trip (runs in its own temp state)
+bash "$R/mcp/burn-mcp/tests/selftest.sh" > "$T/mcp.out" 2>&1; r=$?; ok "burn-mcp selftest: $(grep -c '^PASS' "$T/mcp.out") checks" $r 0; [ $r = 0 ] || cat "$T/mcp.out"
+python3 -c "import json;assert list(json.load(open('$R/.mcp.json'))['mcpServers'])==['burn-mcp']"; ok ".mcp.json names burn-mcp" $? 0
 [ "$fail" = 0 ] && echo "SELFTEST PASS" || { echo "SELFTEST FAIL"; exit 1; }

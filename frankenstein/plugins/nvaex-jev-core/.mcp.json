@@ -1,0 +1,1 @@
+{"mcpServers":{"jev-rea-mcp":{"command":"python3","args":["-I","${CLAUDE_PLUGIN_ROOT}/mcp/jev-rea-mcp/server.py"],"env":{"CLAUDE_PLUGIN_OPTION_TYPESAFE_API_KEY":"${user_config.typesafe_api_key}"}}}}

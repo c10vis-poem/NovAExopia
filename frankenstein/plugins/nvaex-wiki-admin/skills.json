@@ -1,0 +1,117 @@
+{
+ "package": "nvaex-wiki-admin",
+ "skills": [
+  {
+   "id": "audit-outside-material",
+   "path": "skills/audit-outside-material/SKILL.md",
+   "kind": "skill",
+   "purpose": "Audit outside material (video, article, repo, docs) that recommends agent-setup changes. Read-only until a proposal.",
+   "triggers": [],
+   "tools": []
+  },
+  {
+   "id": "corpus-batch-processing",
+   "path": "skills/corpus-batch-processing/SKILL.md",
+   "kind": "skill",
+   "purpose": "Convert a repo's raw/ dump into clean_md/ with orchestrator and subagents. Use for 20+ files or 'process raw'.",
+   "triggers": [],
+   "tools": []
+  },
+  {
+   "id": "corpus-verify",
+   "path": "skills/corpus-verify/SKILL.md",
+   "kind": "skill",
+   "purpose": "Independent check of cleaned files against sources with different extractors; lists missing detail. Use after cleaning.",
+   "triggers": [],
+   "tools": []
+  },
+  {
+   "id": "gdrive-to-markdown",
+   "path": "skills/gdrive-to-markdown/SKILL.md",
+   "kind": "skill",
+   "purpose": "Pull Google Docs, Sheets, Slides or Drive files into raw/ via rclone and convert to Markdown. Use to ingest from Drive.",
+   "triggers": [],
+   "tools": []
+  },
+  {
+   "id": "llm-wiki",
+   "path": "skills/llm-wiki/SKILL.md",
+   "kind": "skill",
+   "purpose": "Wiki toolset: BM25 section search, structural lint, stats, evolve. Use for 'search the wiki', 'lint the wiki', stats.",
+   "triggers": [],
+   "tools": []
+  },
+  {
+   "id": "obsidian-markdown",
+   "path": "skills/obsidian-markdown/SKILL.md",
+   "kind": "skill",
+   "purpose": "Create and edit Obsidian Flavored Markdown: wikilinks, embeds, callouts, properties. Use for Obsidian notes.",
+   "triggers": [],
+   "tools": []
+  },
+  {
+   "id": "obsidian-notes",
+   "path": "skills/obsidian-notes/SKILL.md",
+   "kind": "skill",
+   "purpose": "Lint a Markdown folder as an Obsidian vault, write INDEX.md, convert wikilinks. Use for 'valid vault', 'link notes'.",
+   "triggers": [],
+   "tools": []
+  },
+  {
+   "id": "rag-retrieval-check",
+   "path": "skills/rag-retrieval-check/SKILL.md",
+   "kind": "skill",
+   "purpose": "Debug a wrong wiki or RAG answer by finding the earliest broken stage. Use when the page exists but the agent missed it.",
+   "triggers": [],
+   "tools": []
+  },
+  {
+   "id": "rule-learning",
+   "path": "skills/rule-learning/SKILL.md",
+   "kind": "skill",
+   "purpose": "Capture a behavioural rule from a user correction, with approval, as a staged skill. Use when a correction generalizes.",
+   "triggers": [],
+   "tools": []
+  },
+  {
+   "id": "vault-skill-factory",
+   "path": "skills/vault-skill-factory/SKILL.md",
+   "kind": "skill",
+   "purpose": "Turn mature curated wiki pages into a reviewable Agent Skill package. Writes only to a review directory; never installs.",
+   "triggers": [],
+   "tools": []
+  },
+  {
+   "id": "wiki-admin-ingest",
+   "path": "skills/wiki-admin-ingest/SKILL.md",
+   "kind": "skill",
+   "purpose": "Six-step intake of raw documents into staged wiki pages. Use for 'ingest this', 'process the dump' or files in raw/.",
+   "triggers": [],
+   "tools": []
+  },
+  {
+   "id": "wiki-admin-lint",
+   "path": "skills/wiki-admin-lint/SKILL.md",
+   "kind": "skill",
+   "purpose": "Health check and promotion gate for the wiki and 01-inbox. Use before promotion, after ingest, or 'check the wiki'.",
+   "triggers": [],
+   "tools": []
+  },
+  {
+   "id": "wiki-admin-query",
+   "path": "skills/wiki-admin-query/SKILL.md",
+   "kind": "skill",
+   "purpose": "Answer from wiki pages only, with every claim cited. Use for 'what do we know about X' or 'where is Y decided'.",
+   "triggers": [],
+   "tools": []
+  },
+  {
+   "id": "wiki-dedup",
+   "path": "skills/wiki-dedup/SKILL.md",
+   "kind": "skill",
+   "purpose": "Find and, with confirmation, merge wiki pages covering the same concept. Audit by default; not for link repair.",
+   "triggers": [],
+   "tools": []
+  }
+ ]
+}

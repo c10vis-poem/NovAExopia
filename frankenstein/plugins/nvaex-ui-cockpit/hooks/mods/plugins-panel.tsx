@@ -16,16 +16,27 @@ async function refresh($: EngineInterface) {
 }
 
 export async function init($: EngineInterface) {
-  await $.command.register({ name: 'plugins-panel', description: 'Open the plugins pane: what each active plugin adds and costs' })
+  await $.command.register({ name: 'plugins-panel', description: 'Open the plugins pane: what each active plugin adds and costs. `on|off NAME` enables or disables one' })
   if (!(await isOff($, MOD))) await refresh($)
+}
+
+export async function open($: EngineInterface) {
+  await refresh($)
+  await $.ui.open({ id: PANE, title: 'Plugins' })
 }
 
 export const mount = (on: Parameters<Register>[0]) => {
 
-  on('command.run', { command: 'plugins-panel' }, async $ => {
+  on('command.run', { command: 'plugins-panel' }, async ($, e) => {
     if (await isOff($, MOD)) return { text: 'plugins-panel is switched off (kill switch).' }
-    await refresh($)
-    await $.ui.open({ id: PANE, title: 'Plugins' })
+    // toggle idea from plugin-manager (MIT): `/plugins-panel on|off NAME[@MARKET]`, done by the claude CLI, never by editing settings
+    const m = /^(on|off)\s+([\w.-]+(?:@[\w.-]+)?)\s*$/.exec(e.args.trim())
+    if (m) {
+      const r = await $.process.run(['claude', 'plugin', m[1] === 'on' ? 'enable' : 'disable', m[2]], { timeoutMs: 30000 })
+      await refresh($)
+      return { text: (r.exitCode === 0 ? r.stdout : r.stderr || r.stdout).trim() || `${m[2]} ${m[1]}` }
+    }
+    await open($)
     return { text: summary }
   })
 

@@ -1,6 +1,6 @@
 ---
 name: wiki-admin-ingest
-description: Six-step intake for raw documents into staged wiki pages. Use when the operator says "ingest this", "process the dump", "add these files to the wiki", or drops files in a raw/ folder. Size gate, injection scan, convert/crush, 25-file batches with a ledger, independent verify, skill factory. Stages in 01-inbox/; never writes the live wiki.
+description: Six-step intake of raw documents into staged wiki pages. Use for 'ingest this', 'process the dump' or files in raw/.
 ---
 
 # wiki-admin ingest (6 steps)
@@ -17,14 +17,21 @@ description: Six-step intake for raw documents into staged wiki pages. Use when 
 ## Pipeline
 1. **Size gate.** `python3 $S/peek.py <file>` for any file over ~200 KB: outline first, read only what matters.
 2. **Injection scan.** `python3 $S/wa_quarantine.py <raw> --out <work>/quarantine.jsonl`. Detect-only; the file is never changed. Quarantined files are described, not extracted from, until the owner releases them.
-3. **Convert / crush.** `python3 $S/convert_raw_to_md.py <raw> <work>/clean_md` (PDF, DOCX, HTML, text; reports EMPTY/ERROR/unsupported by name). Large JSON/JSONL tool output: `node $S/crush.js file.jsonl > file.eson` (ESON, lossless). Google Drive files: read through the Drive connector first (no local `gdrive-to-markdown` ships).
+3. **Convert / crush.** `python3 $S/convert_raw_to_md.py <raw> <work>/clean_md` (PDF, DOCX, HTML, text; reports EMPTY/ERROR/unsupported by name). Large JSON/JSONL tool output: `node $S/crush.js file.jsonl > file.eson` (ESON, lossless). Google Drive files: `gdrive-to-markdown` (rclone, local; `gdrive_fetch.py REMOTE:path <raw>`) first.
 4. **Batches.** `python3 $S/batch_ledger.py plan <raw> --ledger <work>/ledger.jsonl` (25 files per batch). Loop: `next --workers 4` -> `claim ID` -> spawn one `corpus-ingest` worker per id -> `done ID` / `fail ID`. A crashed run resumes from the ledger.
 5. **Verify independently.** `python3 $S/verify.py <work>/clean_md --raw <raw>` (different extractors than the converter, canary first). A FAIL means re-convert; never draft from a failed file. See `corpus-verify`.
 6. **Draft, stage, audit.** Pages go to `01-inbox/` with frontmatter `id, type, created, updated, sources`. `python3 $S/manifest.py build 01-inbox`, then `python3 $S/audit_staging.py 01-inbox --wiki <wiki>` (six checks; see `wiki-admin-lint`). Show the operator the staged list, verdicts and convert/verify reports, then stop.
-   Mature curated pages -> skill: `vault-skill-factory`. Duplicates: `wiki-dedup`.
+   Mature curated pages -> skill: `vault-skill-factory`. Duplicates: `wiki-dedup`. Vault validity: `obsidian-notes`. Bad answers: `rag-retrieval-check`. Outside material recommending setup changes: `audit-outside-material`. Corrections to remember: `rule-learning`. Copy docs out (preview first): `/vault-sync`.
 
 ## Provenance
 `python3 $S/provenance.py write|verify` hashes this package (SHA-256). Staged files carry `sha256` in the manifest; re-check before promotion.
 
 ## Search / health / growth
-`python3 $S/wiki_search.py "q" --wiki <wiki> --no-embed` (BM25, stdlib), `wiki_lint.py <wiki>`, `wiki_stats.py <wiki>`, `wiki_evolve.py` (`/wiki-evolve` command). See `llm-wiki`.
+`python3 $S/wiki_search.py "q" --wiki <wiki>` (BM25, stdlib), `wiki_lint.py <wiki>`, `wiki_stats.py <wiki>`, `wiki_evolve.py` (`/wiki-evolve` command). See `llm-wiki`.
+
+## Deltas from wiki-wonka (MIT, Coopera Code)
+- **Discuss before writing**: before drafting, give the operator 3-5 takeaways and ask what to emphasize or ignore, what contradicts or reinforces existing pages, which entities already have pages. "Go ahead" with no changes = proceed on your judgment.
+- **List pages to touch first** (entities, concepts, overview) and get a nod; prefer updating an existing page over creating one (fragmentation is the enemy).
+- **Contradiction and staleness are marked, never silently overwritten**: `> [!contradiction] This source disputes [[page]] on X.` and `> [!outdated]` instead of deleting old text. Read a page fully before changing it.
+- **Source summary page** carries: Summary, Key claims, Connections to existing wiki, Open questions, Notable quotes.
+- **Pause past ~20 file changes** and ask whether to continue or scope down. Questions asked mid-ingest are noted and answered after.

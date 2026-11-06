@@ -1,8 +1,8 @@
 ---
 name: burn
-description: Check or drive the usage pacer. Use when the user asks about usage headroom, burn mode, brake mode, the burn queue, or cache keep-alive.
+description: Check or drive the usage pacer. Use for usage headroom, burn mode, brake mode, the burn queue or cache keep-alive.
 ---
-Run `python3 "${CLAUDE_PLUGIN_ROOT}/scripts/burn.py" <cmd>`:
+MCP tools: `burn.status`, `burn.keepalive` (one ping), `burn.notify`. For the rest, run `python3 "${CLAUDE_PLUGIN_ROOT}/scripts/burn.py" <cmd>`:
 - `status`: current mode (unknown | brake | burn | idle) and why.
 - `tick --dry-run`: show which pre-approved queue job would run. Drop `--dry-run` to run one.
 - `keepalive`: ping every 4m30s while the session is active (run it in the background; it exits when idle).

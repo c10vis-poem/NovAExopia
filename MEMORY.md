@@ -16,3 +16,7 @@ Durable facts about this repo. Dated; newest first. Updated at session wrap-up.
 
 ## 2026-10-08
 - `raw/novaecopia-vincet.md` = condensed version from NovA-Corpus (deleted repo); original in `Merovingian's_keep/_salvage/NovA-Corpus/`.
+
+## 2026-11-05
+- `frankenstein/` holds 8 plugins and 2 standalone MCP servers; `jev-rea-mcp` now ships inside `nvaex-jev-core`. Not pushed, not installed. REA and JEV servers are being redefined from the operator's documents, so this build is a draft of them.
+- `nvaex-memory-vnext` renamed `nvaex-memory`. Router calls TypeSafe Jev with a visible local fallback; no live answer yet because no key is on the phone.

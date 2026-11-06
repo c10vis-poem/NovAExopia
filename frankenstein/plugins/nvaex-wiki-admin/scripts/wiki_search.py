@@ -1,16 +1,7 @@
 #!/usr/bin/env python3
-# /// script
-# requires-python = ">=3.10"
-# dependencies = [
-#   "fastembed==0.8.0",
-#   "sqlite-vec==0.1.9",
-# ]
-# ///
 """
-wiki_search.py — Section-level BM25 and local hybrid search over wiki pages.
-
-FastEmbed and sqlite-vec provide the default semantic path. BM25 remains
-available without dependencies through --no-embed and as a safe fallback.
+wiki_search.py — Section-level BM25 search over wiki pages. Stdlib only.
+(Trimmed: the FastEmbed/sqlite-vec hybrid path was removed; --no-embed is accepted and ignored.)
 
 Usage:
     python wiki_search.py "query terms" [options]
@@ -42,7 +33,6 @@ import json
 import math
 import os
 import re
-import sqlite3
 import sys
 from collections import Counter, defaultdict
 from datetime import date, datetime
@@ -53,10 +43,6 @@ WIKILINK_RE = re.compile(r"\[\[([^\]|]+)(?:\|[^\]]+)?\]\]")
 FRONTMATTER_RE = re.compile(r"^---\s*\n(.*?)\n---\s*\n", re.DOTALL)
 TOKEN_RE = re.compile(r"[a-z0-9]+")
 HEADING_RE = re.compile(r"^(#{1,6})\s+(.+?)\s*#*\s*$")
-LOCAL_EMBED_MODEL = "BAAI/bge-small-en-v1.5"
-VECTOR_INDEX_SCHEMA = "2"
-VECTOR_INDEX_NAME = "embeddings.sqlite"
-MAX_COSINE_DISTANCE = 0.35
 
 
 def parse_frontmatter(text: str) -> tuple[dict, str]:
@@ -394,226 +380,6 @@ def passes_filters(page: dict, args) -> bool:
     return True
 
 
-def embedding_failure_label(exc: Exception) -> str:
-    """Return a safe local-backend error label without leaking paths or payloads."""
-    return type(exc).__name__
-
-
-def section_locator(section: dict) -> str:
-    page = section["page"]
-    return f"{page['rel_path']}\x1f{section['section_index']}"
-
-
-def section_content_hash(section: dict) -> str:
-    text = f"{LOCAL_EMBED_MODEL}\n{section['searchable_text']}"
-    return hashlib.sha256(text.encode("utf-8")).hexdigest()
-
-
-def load_local_embedding_backend():
-    try:
-        import sqlite_vec
-        from fastembed import TextEmbedding
-    except ImportError as exc:
-        raise RuntimeError(
-            "local semantic dependencies are missing; use `uv run --script` "
-            "or install fastembed and sqlite-vec"
-        ) from exc
-
-    cache_dir = Path(
-        os.environ.get(
-            "FASTEMBED_CACHE_PATH",
-            Path.home() / ".cache" / "llm-wiki" / "fastembed",
-        )
-    )
-    model = TextEmbedding(model_name=LOCAL_EMBED_MODEL, cache_dir=str(cache_dir))
-    dimension = TextEmbedding.get_embedding_size(LOCAL_EMBED_MODEL)
-    return model, sqlite_vec, dimension
-
-
-def open_vector_index(wiki_root: Path, sqlite_vec, dimension: int) -> sqlite3.Connection:
-    path = wiki_root / ".wiki-cache" / VECTOR_INDEX_NAME
-    path.parent.mkdir(parents=True, exist_ok=True)
-    connection = sqlite3.connect(path, timeout=30)
-    try:
-        connection.enable_load_extension(True)
-        sqlite_vec.load(connection)
-        connection.enable_load_extension(False)
-        connection.execute(
-            "CREATE TABLE IF NOT EXISTS semantic_meta "
-            "(key TEXT PRIMARY KEY, value TEXT NOT NULL)"
-        )
-        expected = {
-            "schema": VECTOR_INDEX_SCHEMA,
-            "model": LOCAL_EMBED_MODEL,
-            "dimension": str(dimension),
-        }
-        current = dict(connection.execute("SELECT key, value FROM semantic_meta"))
-        if current != expected:
-            with connection:
-                connection.execute("DROP TABLE IF EXISTS semantic_vectors")
-                connection.execute("DROP TABLE IF EXISTS semantic_sections")
-                connection.execute("DELETE FROM semantic_meta")
-                connection.executemany(
-                    "INSERT INTO semantic_meta(key, value) VALUES (?, ?)",
-                    expected.items(),
-                )
-        connection.execute(
-            "CREATE TABLE IF NOT EXISTS semantic_sections ("
-            "id INTEGER PRIMARY KEY, "
-            "locator TEXT NOT NULL UNIQUE, "
-            "content_hash TEXT NOT NULL)"
-        )
-        connection.execute(
-            f"CREATE VIRTUAL TABLE IF NOT EXISTS semantic_vectors "
-            f"USING vec0(embedding float[{dimension}] distance_metric=cosine)"
-        )
-        return connection
-    except Exception:
-        connection.close()
-        raise
-
-
-def embed_passages(model, texts: list[str]) -> list[list[float]]:
-    return [
-        [float(value) for value in vector]
-        for vector in model.passage_embed(texts, batch_size=64)
-    ]
-
-
-def embed_query(model, text: str) -> list[float]:
-    vector = next(model.query_embed(text))
-    return [float(value) for value in vector]
-
-
-def sync_vector_index(
-    connection: sqlite3.Connection,
-    sqlite_vec,
-    model,
-    sections: list[dict],
-) -> dict[str, int]:
-    existing = {
-        locator: (row_id, content_hash)
-        for row_id, locator, content_hash in connection.execute(
-            "SELECT id, locator, content_hash FROM semantic_sections"
-        )
-    }
-    vector_ids = {
-        row_id for row_id, in connection.execute("SELECT rowid FROM semantic_vectors")
-    }
-    current = {
-        section_locator(section): (section_content_hash(section), section)
-        for section in sections
-    }
-    stale = set(existing) - set(current)
-    changed = [
-        (locator, content_hash, section)
-        for locator, (content_hash, section) in current.items()
-        if locator not in existing
-        or existing[locator][1] != content_hash
-        or existing[locator][0] not in vector_ids
-    ]
-    vectors = (
-        embed_passages(model, [section["searchable_text"] for _, _, section in changed])
-        if changed
-        else []
-    )
-    if len(vectors) != len(changed):
-        raise ValueError(
-            f"local embedding model returned {len(vectors)} vectors for {len(changed)} sections"
-        )
-    if changed:
-        print(
-            f"embedding {len(changed)} new or changed sections via {LOCAL_EMBED_MODEL}...",
-            file=sys.stderr,
-        )
-
-    with connection:
-        for locator in stale:
-            row_id = existing[locator][0]
-            connection.execute("DELETE FROM semantic_vectors WHERE rowid = ?", (row_id,))
-            connection.execute("DELETE FROM semantic_sections WHERE id = ?", (row_id,))
-        for (locator, content_hash, _section), vector in zip(changed, vectors):
-            row = existing.get(locator)
-            if row:
-                row_id = row[0]
-                connection.execute(
-                    "UPDATE semantic_sections SET content_hash = ? WHERE id = ?",
-                    (content_hash, row_id),
-                )
-                connection.execute("DELETE FROM semantic_vectors WHERE rowid = ?", (row_id,))
-            else:
-                cursor = connection.execute(
-                    "INSERT INTO semantic_sections(locator, content_hash) VALUES (?, ?)",
-                    (locator, content_hash),
-                )
-                row_id = cursor.lastrowid
-            connection.execute(
-                "INSERT INTO semantic_vectors(rowid, embedding) VALUES (?, ?)",
-                (row_id, sqlite_vec.serialize_float32(vector)),
-            )
-    return {
-        locator: row_id
-        for row_id, locator in connection.execute(
-            "SELECT id, locator FROM semantic_sections"
-        )
-    }
-
-
-def local_semantic_order(
-    query: str,
-    all_sections: list[dict],
-    allowed_locators: set[str],
-    wiki_root: Path,
-) -> list[str]:
-    model, sqlite_vec, dimension = load_local_embedding_backend()
-    connection = open_vector_index(wiki_root, sqlite_vec, dimension)
-    try:
-        locator_ids = sync_vector_index(connection, sqlite_vec, model, all_sections)
-        allowed_ids = [
-            locator_ids[locator]
-            for locator in allowed_locators
-            if locator in locator_ids
-        ]
-        if not allowed_ids:
-            return []
-        query_blob = sqlite_vec.serialize_float32(embed_query(model, query))
-        limit = min(50, len(allowed_ids))
-        if len(allowed_ids) == len(locator_ids):
-            ranked_ids = [
-                row_id
-                for row_id, distance in connection.execute(
-                    "SELECT rowid, distance FROM semantic_vectors "
-                    "WHERE embedding MATCH ? AND k = ? ORDER BY distance",
-                    (query_blob, limit),
-                )
-                if distance <= MAX_COSINE_DISTANCE
-            ]
-        else:
-            connection.execute(
-                "CREATE TEMP TABLE allowed_sections(id INTEGER PRIMARY KEY)"
-            )
-            connection.executemany(
-                "INSERT INTO allowed_sections(id) VALUES (?)",
-                ((row_id,) for row_id in allowed_ids),
-            )
-            ranked_ids = [
-                row_id
-                for row_id, distance in connection.execute(
-                    "SELECT vectors.rowid, "
-                    "vec_distance_cosine(vectors.embedding, ?) AS distance "
-                    "FROM semantic_vectors AS vectors "
-                    "JOIN allowed_sections AS allowed ON allowed.id = vectors.rowid "
-                    "ORDER BY distance LIMIT ?",
-                    (query_blob, limit),
-                )
-                if distance <= MAX_COSINE_DISTANCE
-            ]
-        by_id = {row_id: locator for locator, row_id in locator_ids.items()}
-        return [by_id[row_id] for row_id in ranked_ids]
-    finally:
-        connection.close()
-
-
 def collapse_snippet(text: str) -> str:
     return re.sub(r"\s+", " ", text.strip())[:400]
 
@@ -714,54 +480,6 @@ def cmd_search(args, pages: list[dict]) -> None:
     bm25_ranked = [item for item in bm25_ranked if item[0] > 0]
     ranked = [(score, section_index, ["bm25"]) for score, section_index in bm25_ranked]
     mode = "lexical"
-    if not args.no_embed:
-        try:
-            all_sections = collect_sections(pages)
-            section_indices = {
-                section_locator(section): index
-                for index, section in enumerate(sections)
-            }
-            semantic_order = local_semantic_order(
-                args.query,
-                all_sections,
-                set(section_indices),
-                args.wiki,
-            )
-            embedding_top = [
-                (0.0, section_indices[locator])
-                for locator in semantic_order
-                if locator in section_indices
-            ]
-            lexical_top = bm25_ranked[:50]
-            candidate_order = [index for _, index in lexical_top]
-            seen_candidates = set(candidate_order)
-            for _, index in embedding_top:
-                if index not in seen_candidates:
-                    candidate_order.append(index)
-                    seen_candidates.add(index)
-            lexical_ranks = {index: rank for rank, (_, index) in enumerate(lexical_top, 1)}
-            embedding_ranks = {index: rank for rank, (_, index) in enumerate(embedding_top, 1)}
-            ranked = []
-            for index in candidate_order:
-                score = 0.0
-                retrievers = []
-                if index in lexical_ranks:
-                    score += 1.0 / (60 + lexical_ranks[index])
-                    retrievers.append("bm25")
-                if index in embedding_ranks:
-                    score += 1.0 / (60 + embedding_ranks[index])
-                    retrievers.append("embedding")
-                ranked.append((score, index, retrievers))
-            ranked.sort(key=lambda item: -item[0])
-            mode = "hybrid"
-        except Exception as exc:
-            label = embedding_failure_label(exc)
-            print(
-                f"warning: local semantic search unavailable ({label}); "
-                "falling back to lexical",
-                file=sys.stderr,
-            )
-
     page_counts = Counter()
     top_sections = []
     for score, section_index, retrievers in ranked:
