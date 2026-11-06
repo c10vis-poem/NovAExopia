@@ -23,22 +23,22 @@ Not rows (removed by the brief, not folded): pmm, claude-code-cost, claude-code-
 
 | keep | on phone? (path) | KB | home package | what to take | what to strip | status | note |
 |---|---|---|---|---|---|---|---|
-| adaptive-agent | NOT FOUND | - | nvaex-memory-vnext | (nothing on phone) |  | cannot fold: not on phone (name scan of 493 plugin.json in synced/local-plugins/cache + find -iname in ~/repos found none) |  |
+| adaptive-agent | NOT FOUND | - | nvaex-memory | (nothing on phone) |  | cannot fold: not on phone (name scan of 493 plugin.json in synced/local-plugins/cache + find -iname in ~/repos found none) |  |
 | agent-recall | S1/80cdebec | 692 | dumbass-memory-mcp | SQLite KG table shape + recall query only | own MCP server (.mcp.json), hooks, 692KB | to fold | Graph tier is already Streams 1+2 in dumbass; fold only if it adds something CRG/graphify lack |
-| anchor-memory | S1/63003d0a | 575 | nvaex-memory-vnext | memory_lint.py (322 lines), spec.md (verbatim) | hooks, other skills, 575KB | already in package |  |
-| ccfind | S1/d85d1d81 | 2163 | nvaex-memory-vnext | ccfind.mjs + SKILL.md (verbatim) | demos, gifs, CI | already in package | UNTRIMMED: 73KB mjs + 14KB SKILL copied whole |
-| chat-autoexporter | S1/cb3937a3 | 74 | nvaex-memory-vnext | pre-compact + session-end transcript export step | hooks (re-wire into vnext Stop/SessionEnd), 74KB | to fold | vnext recap already reads transcripts; may be redundant |
-| claude-patterns | S1/23529d87 | 120 | nvaex-memory-vnext | pattern-to-rule/skill capture prompt (approval-gated) | .mcp.json, hooks, 120KB | to fold |  |
+| anchor-memory | S1/63003d0a | 575 | nvaex-memory | memory_lint.py (322 lines), spec.md (verbatim) | hooks, other skills, 575KB | already in package |  |
+| ccfind | S1/d85d1d81 | 2163 | nvaex-memory | ccfind.mjs + SKILL.md (verbatim) | demos, gifs, CI | already in package | UNTRIMMED: 73KB mjs + 14KB SKILL copied whole |
+| chat-autoexporter | S1/cb3937a3 | 74 | nvaex-memory | pre-compact + session-end transcript export step | hooks (re-wire into nvaex-memory Stop/SessionEnd), 74KB | to fold | nvaex-memory recap already reads transcripts; may be redundant |
+| claude-patterns | S1/23529d87 | 120 | nvaex-memory | pattern-to-rule/skill capture prompt (approval-gated) | .mcp.json, hooks, 120KB | to fold |  |
 | compounded | S1/ab9b0379 | 830 | nvaex-wiki-admin | approval-gated rule learning skill + commands | agents, hooks, 830KB | to fold | spec row 3; SOURCES.md says "no match found" but it is on the phone |
 | jevmem | S1/7d57870a | 71 | nvaex-jev-core | (none: jevmem CLI/hosted) | hooks, CLI call | cannot fold: plugin holds no code, only a launcher for the npm `jevmem` CLI, which POSTs to https://api.typesafe.ai/v1/systemone with a TypeSafe key (README line 46); contract rule 6 local-first. Function covered by dumbass memory.record_claim; operator decision to drop |  |
-| memory-agent | S1/55175215 | 2403 | nvaex-memory-vnext | daily KB + autoPromote:false design (reimplemented in vnext.py) | LLM extraction pipeline, polling capture, 2.4MB | already in package |  |
-| memory-toolkit | S1/07e6b314 | 514 | nvaex-memory-vnext | workstream + handoff skill text | hooks, 514KB | to fold |  |
-| remember | S1/043db339 | 8606 | nvaex-memory-vnext | tiered daily-to-weekly log idea | node/dist bundle (8.6MB), hooks, commands | to fold | vnext recap is single-tier today |
-| whydone | S1/a4c444d8 | 1314 | nvaex-memory-vnext | SCHEMA v1 entry format + nudge-only Stop (reimplemented) | 409KB CLI, blocking Stop | already in package |  |
-| context-handoff | S1/96328962 | 1040 | nvaex-memory-vnext | handoff manifest + handoff-search skills | build/, package-lock, .mcp.json, hooks, .codex-plugin, 1MB | to fold | #1 = S1/96328962 (auto-save before compact); S1/9ceee32b is the other one |
-| handoff | S1/d56b622d | 93 | nvaex-memory-vnext | per-branch note save/load skill | hooks (re-wire into vnext SessionStart), 93KB | to fold | #1 = S1/d56b622d |
-| better-compact | S1/126098c7 | 117 | nvaex-memory-vnext | compaction steering text (goal, next step, files, decisions) | hook runtime, 117KB | to fold | Becomes a PreCompact instruction; vnext has no PreCompact entry yet |
-| claude-context-optimizer | S1/43b5eda8 | 2121 | nvaex-memory-vnext | report skills + task-state agent | read-cache.js hook (blocks reads), 2.1MB | to fold |  |
+| memory-agent | S1/55175215 | 2403 | nvaex-memory | daily KB + autoPromote:false design (reimplemented in memory.py) | LLM extraction pipeline, polling capture, 2.4MB | already in package |  |
+| memory-toolkit | S1/07e6b314 | 514 | nvaex-memory | workstream + handoff skill text | hooks, 514KB | to fold |  |
+| remember | S1/043db339 | 8606 | nvaex-memory | tiered daily-to-weekly log idea | node/dist bundle (8.6MB), hooks, commands | to fold | nvaex-memory recap is single-tier today |
+| whydone | S1/a4c444d8 | 1314 | nvaex-memory | SCHEMA v1 entry format + nudge-only Stop (reimplemented) | 409KB CLI, blocking Stop | already in package |  |
+| context-handoff | S1/96328962 | 1040 | nvaex-memory | handoff manifest + handoff-search skills | build/, package-lock, .mcp.json, hooks, .codex-plugin, 1MB | to fold | #1 = S1/96328962 (auto-save before compact); S1/9ceee32b is the other one |
+| handoff | S1/d56b622d | 93 | nvaex-memory | per-branch note save/load skill | hooks (re-wire into nvaex-memory SessionStart), 93KB | to fold | #1 = S1/d56b622d |
+| better-compact | S1/126098c7 | 117 | nvaex-memory | compaction steering text (goal, next step, files, decisions) | hook runtime, 117KB | to fold | Becomes a PreCompact instruction; nvaex-memory has no PreCompact entry yet |
+| claude-context-optimizer | S1/43b5eda8 | 2121 | nvaex-memory | report skills + task-state agent | read-cache.js hook (blocks reads), 2.1MB | to fold |  |
 | context-window | S1/10c1f421 | 181 | nvaex-ui-cockpit | pane listing context entrants | hook bundle, 181KB | to fold | Borderline with "usage display" removal: it shows what entered context, not tokens/limits. Confirm. |
 | headroom | S1/b9db7a50 | 137 | nvaex-wiki-admin | peek.py size gate (copied) + /peek command |  | already in package |  |
 | bake-claude-md-files | S1/b26c0aab | 6172 | NEW nvaex-ops | rule-to-check skill | 6.1MB payload, examples | to fold |  |
@@ -94,7 +94,7 @@ Not rows (removed by the brief, not folded): pmm, claude-code-cost, claude-code-
 | drunken-master | S1/fda4eab2 | 297 | nvaex-jev-core | SKILL.md (verbatim) |  | already in package | UNTRIMMED: 9.7KB SKILL.md whole |
 | local-whisper | S1/55855313 | 130 | NEW nvaex-ops | STT skill (Whisper cpp wrapper text) |  | to fold | Added keep; voice lane. Models stay out of the repo |
 | tts | S1/4aab4b25 | 1206 | NEW nvaex-ops | TTS skill | hooks (auto-speak), commands, 1.2MB | to fold |  |
-| create-smartfolder | S1/e40abd7f | 418 | nvaex-memory-vnext | MAP.md router concept (vnext.py map) | 258KB kit, 36KB SKILL | already in package | UNTRIMMED: licenses/create-smartfolder.LICENSE 18KB CC-BY full text |
+| create-smartfolder | S1/e40abd7f | 418 | nvaex-memory | MAP.md router concept (memory.py map) | 258KB kit, 36KB SKILL | already in package | UNTRIMMED: licenses/create-smartfolder.LICENSE 18KB CC-BY full text |
 | gdrive-to-markdown | S1/6aaccdd0 | 1384 | nvaex-wiki-admin | step-3 converter | 1.4MB | to fold | SOURCES.md says not on phone; it is. Uses the claude.ai Drive connector, which dies with the account-side removal: needs a local rclone path |
 | llm-wiki | S1/a37bed19 | 5516 | nvaex-wiki-admin | wiki_search/lint/stats/evolve scripts | 5.1MB media/docs | already in package |  |
 | obsidian-notes | S1/3cacb896 | 712 | nvaex-wiki-admin | vault validity skill |  | to fold |  |
@@ -130,11 +130,11 @@ Not rows (removed by the brief, not folded): pmm, claude-code-cost, claude-code-
 | human-in-the-loop | S1/f5234247 | 7392 | NEW nvaex-ops | operator-only task pane as a list skill | hooks, 7.4MB | to fold |  |
 | claudestrophobic | S1/c04385b9 | 108 | NEW nvaex-ops | stale session lister (delete step needs operator OK) |  | to fold |  |
 | claudebase | S1/91e6ac8a | 475 | NEW nvaex-ops | backup/restore ~/.claude to private repo | hooks, 475KB | to fold | Writes outside the worktree at run time; fine at run time, not build time |
-| cut-weight | S1/5c75f9c6 | 133 | nvaex-memory-vnext | SKILL.md, references, inventory.py (verbatim) |  | already in package | UNTRIMMED: 13.7+11+6.3KB whole |
+| cut-weight | S1/5c75f9c6 | 133 | nvaex-memory | SKILL.md, references, inventory.py (verbatim) |  | already in package | UNTRIMMED: 13.7+11+6.3KB whole |
 | env-setup-wizard | S1/6f20df63 | 145 | NEW nvaex-ops | verified setup-script skill |  | to fold |  |
 | notify | S1/0e5ea5c6 | 104 | nvaex-burn | webhook POST (derived into burn.py) | Slack/Teams/Lark/Telegram/desktop | already in package | #1 = S1/0e5ea5c6. Telegram dropped; keep = notification, not usage display |
 | caveman | S1/5b256fd0 | 118 | NEW nvaex-ops | concise-mode skill | assets, 118KB | to fold | #1 = S1/5b256fd0. honey skill already covers this; fold only if operator wants both |
-| Memory Bank | S1/02abfee3 | 85 | nvaex-memory-vnext | memory-bank skill | scripts/memory-bank-hook.sh, CoC/PRIVACY/SECURITY docs | to fold | Added keep |
+| Memory Bank | S1/02abfee3 | 85 | nvaex-memory | memory-bank skill | scripts/memory-bank-hook.sh, CoC/PRIVACY/SECURITY docs | to fold | Added keep |
 | mindmap-skills | S1/fd6bdacf | 284 | nvaex-rea-forge | skills/mindmap (one) | mindmap-zh, examples, docs, tests, .github, README.zh | to fold | Added keep; plugin name is "mindmap" |
 | Prompt Enhancer | ~/local-plugins/plugins/prompt-enhancer | 74 | NEW nvaex-ops | skills/ (as is, it is tiny) |  | to fold | Added keep |
 | claude-time | S1/bd69ea1e | 54 | nvaex-jev-core | current-time injector as part of the existing UserPromptSubmit entry | separate hook entry (one per event rule), PRIVACY | to fold | Added keep |
@@ -148,7 +148,7 @@ Not rows (removed by the brief, not folded): pmm, claude-code-cost, claude-code-
 |---|---|---|
 | nvaex-ops (NEW) | 46 | too many for one plugin; see Conflicts 5 |
 | nvaex-jev-core | 23 | heavy too |
-| nvaex-memory-vnext | 16 | |
+| nvaex-memory | 16 | |
 | nvaex-wiki-admin | 12 | |
 | claw-mcp | 8 | 6 replaced, consensus, playwright parts |
 | nvaex-rea-forge | 5 | colosseum, turbocharge #2, mcp2cli, mindmap, (code-map already) |
@@ -156,7 +156,7 @@ Not rows (removed by the brief, not folded): pmm, claude-code-cost, claude-code-
 | dumbass-memory-mcp | 2 | agent-recall, graph-indexer |
 | nvaex-burn | 1 | notify webhook (already) |
 | own plugin dir | 2 | task-observer, code-review-graph |
-| jev-rea-mcp | 0 | no keep maps to it; it is the server for jev-core, no donor needed |
+| jev-rea-mcp | 0 | no keep maps to it; it is the server for jev-core, no donor needed; now inside nvaex-jev-core |
 | (counts above are the table rows' home column) | | |
 
 ## Proposed nvaex-ops contents (NEW package, groups)
@@ -172,7 +172,7 @@ Not rows (removed by the brief, not folded): pmm, claude-code-cost, claude-code-
 Sizes are bytes of files in the worktree today. "Whole" = copied verbatim per SOURCES.md.
 
 - **nvaex-jev-core** (115KB, 16 files): `skills/drunken-master/SKILL.md` 9.7KB whole; `LICENSE-llm-dark-patterns` 11KB (Apache text, required). `scorecard.py` has 13 of 30 checks; 17 not done (donor `hooks/*.sh` absent). `route.py` level heuristic, no taxonomy CSV. Nothing from spec-drift, skill-gate, claude-code-audit-stack, context-protector, safe-bash.
-- **nvaex-memory-vnext** (359KB, 34 files): `skills/ccfind/scripts/ccfind.mjs` 73KB + `SKILL.md` 14KB whole; `skills/cut-weight` ~31KB whole (inventory.py 13.7KB, SKILL 11KB, quarantine-protocol 6.3KB); `memory_lint.py` 11KB (322 lines, as spec); `licenses/` 48KB, of which `create-smartfolder.LICENSE` 18.7KB (CC-BY full text, can be shortened to a notice only if the licence allows; check). Not built: memsearch-aesop (`~/repos/memsearch-aesop` 8.4MB) and OB1 schemas (`~/repos/OB1`), by SOURCES.md.
+- **nvaex-memory** (359KB, 34 files): `skills/ccfind/scripts/ccfind.mjs` 73KB + `SKILL.md` 14KB whole; `skills/cut-weight` ~31KB whole (inventory.py 13.7KB, SKILL 11KB, quarantine-protocol 6.3KB); `memory_lint.py` 11KB (322 lines, as spec); `licenses/` 48KB, of which `create-smartfolder.LICENSE` 18.7KB (CC-BY full text, can be shortened to a notice only if the licence allows; check). Not built: memsearch-aesop (`~/repos/memsearch-aesop` 8.4MB) and OB1 schemas (`~/repos/OB1`), by SOURCES.md.
 - **nvaex-wiki-admin** (430KB, 42 files): `scripts/check.py` 33KB and `wiki_search.py` 33KB, `wiki_evolve.py` 30KB, `wiki_lint.py` 15KB, `evolution-workflow.md` 20KB, `wiki-dedup/SKILL.md` 15KB, `corpus-verify/SKILL.md` 11KB, `convert_raw_to_md.py` 8.5KB. These are copies, not rewrites; wiki_search and wiki_evolve (63KB together) are the best trim candidates. Stand-in `wa_quarantine.py` (real one now found). Missing in SOURCES.md but present on phone: gdrive-to-markdown, compounded, agent-ingest-audit-optimize, llm-secure-patterns.
 - **nvaex-rea-forge** (174KB, 17 files): `skills/code-map/template/engine.html` 51KB whole (the biggest single file in any plugin), `generate.mjs` 7KB. `sync.py` and `wrap.py` are minimal stand-ins: turbocharge #2 (S1/71dabb73) and mcp2cli (S1/3763173a) are on the phone. SOURCES.md's claude-war-room "Missing" is true to the brief now (removed), but the plugin is on the phone (S1/2c68a910, 475KB).
 - **nvaex-ui-cockpit** (139KB, 23 files): hooks are .tsx rewrites; licences ~4KB. `token-cache-gauge` is a usage display (see Conflicts 1). `tests/gauge.test.tsx` tied to it. No `skills/`, so the cockpit has no discoverable docs besides README. Not built: JEV telemetry feed.
@@ -192,4 +192,4 @@ Sizes are bytes of files in the worktree today. "Whole" = copied verbatim per SO
 7. **Two caveats on "cannot fold".** jevmem and graph-indexer are functionally covered elsewhere (jev-core local router + dumbass record_claim; code-review-graph + dumbass Stream 1) but are keeps by the list. Marked cannot fold pending the operator's OK to drop. google-multi-account's MCP, graph-indexer's MCP, jevmem's MCP and claude-bridge's chrome-devtools MCP currently fail to connect this session (ENOENT stdio / CONNECTION_CLOSED).
 8. **claude.ai connectors** (Drive, Gmail, Calendar, Sheets, Slides, Docs, Supabase, Hugging Face, TinyFish, AgentMail) are account-side, not plugins on the phone. gdrive-to-markdown, drive-find and google-multi-account all depend on them; removing "stock" on the accounts will break those unless a local route (rclone, direct API) is built. The map does not list connectors as rows.
 9. **Playwright** donor lives in `~/repos/playwright-mcp` (354KB) and `~/repos/playwright` (77MB), not in the synced plugin (a 35KB `.mcp.json`).
-10. **Contract rule 4** (one hook entry per event per package): airquote, claude-time, chuck, better-compact, chat-autoexporter, memory-bank, handoff, cc, backlog all want hooks; each must be merged into the package's existing entry for that event (jev-core already uses UserPromptSubmit, PostToolUse, Stop; vnext SessionStart, Stop, SessionEnd; wiki-admin PostToolUse, SubagentStop). better-compact needs PreCompact, new to vnext.
+10. **Contract rule 4** (one hook entry per event per package): airquote, claude-time, chuck, better-compact, chat-autoexporter, memory-bank, handoff, cc, backlog all want hooks; each must be merged into the package's existing entry for that event (jev-core already uses UserPromptSubmit, PostToolUse, Stop; nvaex-memory SessionStart, Stop, SessionEnd; wiki-admin PostToolUse, SubagentStop). better-compact needs PreCompact, new to nvaex-memory.

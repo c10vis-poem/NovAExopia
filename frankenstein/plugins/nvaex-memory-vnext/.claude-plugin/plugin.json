@@ -1,9 +1,0 @@
-{
-  "name": "nvaex-memory-vnext",
-  "version": "0.2.0",
-  "description": "Unified memory-as-skill: anchor drift linter, continuity snapshot + task state + /freeze, branch handoff notes, nudge-only whydone, daily+weekly recap to NvAEx-Recaps, pre-compact transcript export, ccfind, MAP.md routers, cut-weight, memory-bank, patterns, workstreams. No daemons.",
-  "author": {
-    "name": "The Builder"
-  },
-  "license": "MIT"
-}

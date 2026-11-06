@@ -1,0 +1,21 @@
+{
+  "hooks": {
+    "SessionStart": [
+      { "matcher": "startup|resume|clear|compact",
+        "hooks": [ { "type": "command", "timeout": 10,
+          "command": "sh \"${CLAUDE_PLUGIN_ROOT}/scripts/killswitch.sh\" nvaex-memory session-start || python3 \"${CLAUDE_PLUGIN_ROOT}/scripts/memory.py\" snapshot" } ] }
+    ],
+    "PreCompact": [
+      { "hooks": [ { "type": "command", "timeout": 10,
+          "command": "sh \"${CLAUDE_PLUGIN_ROOT}/scripts/killswitch.sh\" nvaex-memory pre-compact || python3 \"${CLAUDE_PLUGIN_ROOT}/scripts/memory.py\" export" } ] }
+    ],
+    "Stop": [
+      { "hooks": [ { "type": "command", "timeout": 10,
+          "command": "sh \"${CLAUDE_PLUGIN_ROOT}/scripts/killswitch.sh\" nvaex-memory stop || python3 \"${CLAUDE_PLUGIN_ROOT}/scripts/memory.py\" nudge" } ] }
+    ],
+    "SessionEnd": [
+      { "hooks": [ { "type": "command", "timeout": 15,
+          "command": "sh \"${CLAUDE_PLUGIN_ROOT}/scripts/killswitch.sh\" nvaex-memory session-end || python3 \"${CLAUDE_PLUGIN_ROOT}/scripts/memory.py\" recap" } ] }
+    ]
+  }
+}

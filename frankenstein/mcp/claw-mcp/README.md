@@ -13,6 +13,8 @@ Node.js stdio server (`node/`, built-ins only, Node 22+; phone has v26). `kotlin
 | `claw.infer` | openrouter or gemini (keys from env) |
 | `claw.workflows` | named tool sequences from `workflows.json`; a CHOICE pauses the sequence |
 
+Skills in `skills/`: browser-cdp, android-adb, google-access, gemini-genai, phone-control, termux-helper, android-termux-operator (with `references/audio-pipeline.md`).
+
 Logged-in sites: sign in yourself in the phone's Chrome; claw drives that tab and never handles passwords.
 
 ## Platform layer (`node/platform.mjs`)

@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 """UserPromptSubmit: time, Stage-0 garble flags, Stage-1 router, project decisions and rules. Non-blocking, stdlib."""
 import datetime, glob, json, os, re, sys
+sys.dont_write_bytecode = True
+import jev_route
 d = json.load(sys.stdin)
 p = (d.get("prompt") or "").strip()
 if not p or "#skip-enforce" in p or p.startswith("/"):
     sys.exit(0)
-root = os.environ.get("CLAUDE_PLUGIN_ROOT") or os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-G = json.load(open(os.path.join(root, "skills/jev-router/groups.json")))["groups"]
 cwd = d.get("cwd") or os.getcwd()
 low = p.lower()
 words = set(re.findall(r"[a-z0-9]+", low))
@@ -22,34 +22,20 @@ if flags and len(spoken.split()) >= 4:
     out.append("STAGE-0: possible garbled input (" + ", ".join(flags[:5]) +
                "). Apply the drunken-master skill: your first text, before any tool call, is a 'Read as: ...' line.")
 
-# Stage 1: up to 3 groups by keyword hits, then the top skill of the best two.
-hits = sorted(((len(words & set(g["kw"])), n) for n, g in G.items()), reverse=True)
-top = [n for c, n in hits if c][:3]
-n = len(p)
-steps = len(re.findall(r"\b(and then|then|also|after that|finally)\b", low))
-lvl = 0 if n < 60 and not top else 1 if n < 200 and steps == 0 else 2 if n < 600 else 3
-def tier_for(level, groups):
-    """Model tier from skills/jev-router/tiers.json; fail open (empty string) if the file is missing or bad."""
-    try:
-        T = json.load(open(os.path.join(root, "skills/jev-router/tiers.json")))
-        order = T["order"]
-        t = T["levels"]["L%d" % level]["tier"]
-        if level > 0:
-            for g in groups:
-                m = T["task_types_min"].get(g)
-                if m in order and order.index(m) > order.index(t):
-                    t = m
-        return T["tiers"][t]["model"]
-    except Exception:
-        return ""
-tier = tier_for(lvl, top)
-tier_s = f" | tier {tier}" if tier else ""
+# Stage 1: jev_route.classify: TypeSafe Jev, or the keyword rules when Jev is unavailable. The line always names which.
+R = jev_route.classify(p)
+lvl, top = R["level"], R["groups"]
+tier_s = f" | tier {R['tier']['model']}" if R["tier"] else ""
+if R["source"] == "typesafe":
+    c = R["confidence"]
+    via = f"via typesafe {R['jev_model']} conf {c['level']:.2f}/{c['group']:.2f}" + (" LOW: check it" if R["gated"] == "escalate" else "")
+else:
+    via = f"via local-fallback ({R['error']})"
+gates = " | L2+: run the task-auditor gates" if lvl >= 2 else ""
 if top:
-    sk = [s for t in top[:2] for s in G[t]["skills"][:1]]
-    out.append(f"JEV route: L{lvl}{tier_s} | groups {'/'.join(top)} | try {', '.join(sk)}"
-               + (" | L2+: run the task-auditor gates" if lvl >= 2 else ""))
-elif lvl >= 2:
-    out.append(f"JEV route: L{lvl}{tier_s} | no group matched | run the task-auditor gates")
+    out.append(f"JEV route: L{lvl}{tier_s} | groups {'/'.join(top)} | try {', '.join(R['skills'])}{gates} | {via}")
+else:
+    out.append(f"JEV route: L{lvl}{tier_s} | no group matched{gates} | {via}")
 
 # Decision ledger (<project>/.nvaex/decisions.jsonl, ~/.nvaex/decisions.jsonl): inject matches, flag contradictions.
 def jl(path):

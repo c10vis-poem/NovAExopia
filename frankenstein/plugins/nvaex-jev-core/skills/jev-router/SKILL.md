@@ -6,7 +6,9 @@ description: Two-stage skill router plus per-project decision memory. Use at the
 
 Stage 1: up to 3 groups from `groups.json` (this folder). Stage 2: at most 2 skills inside them. Never more.
 
-Levels (hook estimate; override when wrong):
+Level and groups come from TypeSafe Jev, or from the keyword rules when Jev is unavailable. The `JEV route:` line ends with which: `via typesafe <model> conf <level>/<group>` or `via local-fallback (<reason>)`. `LOW: check it` means Jev was unsure. The MCP tool `jev.route_task` gives the same answer as JSON. `rm -rf`, force push and similar shapes hold L3 whatever Jev says.
+
+Levels (override when wrong):
 - L0 trivial: answer inline.
 - L1 one bounded task: 1 skill, no subagent.
 - L2 multi-step: task-auditor gates; subagents with isolated scope for independent parts.

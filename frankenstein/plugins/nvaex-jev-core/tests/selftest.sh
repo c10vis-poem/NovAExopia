@@ -1,7 +1,7 @@
 #!/usr/bin/env sh
 # nvaex-jev-core selftest: runs the real hooks.json commands and scripts in an isolated HOME. Exit 0 only if all behaviour holds.
 R="$(cd "$(dirname "$0")/.." && pwd)"; export CLAUDE_PLUGIN_ROOT="$R"
-T="$(mktemp -d)"; export HOME="$T"; unset CLAUDE_CONFIG_DIR; fail=0; PRJ="$T/proj"; mkdir -p "$PRJ/.nvaex/rules" "$PRJ/.claude"
+T="$(mktemp -d)"; export HOME="$T"; unset CLAUDE_CONFIG_DIR TYPESAFE_API_KEY CLAUDE_PLUGIN_OPTION_TYPESAFE_API_KEY TYPESAFE_BASE_URL TYPESAFE_DEFAULT_MODEL JEV_TIMEOUT JEV_TIERS_JSON JEV_TAXONOMY_CSV; fail=0; PRJ="$T/proj"; mkdir -p "$PRJ/.nvaex/rules" "$PRJ/.claude"
 ok(){ echo "PASS $1"; }; bad(){ echo "FAIL $1"; fail=1; }
 py(){ python3 -c "$@"; }
 cmd(){ py "import json;print(json.load(open('$R/hooks/hooks.json'))['hooks']['$1'][0]['hooks'][0]['command'])"; }
@@ -109,4 +109,63 @@ mkdir -p "$T/.claude/sessions"
 echo "{\"pid\":$$,\"name\":\"alive-one\",\"status\":\"idle\",\"cwd\":\"/x\",\"updatedAt\":$(date +%s)000}" > "$T/.claude/sessions/1.json"
 echo '{"pid":999999,"name":"dead-one","status":"idle","cwd":"/y"}' > "$T/.claude/sessions/2.json"
 o=$(python3 "$R/scripts/peers.py"); has "$o" alive-one && ! has "$o" dead-one && has "$o" '1 live' && ok "peers lists live only" || { bad peers; echo "$o"; }
+# ---- routing: FAKE TypeSafe server (tests/fake_typesafe.py). Real hook command, real client, real sockets; only the far end is fake.
+Q(){ py "import json,sys;print(json.dumps({'cwd':'$PRJ','prompt':sys.argv[1]}))" "$1"; }
+python3 "$R/tests/fake_typesafe.py" "$T/fake.port" "$T/fake.log" & FP=$!
+for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20; do [ -s "$T/fake.port" ] && break; sleep 0.1; done
+U="http://127.0.0.1:$(cat "$T/fake.port")"
+K=fake-test-key
+jev(){ ( export TYPESAFE_API_KEY="$K" TYPESAFE_BASE_URL="$U/$1" JEV_TIMEOUT="${3:-2}"; run UserPromptSubmit "$(Q "$2")" ); }
+fb(){ o=$(jev "$1" "write a haiku about spring" "$3"); has "$o" "via local-fallback ($2)" && has "$o" 'JEV route: L' && ok "FAKE $1 -> local-fallback ($2)" || { bad "fallback $1"; echo "$o"; }; }
+o=$(run UserPromptSubmit "$(Q 'add tests')"); has "$o" 'via local-fallback (no-key)' && ok "no key -> local-fallback, stated" || { bad "no key"; echo "$o"; }
+o=$(run UserPromptSubmit "$(Q 'hello there')"); has "$o" 'no group matched' && has "$o" 'via local-fallback (no-key)' && ok "no group: fallback still stated" || { bad "no group line"; echo "$o"; }
+o=$(jev ok "write a haiku about spring")
+has "$o" 'JEV route: L2 | tier claude-fable-5-1 | groups review/plan | try verify-before-done, writing-plans' && has "$o" 'via typesafe fake-jev-1.0 conf 0.90/0.90' && ok "FAKE ok: level and groups come from Jev, not the keywords" || { bad "jev ok"; echo "$o"; }
+has "$o" "$K" && bad "key in hook output" || ok "key not in hook output"
+o=$(jev low "write a haiku about spring"); has "$o" 'conf 0.40/0.30 LOW: check it' && ok "FAKE low confidence flagged" || { bad "low conf"; echo "$o"; }
+o=$(jev none "write a haiku about spring"); has "$o" 'JEV route: L0' && has "$o" 'no group matched' && has "$o" 'via typesafe' && ok "FAKE none_of_the_above -> no group" || { bad "none"; echo "$o"; }
+o=$(jev none "force push the rewritten branch"); has "$o" 'JEV route: L3' && has "$o" 'via typesafe' && ok "FAKE Jev says L0, code floor holds L3 on force push" || { bad "floor"; echo "$o"; }
+: > "$T/fake.log"
+o=$(jev ok 'review my key sk-abcdefghijklmnopqrstuvwxyz1234 with password=hunter2hunter2 token: ghp_abcdefghijklmnop1234 TYPESAFE_API_KEY=plainvalue1 mail jo.doe@example.com at postgres://bob:pw9x@db.example.com/x Bearer abcdefgh12345678') # gitleaks:allow (fake test string)
+for s in sk-abcdef hunter2 ghp_abc plainvalue1 jo.doe pw9x abcdefgh12345678; do grep -q -- "$s" "$T/fake.log" && { bad "secret left the phone: $s"; }; done
+grep -q 'REDACTED' "$T/fake.log" && grep -q 'review my key' "$T/fake.log" && ok "FAKE redacted before sending, rest of prompt kept" || bad "redaction"
+: > "$T/fake.log"; o=$(jev ok "$(py "print('start '+'word '*4000+'finish')")"); [ "$(py "import json;print(len(json.loads(json.loads(open('$T/fake.log').readline())['body'])['state']['task'])<8100)")" = True ] && grep -q 'finish' "$T/fake.log" && ok "FAKE long prompt cut to head and tail" || bad truncate
+for c in 401 403 422 429 500 529; do fb http$c http-$c; done
+fb garbage bad-response; fb unknown bad-response
+: > "$T/fake.log"; fb redirect http-302; [ "$(grep -c '"path"' "$T/fake.log")" = 1 ] && ok "FAKE redirect not followed: key sent once" || bad "redirect followed"
+S0=$(date +%s); fb slow timeout 0.5; S1=$(date +%s); [ $((S1-S0)) -le 2 ] && ok "FAKE timeout: hook back in $((S1-S0))s (fake sleeps 4)" || bad "hook waited $((S1-S0))s"
+o=$( ( export TYPESAFE_API_KEY=$K TYPESAFE_BASE_URL=http://127.0.0.1:9; run UserPromptSubmit "$(Q 'add tests')" ) ); has "$o" 'local-fallback (network)' && ok "connection refused -> local-fallback (network)" || { bad network; echo "$o"; }
+o=$( ( export TYPESAFE_API_KEY=$K TYPESAFE_BASE_URL=http://example.com; run UserPromptSubmit "$(Q 'add tests')" ) ); has "$o" 'local-fallback (bad-base-url)' && ok "plain http off-device refused" || { bad "http refused"; echo "$o"; }
+o=$( ( export TYPESAFE_API_KEY="abc def-LEAK"; run UserPromptSubmit "$(Q 'add tests')" ) ); has "$o" 'local-fallback (bad-key-format)' && ! has "$o" LEAK && ok "malformed key: reason only, key not quoted" || { bad "bad key"; echo "$o"; }
+o=$( ( export CLAUDE_PLUGIN_OPTION_TYPESAFE_API_KEY=$K TYPESAFE_BASE_URL="$U/ok"; run UserPromptSubmit "$(Q 'add tests')" ) ); has "$o" 'via typesafe' && ok "FAKE key from plugin config works" || { bad "plugin option key"; echo "$o"; }
+o=$( ( export CLAUDE_PLUGIN_OPTION_TYPESAFE_API_KEY='${user_config.typesafe_api_key}'; run UserPromptSubmit "$(Q 'add tests')" ) ); has "$o" 'local-fallback (no-key)' && ok "unfilled placeholder is no key" || { bad placeholder; echo "$o"; }
+mkdir -p "$T/.claude/state/off"; touch "$T/.claude/state/off/nvaex-jev-core.typesafe"; : > "$T/fake.log"
+o=$(jev ok "write a haiku about spring"); rm "$T/.claude/state/off/nvaex-jev-core.typesafe"; has "$o" 'local-fallback (typesafe-off)' && [ ! -s "$T/fake.log" ] && ok "off switch: nothing sent, stated" || { bad "off switch"; echo "$o"; }
+L="$T/.claude/state/nvaex-jev-core/route.jsonl"; [ -s "$L" ] && ! grep -q 'haiku' "$L" && py "import json;r=[json.loads(x) for x in open('$L')];assert {x['source'] for x in r}=={'typesafe','local-fallback'}" && ok "decision log has source, no prompt text" || bad "route log"
+# one router: hook and MCP tool agree, one tiers file, server has no rules of its own
+M(){ py "import json,sys;print(json.dumps({'jsonrpc':'2.0','id':1,'method':'tools/call','params':{'name':'jev.route_task','arguments':{'task':sys.argv[1]}}}))" "$1" | python3 -I "$2" | py "import json,sys;r=json.loads(json.loads(sys.stdin.read())['result']['content'][0]['text']);print(r['source'],r['error'],r['level'],'/'.join(r['groups']),r['tier']['model'])"; }
+SV="$R/mcp/jev-rea-mcp/server.py"
+o=$( ( export TYPESAFE_API_KEY=$K TYPESAFE_BASE_URL="$U/ok"; M "write a haiku about spring" "$SV" ) ); [ "$o" = "typesafe None 2 review/plan claude-fable-5-1" ] && ok "FAKE MCP route_task gives the hook's answer" || { bad "mcp jev"; echo "$o"; }
+o=$(M "fix the failing test then also review the diff" "$SV"); h=$(run UserPromptSubmit "$(Q 'fix the failing test then also review the diff')"); has "$h" "$(echo "$o" | awk '{print "JEV route: L"$3" | tier "$5" | groups "$4}')" && has "$o" 'local-fallback no-key' && ok "fallback: MCP and hook agree" || { bad "mcp fallback"; echo "$o"; echo "$h"; }
+[ "$(find "$R" -name tiers.json | wc -l | tr -d ' ')" = 1 ] && ok "one tiers.json" || bad "tiers copies"
+grep -qE 'L3 = |GROUPS = |def route\(|def tier_for|def taxonomy_match' "$SV" "$R/scripts/route.py" && bad "routing logic outside jev_route.py" || ok "routing logic only in jev_route.py"
+kill $FP 2>/dev/null
+# package alone: copied out of the tree (no sibling packages), .mcp.json command run as written, hook run, 5 tools listed
+A="$T/alone/nvaex-jev-core"; mkdir -p "$T/alone"; cp -r "$R" "$A"
+o=$(printf '%s\n' '{"jsonrpc":"2.0","id":1,"method":"tools/list"}' | py "
+import json,subprocess,sys
+m=json.load(open('$A/.mcp.json'))['mcpServers']['jev-rea-mcp']
+sub=lambda s:s.replace('\${CLAUDE_PLUGIN_ROOT}','$A')
+r=subprocess.run([m['command']]+[sub(a) for a in m['args']],stdin=sys.stdin,capture_output=True,text=True)
+print(len(json.loads(r.stdout)['result']['tools']))"); [ "$o" = 5 ] && ok "package alone: .mcp.json starts jev-rea-mcp, 5 tools" || { bad "mcp alone"; echo "$o"; }
+o=$(echo "{\"cwd\":\"$PRJ\",\"prompt\":\"add tests\"}" | CLAUDE_PLUGIN_ROOT="$A" python3 "$A/scripts/route.py"); has "$o" 'JEV route: L1' && ok "package alone: hook routes" || { bad "hook alone"; echo "$o"; }
+# groups.json names only skills that exist; the check itself fails on a bad name
+F="$(cd "$R/../.." && pwd)"
+if [ -d "$F/plugins" ] && [ -d "$F/mcp" ]; then
+  o=$(python3 "$R/tests/check_groups.py" "$R/skills/jev-router/groups.json" "$F") && ok "groups.json skills all exist: $o" || { bad "groups.json: $o"; }
+  py "import json;g=json.load(open('$R/skills/jev-router/groups.json'));g['groups']['device']['skills'].append('no-such-skill');json.dump(g,open('$T/g.json','w'))"
+  python3 "$R/tests/check_groups.py" "$T/g.json" "$F" >/dev/null && bad "check_groups passed a bad name" || ok "check_groups fails on a missing skill"
+else echo "SKIP groups.json check (not inside the frankenstein tree)"; fi
+# jev-rea-mcp server selftest
+sh "$R/mcp/jev-rea-mcp/tests/selftest.sh" > "$T/mcp.out" 2>&1 && ok "jev-rea-mcp selftest: $(grep -c '^PASS' "$T/mcp.out") checks" || { bad "jev-rea-mcp selftest"; cat "$T/mcp.out"; }
 rm -rf "$T"; [ $fail = 0 ] && echo "SELFTEST PASS" || echo "SELFTEST FAIL"; exit $fail

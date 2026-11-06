@@ -26,7 +26,7 @@
     "plan":       "architect",
     "memory":     "routine"
   },
-  "task_types_source": "keys are the groups in groups.json plus 'memory' (jev-rea-mcp built-in group); minimums assigned here from the same standing-order sizing and the FAST-TRACK Tier 1 (plan) / Tier 4 Builder (build) roles",
+  "task_types_source": "keys are the groups in groups.json; minimums assigned here from the same standing-order sizing and the FAST-TRACK Tier 1 (plan) / Tier 4 Builder (build) roles",
   "external_seats_not_routed": {
     "note": "FAST-TRACK Part B names four workflow seats that are not Claude model tiers; recorded for reference, never returned by routing",
     "seats": {

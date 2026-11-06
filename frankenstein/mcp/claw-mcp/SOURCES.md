@@ -16,6 +16,14 @@
 | skills/google-access | google-multi-account 0.7.0 (`~/.claude/plugins/synced/a5d13a90.../ba923796...`) design | 296KB | 1.3KB |
 | skills/gemini-genai | consensus idea | 128KB | 0.9KB |
 
+## Brought in from `~/.claude/skills` (own work, 2026-11-05), cleaned for a public repo
+| here | what was stripped |
+|---|---|
+| skills/android-termux-operator (SKILL.md, references/audio-pipeline.md) | device make and model; personal tablet and desktop layout; references to private tools and scripts (ccv, vv, speakd, speak, ~/bin, ~/models); ECC mentions; observation numbers; session anecdotes and dates; the operator's stated preferences. audio-pipeline.md was rewritten from 9.2KB to 4.2KB, keeping only Termux facts |
+| skills/termux-helper | private paths (~/.claude/NPU-ON-DEVICE.md, ~/tools/geniex-bench, vault and Documents paths, a model file path); the operator's Qwen model rule; the "Where This Lives" part; private project name in the port table. Kept: Aesop-Xi references, that repo is public |
+
+The two `~/.claude/skills` copies are unchanged and now differ from these. No secrets were found in either source. `tests/selftest.sh` fails if private path shapes come back.
+
 ## Written new
 `node/{server,cdp,drivers,md,wire,platform,listener,adb,crawl,video,google}.mjs` (Node built-ins only: fetch, WebSocket, child_process, net, tls, crypto), `tests/{selftest.sh,check.mjs,check2.mjs,live.mjs,fake-cdp.mjs,fake-adbd.mjs,fake-services.mjs}`, `bin/claw-mcp`, `workflows.json`, `kotlin/**` (kept as the later APK form; untested).
 
@@ -41,6 +49,6 @@ No code copied. `node/adb.mjs` is written from the public ADB wire protocol; no 
 Chrome DevTools toolkit: folded as claw.browser + skill. Playwright skills: folded as skill. Google API/MCP: folded as `claw.device action=google` (read, plus confirm-gated Drive create, Gmail draft, Calendar create; no send, delete or share) + rclone read-only. Proven only against a fake: no credentials, real Google untested. No OAuth flow built. Android: partly (above). Custom Tabs: not drivable, stated in skills/browser-cdp. GenAI toolkit: gemini via REST only.
 
 ## Missing (not on the phone, not invented)
-**AEsopXi-mobile-harness** (c10vis-poem fork of droidrun/mobile-harness, synced at 321868e, MIT): it is Markdown only. `skills/phone-control` trims its Android guide, recovery and credential guides; `skills/phone-control/cards/` copies the Chrome, Settings and Gmail cards. Not taken: the `mobilerun_core` Python client and Portal app (claw.device and the built-in ADB client do this job), iOS, cloud, the eBay card, the memory guide (nvaex-memory-vnext owns memory).
+**AEsopXi-mobile-harness** (c10vis-poem fork of droidrun/mobile-harness, synced at 321868e, MIT): it is Markdown only. `skills/phone-control` trims its Android guide, recovery and credential guides; `skills/phone-control/cards/` copies the Chrome, Settings and Gmail cards. Not taken: the `mobilerun_core` Python client and Portal app (claw.device and the built-in ADB client do this job), iOS, cloud, the eBay card, the memory guide (nvaex-memory owns memory).
 
 Goodbye-Termux-ADB, claude-android-skill, `Merovin-genai-for-developers-`, `NxAEx-gemini-skills` (find over ~/repos, ~/.claude/plugins, ~/local-plugins). Spec's "Device and browser toolkit architecture proposal.md" not read; tool arguments are my minimal design.

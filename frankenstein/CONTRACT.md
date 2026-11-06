@@ -11,7 +11,7 @@ NovAExopia/frankenstein/
   mcp/<server>/               (one MCP server per folder)
   marketplace.fragment.json   (entries the root .claude-plugin/marketplace.json includes)
 ```
-Packages: `plugins/nvaex-jev-core`, `plugins/nvaex-memory-vnext`, `plugins/nvaex-wiki-admin`, `plugins/nvaex-rea-forge`, `plugins/nvaex-burn`, `plugins/nvaex-ui-cockpit`. Servers: `mcp/claw-mcp`, `mcp/dumbass-memory-mcp`, `mcp/jev-rea-mcp`.
+Packages: `plugins/nvaex-jev-core`, `plugins/nvaex-memory`, `plugins/nvaex-wiki-admin`, `plugins/nvaex-rea-forge`, `plugins/nvaex-burn`, `plugins/nvaex-ui-cockpit`. Servers: `mcp/claw-mcp`, `mcp/dumbass-memory-mcp`. `jev-rea-mcp` lives inside its package at `plugins/nvaex-jev-core/mcp/jev-rea-mcp` and installs with it.
 
 ## Hot-swap rules (every package)
 1. **Self-contained.** Everything the package needs is inside its folder. Paths use `${CLAUDE_PLUGIN_ROOT}`. No package reads another package's files; shared code is only `frankenstein/shared/`, vendored into the package at build time by `bin/vendor-shared.sh` if needed.

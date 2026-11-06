@@ -24,6 +24,11 @@ export STUBPATH="$T/bin"
 rc=0
 node "$D/tests/check.mjs" "$D" "$T" </dev/null || rc=1
 node "$D/tests/check2.mjs" "$D" "$T" </dev/null || rc=1
+# skills imported from a private folder: frontmatter intact, nothing private in a public repo
+for n in android-termux-operator termux-helper; do
+  f="$D/skills/$n"
+  if head -3 "$f/SKILL.md" | grep -q "^name: $n$" && ! grep -rqiE 'razr|motorola|NovAEx|u0_a[0-9]|obs 00[0-9]|~/(repos|bin|tools|models|\.claude)|Documents/' "$f"; then echo "PASS [real] skill $n: frontmatter, no private paths"; else echo "FAIL skill $n"; rc=1; fi
+done
 # kill switch
 mkdir -p "$T/h/.claude/state/off"; : > "$T/h/.claude/state/off/claw-mcp"
 o="$(echo '{"jsonrpc":"2.0","id":1,"method":"tools/list"}' | HOME="$T/h" sh "$D/bin/claw-mcp")"; krc=$?
