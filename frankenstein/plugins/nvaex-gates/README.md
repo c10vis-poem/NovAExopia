@@ -10,7 +10,7 @@ The ten rules as one plugin, all on, on any device. `RULES.md` is the only rule 
 |---|---|
 | SessionStart (2) | session-start, observe-event |
 | UserPromptSubmit (2) | enforce-prompt, observe-event |
-| PreToolUse (9) | resume-gate, secret-guard, guard, push-gate, answer-gate, checkin-gate, repo-gate, task-gate, session-log |
+| PreToolUse (9) | direction-gate, secret-guard, guard, push-gate, answer-gate, repo-gate, task-gate, session-log |
 | PostToolUse (2) | session-log, task-gate |
 | PostToolUseFailure (1), PermissionDenied (1) | observe-event |
 | Stop (2) | stop-gate, answer-gate |
@@ -32,8 +32,7 @@ Logs: `~/.claude/state/hooks.log` (MISSING, ERROR, CRASH, TIMEOUT, LOOP-BREAKER,
 
 | Hook | Blocks |
 |---|---|
-| resume-gate | non-Read tools until this agent Read the RESUME.md for this repo (else the vault's), and again if its content changed |
-| checkin-gate | state-changing calls after RESUME is read, until the operator checks in |
+| direction-gate | every tool until the operator opens the job with `#`, okay or yes, except the opening reads, task-observer and asking |
 | secret-guard | Read or print of secret files; `--no-verify` and `core.hooksPath` changes |
 | guard | writes to `~/.claude/settings*.json`, `~/.claude.json`, enforcement state and the off switches; `gate off/on` by the agent; writing `disableAllHooks` true in any repo or starting a session with it |
 | answer-gate | a menu with a question that has no write-in option; ending on a "not found" claim with no search; ending on a yes/no or either/or question (phrase match; blocks once) |
@@ -61,8 +60,6 @@ Everything runs from the plugin root. The table names the checks inside the hook
 | Hook | Needs | Without it |
 |---|---|---|
 | all | `jq` | nothing runs, each event logs DEGRADE; `gate status` says MISSING jq |
-| resume-gate | a repo RESUME.md or a vault checkout | allows |
-| checkin-gate | a RESUME snapshot | not enforced (no snapshot, no check-in list) |
 | enforce-prompt | `read:` targets on phone paths (npu, naming, bench rows) | row dropped |
 | stop-gate | vault `skill-observations/`, gh | O5/W2/W6 reported as a NOTE, not a block |
 | housekeeping-check | vault PENDING.md | skipped |
@@ -92,8 +89,6 @@ branch-current.test.sh               4 passed   0 failed rc=0
 build-doc-gate.test.sh              15 passed   0 failed rc=0
 carryover.test.sh                   16 passed   0 failed rc=0
 change-log.test.sh                  22 passed   0 failed rc=0
-checkin-gate.test.sh                18 passed   0 failed rc=0
-checkin.test.sh                     19 passed   0 failed rc=0
 ci-ready.test.sh                     4 passed   0 failed rc=0
 cloud-run.test.sh                   13 passed   0 failed rc=0
 delegation-tripwire.test.sh          9 passed   0 failed rc=0
@@ -102,7 +97,6 @@ gitgate.test.sh                     17 passed   0 failed rc=0
 h7-mention.test.sh                   8 passed   0 failed rc=0
 housekeeping.test.sh                 6 passed   0 failed rc=0
 observe.test.sh                     35 passed   0 failed rc=0
-resume-gate.test.sh                 36 passed   0 failed rc=0
 settings-guard.test.sh              19 passed   0 failed rc=0
 ship-gaps.test.sh                   14 passed   0 failed rc=0
 staged-updates.test.sh               9 passed   0 failed rc=0

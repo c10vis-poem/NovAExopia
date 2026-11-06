@@ -2,7 +2,7 @@
 # H1 Stop gate. The turn cannot end while a required step of the session is missing. Two checklists:
 #
 # OPENING (every turn until the operator has checked in):
-#   O1 RESUME.md read (resume-gate snapshot)   O2 AGENTS.md of the repo read (when it exists)
+#   O1 session started (direction-gate marker)   O2 AGENTS.md of the repo read (when it exists)
 #   O3 PENDING.md read (repo, else vault)      O4 START HERE plan posted (resume-item plan)
 #   O5 task-observer loaded + session-start scan (when the vault's skill-observations exists)
 #   O6 operator checked in (/ok, /defer, /reject, /write) -- operator-only: blocks once, then yields

@@ -6,14 +6,14 @@
 # task-gate last of the blockers so it ticks a requirement only for a call that will run.
 SessionStart	*	session-start	20	-
 SessionStart	*	observe-event	10	-
+UserPromptSubmit	*	direction-gate	8	!
 UserPromptSubmit	*	enforce-prompt	10	-
 UserPromptSubmit	*	observe-event	10	-
-PreToolUse	*	resume-gate	8	#skip-resume
+PreToolUse	*	direction-gate	8	!
 PreToolUse	Bash|Read	secret-guard	8	#show-secret
 PreToolUse	Bash|Edit|Write	guard	8	!	\.claude|gate|nvaex-hooks|disableAllHooks
 PreToolUse	Bash	push-gate	40	#skip-git	push|gh
 PreToolUse	AskUserQuestion	answer-gate	8	#skip-answer
-PreToolUse	*	checkin-gate	8	#skip-checkin
 PreToolUse	Bash|Edit|Write|Read	repo-gate	70	#skip-repo
 PreToolUse	*	task-gate	8	#skip-enforce
 PreToolUse	Write|Edit|NotebookEdit|Bash	session-log	8	-

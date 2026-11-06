@@ -4,7 +4,7 @@
 in=$(cat); sid=$(jq -r '.session_id // "x"' <<<"$in") || exit 0
 st="$HOME/.claude/state"; req="$st/required-$sid.tsv"; done_="$st/satisfied-$sid.tsv"; log="$st/enforce-$sid.log"
 [ -s "$req" ] || exit 0
-[ -f "$st/resume-$sid.ok" ] || exit 0          # resume-gate goes first; no deadlock
+[ -f "$st/resume-$sid.ok" ] || exit 0          # direction-gate writes it at the first prompt
 tool=$(jq -r '.tool_name // ""' <<<"$in")
 [ "$tool" = ToolSearch ] && exit 0             # loading a tool is how a tool: row gets met
 skill=$(jq -r '.tool_input.skill // ""' <<<"$in")

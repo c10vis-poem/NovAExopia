@@ -21,7 +21,7 @@ chmod +x "$T/bin/gh"; export PATH="$T/bin:$PATH" GIT_ALLOW_PROTOCOL=file NVAEX_G
 export GIT_AUTHOR_NAME=t GIT_AUTHOR_EMAIL=t@e.invalid GIT_COMMITTER_NAME=t GIT_COMMITTER_EMAIL=t@e.invalid
 unset VAULT AESOP_VAULT RECAPS_DIR STATE_DIR CLAUDE_CODE_REMOTE AESOP_HOOK_TIMEOUT CLAUDE_CODE_SESSION_ID
 ROOT=$PKG; n=0
-fresh() { n=$((n+1)); export HOME=$T/h$n; mkdir -p "$HOME/.claude/state"; st=$HOME/.claude/state; unset VAULT; unset TERMUX_VERSION; off=$st/off; }
+fresh() { n=$((n+1)); export HOME=$T/h$n; mkdir -p "$HOME/.claude/state"; st=$HOME/.claude/state; unset VAULT; unset TERMUX_VERSION; off=$st/off; echo direction > "$st/job-S"; }
 # fire EVENT JSON: runs hooks.json's own command for EVENT; rc in $rc, stdout $T/out, stderr $T/err
 fire() {
   local c; c=$(jq -r --arg e "$1" '.hooks[$e][0].hooks[0].command' "$PKG/hooks/hooks.json")
@@ -29,23 +29,22 @@ fire() {
 }
 tool() { jq -nc --arg t "$1" --argjson i "$2" --arg c "${3:-$HOME}" '{session_id:"S",hook_event_name:"PreToolUse",cwd:$c,tool_name:$t,tool_input:$i,transcript_path:""}'; }
 post() { jq -nc --arg e "${4:-PostToolUse}" --arg t "$1" --argjson i "$2" --arg c "${3:-$HOME}" '{session_id:"S",hook_event_name:$e,cwd:$c,tool_name:$t,tool_input:$i}'; }
-ups() { fire UserPromptSubmit "$(jq -nc --arg p "$1" --arg c "$HOME" '{session_id:"S",hook_event_name:"UserPromptSubmit",prompt:$p,cwd:$c}')"; }
+ups() { fire UserPromptSubmit "$(jq -nc --arg p "$1" --arg c "$HOME" '{session_id:"S",hook_event_name:"UserPromptSubmit",prompt:$p,cwd:$c}')"; local r=$rc; echo direction > "$st/job-S"; rc=$r; }
 ev() { jq -nc --arg e "$1" --arg c "$HOME" '{session_id:"S",hook_event_name:$e,cwd:$c}'; }
 fired() { grep -c "FIRED $1 $2\$" "$st/hooks.log" 2>/dev/null; }
 
 # ---- one scenario per blocking hook: leaves E (event) and J (json) that must block --------------
-arm() { case $name in enforce-gate|task-gate) printf 'x\tskill: foo\tturn\n' > "$st/required-S.tsv" ;; esac; }
+arm() { case $name in enforce-gate|task-gate) printf 'x\tskill: foo\tturn\n' > "$st/required-S.tsv" ;; stop-gate) rm -f "$st/resume-S.ok" ;; esac; }
 scen() {
   name=$1; fresh; E=PreToolUse
   case $name in
-    resume-gate) export VAULT=$HOME/v; mkdir -p "$VAULT"; echo '# R 2026-11-05' > "$VAULT/RESUME.md"; J=$(tool Bash '{"command":"ls"}') ;;
+    direction-gate) rm -f "$st/job-S"; J=$(tool Bash '{"command":"ls"}') ;;
     secret-guard) J=$(tool Read '{"file_path":"/x/.env"}') ;;
     guard|settings-guard) J=$(tool Edit "$(jq -nc --arg f "$HOME/.claude/settings.json" '{file_path:$f}')") ;;
     state-guard) J=$(tool Write "$(jq -nc --arg f "$st/checkin-S" '{file_path:$f}')") ;;
     push-gate|git-gate) J=$(tool Bash '{"command":"git push origin x"}') ;;
     agent-type-gate) J=$(tool Agent '{"subagent_type":"Explore","prompt":"keep a progress file"}') ;;
     ci-ready) : > "$st/pushnow-S"; J=$(tool Bash '{"command":"gh pr merge 1 --auto --squash -R o/r"}') ;;
-    checkin-gate) echo x > "$st/resume-S.snap.md"; J=$(tool Edit '{"file_path":"/x/y.txt"}') ;;
     build-doc-gate) mkdir -p "$HOME/repos/bd"; git init -q "$HOME/repos/bd"; J=$(tool Bash '{"command":"make"}' "$HOME/repos/bd") ;;
     branch-current-gate) r=$HOME/bc; git init -q -b main "$r"
       ( cd "$r"; git commit -q --allow-empty -m 1; git commit -q --allow-empty -m 2; git update-ref refs/remotes/origin/main HEAD; git reset -q --hard HEAD~1
@@ -63,7 +62,7 @@ scen() {
       J=$(jq -nc --arg t "$HOME/a.jsonl" '{session_id:"S",hook_event_name:"SubagentStop",agent_transcript_path:$t}') ;;
   esac
 }
-BLOCKERS="resume-gate secret-guard guard push-gate checkin-gate repo-gate task-gate stop-gate answer-gate"
+BLOCKERS="direction-gate secret-guard guard push-gate repo-gate task-gate stop-gate answer-gate"
 CHECKS="state-guard ci-ready agent-type-gate build-doc-gate branch-current-gate menu-gate question-gate subagent-stop-gate"
 verb() { awk -F'\t' -v n="$1" '$3==n{print $5; exit}' "$PKG/scripts/gates.tsv"; }
 
@@ -160,7 +159,6 @@ scen git-gate; ups "fine"; jq -nc '{session_id:"S",hook_event_name:"UserPromptSu
 fire "$E" "$J"; ok "$rc" 2 "override inside a subagent hand-back does not count"
 for h in secret-guard guard state-guard; do scen "$h"; ups "go ahead, override"; fire "$E" "$J"; ok "$rc" 2 "phrases do not lift hard guard $h"; done
 fresh; ups "/ok"; ok "$rc" 0 "check-in prompt accepted"
-scen checkin-gate; printf '## START HERE\n1. a\n' > "$st/resume-S.snap.md"; ups "/ok 1"; fire "$E" "$J"; ok "$rc" 0 "check-in verb /ok opens checkin-gate"
 scen stop-gate; printf '' ; yes_ "rule 7 verb /wrapup-defer is parsed" '
   printf "## START HERE\n1. a\n" > "$st/resume-S.snap.md"; ups "/wrapup-defer 1 why: blocked upstream"; grep -q "deferred" "$st/confirm-S.tsv" && grep -q "blocked upstream" "$st/defer-why-S.tsv"'
 
@@ -182,25 +180,23 @@ ups "#hooks-on"; fire "$E" "$J"; ok "$rc" 2 "#hooks-on"
 : > "$off/other-pkg"; $G on all >/dev/null; yes_ "gate on all leaves other packages' switches alone" '[ -e "$off/other-pkg" ]'
 ok "$($G off nosuchhook 2>&1 >/dev/null | grep -c 'no hook named')" 1 "gate refuses an unknown hook name"
 ok "$($G status | grep -c '^on ')" "$(awk -F'\t' '!/^#/{print $3}' "$PKG/scripts/gates.tsv" | sort -u | wc -l | tr -d ' ')" "status lists every hook, all on, nothing starts off"
-for c in 'gate off resume-gate' "bash $PKG/bin/gate off all" 'touch ~/.nvaex-hooks-off' 'rm ~/.claude/state/off/resume-gate' 'rm ~/.claude/state/hooks-off'; do
+for c in 'gate off direction-gate' "bash $PKG/bin/gate off all" 'touch ~/.nvaex-hooks-off' 'rm ~/.claude/state/off/direction-gate' 'rm ~/.claude/state/hooks-off'; do
   fresh; fire PreToolUse "$(tool Bash "$(jq -nc --arg c "$c" '{command:$c}')")"; ok "$rc" 2 "the agent cannot run: ${c/$PKG/PKG}"
 done
 fresh; fire PreToolUse "$(tool Bash '{"command":"echo \"gate off x\""}')"; ok "$rc" 0 "quoted text about gate off is not a command"
 
 echo "--- no deadlock"
 for h in $BLOCKERS; do
-  case " secret-guard guard " in *" $h "*) continue ;; esac
+  case " secret-guard guard direction-gate " in *" $h "*) continue ;; esac
   scen "$h"; ups "work"; arm; fire "$E" "$J"; a=$rc; arm; fire "$E" "$J"; b=$rc; arm; fire "$E" "$J"; c=$rc
   ok "$a$b$c" 220 "$h: same call blocks twice, third yields"
   yes_ "$h: LOOP-BREAKER logged" 'grep -q "$h LOOP-BREAKER" "$st/hooks.log"'
   ups "next"; arm; fire "$E" "$J"; ok "$rc" 2 "$h: new turn, gate is back"
 done
-scen resume-gate; ups "work"; b=0; for i in 1 2 3 4 5 6 7 8 9 10 11 12; do fire PreToolUse "$(tool Bash "$(jq -nc --arg c "ls $i" '{command:$c}')")"; [ "$rc" = 2 ] && b=$((b+1)); done
-ok "$b" 6 "an agent that never reads RESUME: 12 different calls, 6 blocks, then the turn budget yields"
-fresh; export VAULT=$HOME/v; mkdir -p "$VAULT"; echo R > "$VAULT/RESUME.md"; ups "work"
-jq -c '.agent_id="ag1"' <<<"$(tool Bash '{"command":"ls"}')" >"$T/a1"; fire PreToolUse "$(tool Bash '{"command":"ls"}')"; fire PreToolUse "$(cat "$T/a1")"; ok "$rc" 2 "blocks count per agent, a subagent has its own budget"
-fire PreToolUse "$(tool Read "$(jq -nc --arg f "$VAULT/RESUME.md" '{file_path:$f}')")"; ok "$rc" 0 "Read is the way out, never blocked"
-fire PreToolUse "$(tool Bash '{"command":"ls"}')"; ok "$rc" 0 "after the Read the agent runs"
+scen direction-gate; b=0; for i in 1 2 3 4 5 6 7 8 9 10 11 12; do fire PreToolUse "$(tool Bash "$(jq -nc --arg c "ls $i" '{command:$c}')")"; [ "$rc" = 2 ] && b=$((b+1)); done
+ok "$b" 12 "Rule 1 holds: 12 different calls, 12 blocks, no loop breaker"
+fresh; export VAULT=$HOME/v; mkdir -p "$VAULT"; echo R > "$VAULT/RESUME.md"; rm -f "$st/job-S"
+fire PreToolUse "$(tool Read "$(jq -nc --arg f "$VAULT/RESUME.md" '{file_path:$f}')")"; ok "$rc" 0 "opening read allowed while closed"
 scen guard; for i in 1 2 3 4; do fire "$E" "$J"; done; ok "$rc" 2 "hard guard holds on the 4th identical try (retrying must not reach the operator's settings)"
 fire PreToolUse "$(tool Bash '{"command":"ls"}')"; ok "$rc" 0 "hard guard deadlocks nothing: the next call runs"
 scen stop-gate; for i in 1 2 3; do fire Stop "$J"; done; ok "$rc" 0 "stop-gate: a session can always end (third Stop yields)"
@@ -224,22 +220,22 @@ echo "--- cloud"
 cloud() { local c; c=$(jq -r --arg e "$1" '.hooks[$e][0].hooks[0].command' "$PKG/hooks/hooks.json"); env -u PREFIX CLAUDE_CODE_REMOTE=true CLAUDE_PLUGIN_ROOT=$PKG bash -c "$c" <<<"$2" >"$T/out" 2>"$T/err"; rc=$?; }
 fresh; bad=0
 cloud SessionStart "$(ev SessionStart)"; [ $rc = 0 ] || bad=1
-cloud UserPromptSubmit "$(jq -nc --arg c "$HOME" '{session_id:"S",hook_event_name:"UserPromptSubmit",prompt:"fix the npu and rename NvAEx",cwd:$c}')"; [ $rc = 0 ] || bad=2
+cloud UserPromptSubmit "$(jq -nc --arg c "$HOME" '{session_id:"S",hook_event_name:"UserPromptSubmit",prompt:"#fix the npu and rename NvAEx",cwd:$c}')"; [ $rc = 0 ] || bad=2
 : > "$st/resume-S.ok"
 cloud PreToolUse "$(tool Bash '{"command":"ls"}')"; [ $rc = 0 ] || { bad=3; cat "$T/err"; }
 cloud PreToolUse "$(tool Bash '{"command":"ls"}')"; [ $rc = 0 ] || { bad=4; cat "$T/err"; }
 cloud PreToolUse "$(tool Bash '{"command":"ls"}')"; [ $rc = 0 ] || { bad=5; cat "$T/err"; }
 r=$HOME/repos/sy; mkdir -p "$r"; git init -q "$r"; git -C "$r" remote add origin https://github.com/c10vis-poem/sy
-cloud PreToolUse "$(tool Read "$(jq -nc --arg f "$r/a" '{file_path:$f}')" "$r")"; [ $rc = 0 ] || bad=6
+cloud PreToolUse "$(tool Read "$(jq -nc --arg f "$r/a" '{file_path:$f}')" "$r")"; [ $rc = 0 ] || { bad=6; cat "$T/err"; }
 cloud PostToolUse "$(post Write '{"file_path":"/x/a"}')"; [ $rc = 0 ] || bad=7
-cloud Stop "$(ev Stop)"; [ $rc = 0 ] || bad=8
+cloud Stop "$(ev Stop)"; [ $rc = 0 ] || { bad=8; cat "$T/err"; }
 cloud PreCompact "$(ev PreCompact)"; [ $rc = 0 ] || bad=9
 cloud SessionEnd "$(ev SessionEnd)"; [ $rc = 0 ] || bad=10
 ok "$bad" 0 "cloud with no vault, no phone paths, no working gh: nothing blocks"
-for k in 'resume-gate: no RESUME' 'housekeeping-check' 'staged-updates' 'context-diff' 'enforce-prompt: row' 'sync-on-use: sy' 'archive-scratchpad'; do
+for k in 'housekeeping-check' 'staged-updates' 'context-diff' 'enforce-prompt: row' 'sync-on-use: sy' 'archive-scratchpad'; do
   yes_ "cloud degrade logged: $k" 'grep -q "DEGRADE $k" "$st/hooks.log"'
 done
-fresh; export VAULT=$HOME/v; mkdir -p "$VAULT"; echo R > "$VAULT/RESUME.md"; cloud PreToolUse "$(tool Bash '{"command":"ls"}')"; ok "$rc" 2 "cloud with a vault checkout: resume-gate still blocks"
+fresh; export VAULT=$HOME/v; mkdir -p "$VAULT"; echo R > "$VAULT/RESUME.md"; rm -f "$st/job-S"; cloud PreToolUse "$(tool Bash '{"command":"ls"}')"; ok "$rc" 2 "cloud: direction-gate still blocks"
 fresh; cloud PreToolUse "$(tool Bash '{"command":"git push origin x"}')"; ok "$rc" 2 "cloud: git-gate still blocks"
 
 echo "== $pass passed, $fail failed"; [ "$fail" -eq 0 ]

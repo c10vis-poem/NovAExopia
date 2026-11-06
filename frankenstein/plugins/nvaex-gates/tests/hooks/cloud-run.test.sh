@@ -11,7 +11,7 @@ ev=$(jq -nc --arg c "$repo" --arg t "$T/t.jsonl" '{session_id:"s1",transcript_pa
 RH=$HOOKS/run-gate.sh
 run() { env -u PREFIX HOME="$T" "$@" bash "$RH" "$H" <<<"$ev" 2>"$T/err"; }
 
-for H in resume-gate git-gate; do
+for H in direction-gate git-gate; do
   rm -rf "$T/.claude/state"
   run CLAUDE_CODE_REMOTE=true >/dev/null; check "cloud: $H still blocks" '[ $? -eq 2 ]'
   rm -rf "$T/.claude/state"
