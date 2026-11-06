@@ -61,7 +61,7 @@ fi
 
 # "Rewritten" = RESUME.md's top 40 lines carry today's date (WRAP-UP requires a dated rewrite);
 # mtime alone is unreliable (GitSync conflict handling touches the file).
-# Content check (mtime is unreliable on shared storage): differs from the hash resume-gate stored at session start.
+# Content check (mtime is unreliable on shared storage): differs from the hash direction-gate stored at session start.
 base=$(cat "$STATE_DIR/resume-$sid.ok" 2>/dev/null)
 if [ -n "$base" ] && [ "$(sha256sum "$VAULT/RESUME.md" | cut -d' ' -f1)" != "$base" ] && head -40 "$VAULT/RESUME.md" 2>/dev/null | grep -q "$(date +%F)"; then resume=rewritten; flag=ok
 else resume="NOT REWRITTEN"; flag="missing ${sid:0:8} $date"; fi

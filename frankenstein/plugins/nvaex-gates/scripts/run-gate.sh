@@ -19,7 +19,7 @@
 here=$(cd "$(dirname "$(realpath "${BASH_SOURCE[0]}")")" && pwd); root=${here%/*}; pkg=nvaex-gates
 sh "$here/killswitch.sh" "$pkg" 2>/dev/null && exit 0
 st=${STATE_DIR:-$HOME/.claude/state}; off=$HOME/.claude/state/off; mkdir -p "$st" "$off" 2>/dev/null
-table=$here/gates.tsv; hard=" secret-guard guard "
+table=$here/gates.tsv; hard=" secret-guard guard direction-gate "
 log() { printf '%s %s\n' "$(date '+%F %T')" "$*" >> "$st/hooks.log" 2>/dev/null; }
 
 event=; if [ "$1" = --event ]; then event=$2; shift 2; else one=${1%.sh}; shift; fi

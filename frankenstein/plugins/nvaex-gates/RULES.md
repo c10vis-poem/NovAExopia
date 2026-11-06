@@ -8,8 +8,8 @@ Every hook serves a rule, and runs through `scripts/run-gate.sh`; `scripts/gates
 
 | # | Rule | Hooks that enforce it | Override | Revoke |
 |---|------|-----------------------|----------|--------|
-| 1 | Read RESUME.md before any other tool runs | resume-gate | `#skip-resume` | `gate off resume-gate` |
-| 2 | No state change before the operator checks in: `/ok`, `/ok 1-4`, `/defer N`, `/reject N`, `/write N text` | checkin-gate; enforce-prompt records the check-in | any check-in verb, or `#skip-checkin` | `gate off checkin-gate`, `gate off enforce-prompt` |
+| 1 | No actions, no reading, no tool use without explicit permission or direction. A `#` message is a direction; okay or yes opens the job; one opening covers the whole job. Inference is not an okay. Once directed, what the job requires gets done first | direction-gate | operator's `#`, okay or yes | `gate off direction-gate` |
+| 2 | No state change before check-in: answer is okay, amend or override | direction-gate | okay, override or `#` | `gate off direction-gate`, `gate off enforce-prompt` |
 | 3 | Secrets never printed unredacted; git hooks never skipped | secret-guard | `#show-secret <path>` for one call | `gate off secret-guard` |
 | 4 | The agent cannot edit settings, enforcement state or the off switches, cannot run `gate off/on`, and cannot set `disableAllHooks` true in any repo | guard | none for the agent; the operator uses a `!` line | `gate off guard` |
 | 5 | Questions: every menu has a write-in option; no turn ends on a yes/no or either/or question | answer-gate | `#skip-answer` | `gate off answer-gate` |
@@ -25,8 +25,7 @@ Each is one switch. Some run several checks, which stay as separate files in `sc
 
 | Hook | Runs | What it does |
 |---|---|---|
-| resume-gate | itself | RESUME.md read first |
-| checkin-gate | itself | no changes until the operator checks in |
+| direction-gate | itself | Rules 1 and 2 |
 | enforce-prompt | itself, classify | records check-ins and what each prompt requires |
 | secret-guard | itself | no secrets printed, no skipped git hooks |
 | guard | settings-guard, state-guard | settings, state and switches off limits |
@@ -65,4 +64,4 @@ Not wired, not a hook on any event:
 
 ## obs 0051, fixed
 
-resume-gate looped when subagents ran in other repos. It now keeps one record per agent and per RESUME path, compares content hashes, and never blocks Read. `tests/hooks/resume-gate.test.sh` runs 40 interleaved calls across three agents and three repos with no block.
+direction-gate replaced resume-gate and checkin-gate on 2026-11-06. It is a hard block with no loop breaker: `tests/hooks/direction-gate.test.sh`.
