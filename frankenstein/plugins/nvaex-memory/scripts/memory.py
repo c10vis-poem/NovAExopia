@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-"""nvaex-memory: snapshot | freeze | task | nudge | recap | export | map | lint. stdlib only, fail-open, no daemons."""
+"""nvaex-memory: snapshot | freeze | task | nudge | recap | export | map | lint. stdlib only, fail-open, no daemons.
+The single source of this logic: hooks run it directly, the memory.* MCP tools (mcp/dumbass-memory-mcp) call it."""
 import hashlib, json, os, re, subprocess, sys, time
 from fnmatch import fnmatch
 from datetime import datetime
@@ -269,6 +270,7 @@ def export_chat():
     out.chmod(0o600)
     for old in sorted(out.parent.glob("*.txt"), key=lambda p: p.stat().st_mtime)[:-20]:
         old.unlink()
+    return out
 
 
 def rollup():
@@ -327,6 +329,7 @@ def recap():
         f.write(json.dumps({"ts": now.isoformat(timespec="seconds"), "session": sid, "project": proj,
                             "layer": "episodic", "file": day.name, "prompts": len(prompts),
                             "autoPromote": False}) + "\n")  # promotion to MEMORY.md is the auditor's job, never ours
+    return day
 
 
 # ---- create-smartfolder: tiered MAP.md routers -------------------------------------------
@@ -375,11 +378,16 @@ def mapgen(argv):
 
 def main():
     cmd, rest = (sys.argv[1] if len(sys.argv) > 1 else ""), sys.argv[2:]
+    report = "--report" in rest  # MCP tool mode: say what was written, and errors are errors (hooks stay silent, fail open)
     try:
         if cmd == "snapshot": snapshot()
         elif cmd == "nudge": nudge()
-        elif cmd == "recap": recap(); rollup()
-        elif cmd == "export": export_chat()
+        elif cmd == "recap":
+            day = recap(); rollup()
+            if report: print(json.dumps({"written": str(day) if day else None}))
+        elif cmd == "export":
+            out = export_chat()
+            if report: print(json.dumps({"written": str(out) if out else None}))
         elif cmd == "task": task(rest)
         elif cmd == "freeze": freeze(rest)
         elif cmd == "map": mapgen(rest)
@@ -396,7 +404,7 @@ def main():
             (state_root() / "errors.log").open("a").write(f"{time.time()} {cmd}: {e!r}\n")
         except Exception:
             pass
-        if cmd in ("freeze", "map", "lint", "task"):
+        if report or cmd in ("freeze", "map", "lint", "task"):
             print("error:", e, file=sys.stderr)
             sys.exit(1)
 

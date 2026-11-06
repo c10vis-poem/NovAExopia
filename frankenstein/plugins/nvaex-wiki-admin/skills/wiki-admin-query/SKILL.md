@@ -1,6 +1,6 @@
 ---
 name: wiki-admin-query
-description: Answer a question from the corpus wiki using only wiki pages, with every claim cited. Use when the operator asks "what do we know about X", "where is Y decided", or any question the wiki should answer. Read-only on the wiki; the answer is saved for review, not filed as truth.
+description: Answer from wiki pages only, with every claim cited. Use for 'what do we know about X' or 'where is Y decided'.
 ---
 
 # wiki-admin query

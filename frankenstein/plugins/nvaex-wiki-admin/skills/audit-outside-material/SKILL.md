@@ -1,6 +1,6 @@
 ---
 name: audit-outside-material
-description: Audit outside material (video, article, repo, post, docs, transcript) that recommends changes to an agent setup (skills, plugins, MCP, permissions, models) before touching anything. Read-only until the user names a specific proposal; every change is backed up and reversible. Not for ordinary coding.
+description: Audit outside material (video, article, repo, docs) that recommends agent-setup changes. Read-only until a proposal.
 ---
 
 # Audit outside material (trimmed agent-ingest-audit-optimize)

@@ -1,6 +1,6 @@
 ---
 name: workstream
-description: Park ideas and keep per-workstream notes in plain markdown under NvAEx-Recaps/memory/workstreams/. Use when the user says "park this", "add a workstream", "what was open on X", or wants to save a thought without ending the session.
+description: Park ideas and keep per-workstream notes in NvAEx-Recaps. Use on 'park this', 'add a workstream', 'what was open on X'.
 ---
 Folded from memory-toolkit 1.9.13 (workstream, park, handoff text); its 37KB memory.js is not included. Plain files, no daemon.
 

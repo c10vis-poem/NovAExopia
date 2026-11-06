@@ -1,6 +1,6 @@
 ---
 name: browser-cdp
-description: Drive the phone's Chrome through claw.browser (CDP over adb forward). Use for reading pages, clicking, typing, waiting, accessibility snapshots, and logged-in sites via the operator's own Chrome session.
+description: "Drive the phone's Chrome via claw.browser (CDP): read pages, click, type, snapshots, logged-in sites."
 ---
 Distilled from chrome-devtools-mcp (`skills/chrome-devtools`, `docs/debugging-android.md`) and playwright-mcp (snapshot-first, wait-before-act). No server or bundled browser.
 

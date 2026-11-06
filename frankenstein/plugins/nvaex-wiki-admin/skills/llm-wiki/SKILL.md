@@ -1,6 +1,6 @@
 ---
 name: llm-wiki
-description: Trimmed llm-wiki toolset for a Markdown wiki: section-level search (BM25), structural lint, stats, and evolve (propose, evaluate, apply, roll back evidence-linked improvements). Use for "search the wiki", "lint the wiki", "wiki stats", "wiki evolve".
+description: "Wiki toolset: BM25 section search, structural lint, stats, evolve. Use for 'search the wiki', 'lint the wiki', stats."
 ---
 
 # llm-wiki (trimmed)

@@ -1,6 +1,6 @@
 ---
 name: vault-skill-factory
-description: Turn a cluster of mature, curated wiki pages into a reviewable Agent Skill package (SKILL.md plus references/). Use when verified wiki knowledge should become a reusable skill. Reads the wiki, writes only to a review directory, never installs.
+description: Turn mature curated wiki pages into a reviewable Agent Skill package. Writes only to a review directory; never installs.
 ---
 
 # Vault skill factory (trimmed obsidian-wiki skill)

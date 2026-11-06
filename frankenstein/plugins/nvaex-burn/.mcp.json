@@ -1,0 +1,1 @@
+{"mcpServers":{"burn-mcp":{"command":"python3","args":["-I","${CLAUDE_PLUGIN_ROOT}/mcp/burn-mcp/server.py"]}}}

@@ -1,6 +1,6 @@
 ---
 name: peer-sessions
-description: Use to see other live Claude Code sessions on this device, to message one, or to debate with another agent (Claude, Gemini) through a shared file.
+description: List other live Claude Code sessions, message one, or debate with another agent through a shared file.
 ---
 # Peer sessions
 

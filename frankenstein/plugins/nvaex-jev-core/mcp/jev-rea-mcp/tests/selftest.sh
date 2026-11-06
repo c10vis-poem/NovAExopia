@@ -1,7 +1,7 @@
 #!/usr/bin/env sh
 # Real stdio round trip against server.py. Exit 0 only if every check passes.
 D=$(cd "$(dirname "$0")/.." && pwd)
-export JEV_JOBS_DIR="${TMPDIR:-/tmp}/jev-rea-selftest-$$"; unset JEV_AG_BRIDGE_URL TYPESAFE_API_KEY CLAUDE_PLUGIN_OPTION_TYPESAFE_API_KEY TYPESAFE_BASE_URL
+unset TYPESAFE_API_KEY CLAUDE_PLUGIN_OPTION_TYPESAFE_API_KEY TYPESAFE_BASE_URL
 # jev.remember data dir: tilde form under an isolated HOME proves expansion; cwd is an empty dir to prove nothing lands there
 TH="${TMPDIR:-/tmp}/jev-rea-home-$$"; mkdir -p "$TH/cwd"; export HOME="$TH"; export JEV_MEMORY_DIR="~/mem-test"; cd "$TH/cwd"
 python3 -B -I -c "import sys;sys.path.insert(0,'$D');import server" || { echo "FAIL import"; exit 1; }
@@ -19,8 +19,6 @@ OUT=$(printf '%s\n' \
  '{"jsonrpc":"2.0","id":2,"method":"tools/list"}' \
  '{"jsonrpc":"2.0","id":3,"method":"tools/call","params":{"name":"jev.route_task","arguments":{"task":"delete old branches across all repos and force push"}}}' \
  '{"jsonrpc":"2.0","id":4,"method":"tools/call","params":{"name":"jev.audit_gate","arguments":{"gate":"1","evidence":{"goal":"x"}}}}' \
- '{"jsonrpc":"2.0","id":5,"method":"tools/call","params":{"name":"rea.inspect_target","arguments":{"path":"'"$D"'"}}}' \
- '{"jsonrpc":"2.0","id":6,"method":"tools/call","params":{"name":"ag.cloud_dispatch","arguments":{"job":"demo","send":true}}}' \
  '{"jsonrpc":"2.0","id":7,"method":"tools/call","params":{"name":"jev.remember","arguments":{"action":"recall","query":"sqlite"}}}' \
  '{"jsonrpc":"2.0","id":8,"method":"tools/call","params":{"name":"jev.remember","arguments":{"action":"add","text":"State store is sqlite, not postgres. api_key=abc123SECRET","tags":["db","Storage"],"project":"demo"}}}' \
  '{"jsonrpc":"2.0","id":9,"method":"tools/call","params":{"name":"jev.remember","arguments":{"action":"add","text":"State store is sqlite, not postgres. api_key=abc123SECRET","tags":["db"],"project":"demo"}}}' \
@@ -41,15 +39,11 @@ ok = []
 def chk(n, c): ok.append(c); print(("PASS " if c else "FAIL ") + n)
 chk("initialize", r[1]["result"]["serverInfo"]["name"] == "jev-rea-mcp")
 names = sorted(t["name"] for t in r[2]["result"]["tools"])
-chk("tools/list 5 tools", names == ["ag.cloud_dispatch","jev.audit_gate","jev.remember","jev.route_task","rea.inspect_target"])
+chk("tools/list: the 3 jev.* tools only", names == ["jev.audit_gate","jev.remember","jev.route_task"])
 chk("route_task L3", txt(3)["level"] == 3)
 chk("route_task states its source and reason", txt(3)["source"] == "local-fallback" and txt(3)["error"] == "no-key")
 g = txt(4)["gates"][0]
 chk("audit_gate incomplete, non-blocking", g["status"] == "incomplete" and txt(4)["blocking"] is False)
-i = txt(5)
-chk("inspect_target read-only sees server.py", i["read_only"] and "server.py" in i["entrypoints"] + i["manifests"] + [""] or i["files_scanned"] > 0)
-d = txt(6)
-chk("cloud_dispatch writes job, does not send", d["sent"] is False and os.path.isfile(d["job_file"]))
 chk("route_task L3 -> fable tier", txt(3)["tier"]["model"] == "claude-fable-5-1")
 chk("route_task plan -> fable", txt(15)["tier"]["model"] == "claude-fable-5-1")
 chk("remember: recall on empty store is empty", txt(7)["count"] == 0)
@@ -67,6 +61,6 @@ chk("remember: file mode 0600, one line per add", oct(os.stat(a["path"]).st_mode
 chk("remember: nothing written to cwd", os.listdir(os.getcwd()) == [])
 sys.exit(0 if all(ok) else 1)
 '; RC=$?
-rm -rf "$JEV_JOBS_DIR" "$TH"
+rm -rf "$TH"
 [ -n "$S" ] && echo "round-trip ms: $(( (E_-S)/1000000 ))"
 [ $RC -eq 0 ] && echo "SELFTEST OK" || echo "SELFTEST FAILED"; exit $RC

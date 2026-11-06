@@ -1,0 +1,13 @@
+{
+ "package": "nvaex-gates",
+ "skills": [
+  {
+   "id": "gates",
+   "path": "skills/gates/SKILL.md",
+   "kind": "skill",
+   "purpose": "Handle an nvaex-gates block. Use when a tool call or Stop returns BLOCKED, or for questions on rules, overrides, status.",
+   "triggers": [],
+   "tools": []
+  }
+ ]
+}

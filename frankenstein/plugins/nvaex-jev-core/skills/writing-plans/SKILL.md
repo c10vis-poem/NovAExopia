@@ -1,6 +1,6 @@
 ---
 name: writing-plans
-description: Use when a spec or requirement spans several steps, before touching code. Produces a task-by-task plan another engineer or agent can execute.
+description: Use when a spec spans several steps, before touching code. Writes a task-by-task plan another agent can execute.
 ---
 # Writing plans
 

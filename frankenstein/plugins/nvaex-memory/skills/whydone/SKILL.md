@@ -1,6 +1,6 @@
 ---
 name: whydone
-description: Log what was done and why as a repo-committed decision entry in .whydone/. Use when the user asks to log the session, or when the Stop nudge "whydone: ... no .whydone entry today" appears. Never log on your own initiative otherwise.
+description: Log what was done and why in .whydone/. Use when asked to log the session or when the Stop nudge reports no entry today.
 ---
 Write one file `.whydone/<YYYYMMDD>-<slug>.md` (flat path; slug ASCII kebab-case, max ~50 chars). Format follows whydone SCHEMA v1:
 

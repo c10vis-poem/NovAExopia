@@ -1,0 +1,101 @@
+{
+ "package": "nvaex-memory",
+ "skills": [
+  {
+   "id": "anchor-memory",
+   "path": "skills/anchor-memory/SKILL.md",
+   "kind": "skill",
+   "purpose": "Lint memory ledgers (decisions.md, FACTS.md) for DRIFT, BROKEN, DANGLING, DUPLICATE. Use when writing a durable fact.",
+   "triggers": [],
+   "tools": [
+    "memory.lint"
+   ]
+  },
+  {
+   "id": "ccfind",
+   "path": "skills/ccfind/SKILL.md",
+   "kind": "skill",
+   "purpose": "Search past Claude Code sessions by keyword (local BM25). Use for 'did we do X before' or context from earlier sessions.",
+   "triggers": [],
+   "tools": []
+  },
+  {
+   "id": "continuity",
+   "path": "skills/continuity/SKILL.md",
+   "kind": "skill",
+   "purpose": "Session snapshot, claim freezing and task state injected at SessionStart. Use /nvaex-memory:freeze to lock a claim.",
+   "triggers": [],
+   "tools": [
+    "memory.freeze",
+    "memory.snapshot",
+    "memory.task"
+   ]
+  },
+  {
+   "id": "create-smartfolder",
+   "path": "skills/create-smartfolder/SKILL.md",
+   "kind": "skill",
+   "purpose": "Generate tiered MAP.md routers for a folder tree. Use when a directory is large or poorly navigable.",
+   "triggers": [],
+   "tools": [
+    "memory.map"
+   ]
+  },
+  {
+   "id": "cut-weight",
+   "path": "skills/cut-weight/SKILL.md",
+   "kind": "skill",
+   "purpose": "Archive repo residue (old plans, audits, duplicate docs, scratch), never delete. Use for repo bloat or folder cleanup.",
+   "triggers": [],
+   "tools": []
+  },
+  {
+   "id": "handoff",
+   "path": "skills/handoff/SKILL.md",
+   "kind": "skill",
+   "purpose": "Write or refresh the git branch's handoff note. Use when finishing work, before ending a session, or on /handoff.",
+   "triggers": [],
+   "tools": []
+  },
+  {
+   "id": "memory-agent",
+   "path": "skills/memory-agent/SKILL.md",
+   "kind": "skill",
+   "purpose": "Explain or review the daily episodic recap written at SessionEnd to NvAEx-Recaps/memory before promoting to MEMORY.md.",
+   "triggers": [],
+   "tools": []
+  },
+  {
+   "id": "memory-bank",
+   "path": "skills/memory-bank/SKILL.md",
+   "kind": "skill",
+   "purpose": "Maintain the six-file memory-bank/ folder. Use on 'initialize/update/read memory bank' or when a repo has memory-bank/.",
+   "triggers": [],
+   "tools": []
+  },
+  {
+   "id": "patterns",
+   "path": "skills/patterns/SKILL.md",
+   "kind": "skill",
+   "purpose": "Find recurring patterns in recent sessions; propose captures (rule, note, fix). Use on /patterns or 'keeps coming up'.",
+   "triggers": [],
+   "tools": []
+  },
+  {
+   "id": "whydone",
+   "path": "skills/whydone/SKILL.md",
+   "kind": "skill",
+   "purpose": "Log what was done and why in .whydone/. Use when asked to log the session or when the Stop nudge reports no entry today.",
+   "triggers": [],
+   "tools": []
+  },
+  {
+   "id": "workstream",
+   "path": "skills/workstream/SKILL.md",
+   "kind": "skill",
+   "purpose": "Park ideas and keep per-workstream notes in NvAEx-Recaps. Use on 'park this', 'add a workstream', 'what was open on X'.",
+   "triggers": [],
+   "tools": []
+  }
+ ]
+}

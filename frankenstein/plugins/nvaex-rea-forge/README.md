@@ -3,7 +3,7 @@ Fork harvester and packager. Parts folded from stock plugins (see SOURCES.md), n
 
 | piece | does |
 |---|---|
-| `/rea-harvest <repo> [--crg]` (`scripts/harvest.py`) | Python AST scan, optional Tree-sitter graph via `code-review-graph`; writes `CAPABILITY_CARD.json`, picks a packaging gate (skill / cli-wrap / mcp-core) |
+| `/rea-harvest <repo> [--crg]` (`scripts/harvest.py`) | Python AST scan plus the required Tree-sitter graph via `code-review-graph` (fails if missing); writes `CAPABILITY_CARD.json`, picks a packaging gate (skill / cli-wrap / mcp-core) |
 | `scripts/wrap.py` | harvested CLI entrypoint -> shell shim + SKILL.md |
 | `mcp2cli` skill + `scripts/mcp2cli.py` | MCP stdio server -> shell CLI + SKILL.md (stdlib, per-call server, nothing left running) |
 | `rea-review` skill + `adversarial-reviewer` agent + `quote_check.py` | blind drafts, vote baseline, only verbatim quotes verified `v` move the verdict (from colosseum) |
@@ -11,23 +11,25 @@ Fork harvester and packager. Parts folded from stock plugins (see SOURCES.md), n
 | `code-map` skill | data.json -> self-contained HTML architecture map |
 | `mindmap` skill + `check.py` | input -> Markmap `.md`, validated |
 | `code-archaeologist`, `integration-verifier` agents | adversarial strip loop |
+| `mcp/rea-mcp` (`.mcp.json`) | MCP server, one tool: `rea.inspect_target`, a read-only repo or folder summary (extensions, manifests, entrypoints, sensitive-looking filenames, git HEAD). Runs `scripts/inspect_target.py`. This is a static summary, not the real REA suite (`~/repos/NvAEx-rea`) |
 
 ## Swap
 ```
 claude plugin enable  nvaex-rea-forge@novaexopia
 claude plugin disable nvaex-rea-forge@novaexopia
 ```
-Self-contained, stdlib Python 3 plus Node built-ins, no network, no daemons.
+Self-contained, stdlib Python 3 plus Node built-ins, no network, no daemons. The server starts with the plugin and stops with the session.
 
 ## Hooks / kill switch
-None registered, so nothing to kill-switch: every script runs only when invoked and never writes into the target repo.
+None registered, so nothing to kill-switch; disabling the plugin stops the server: every script runs only when invoked and never writes into the target repo.
 
 ## Use
 ```
-python3 scripts/harvest.py <repo> --out /tmp/x [--crg]
+python3 scripts/harvest.py <repo> --out /tmp/x
 python3 scripts/wrap.py /tmp/x/CAPABILITY_CARD.json [--index N] [--bin-dir DIR]
 python3 scripts/mcp2cli.py gen <name> <outdir> <server cmd...>
 python3 scripts/upstream.py init|next|prune <fork> ...
+python3 scripts/inspect_target.py <dir>
 ```
 
 ## Not done
@@ -47,7 +49,8 @@ PASS upstream-sync
 PASS mcp2cli
 PASS mindmap
 PASS code-map
-INFO crg backend: code-review-graph
+ok code-review-graph required
+PASS rea-mcp selftest: 8 checks
 SELFTEST PASS
 ```
 

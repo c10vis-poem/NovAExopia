@@ -1,10 +1,10 @@
 ---
 name: jev-router
-description: Two-stage skill router plus per-project decision memory. Use at the start of a multi-step task to pick a domain group and then 1-2 skills, and honor the "JEV route:", "DECISIONS:" and "RULE" lines the UserPromptSubmit hook injects.
+description: "Read and honor TypeSafe Jev routing. Use at the start of a multi-step task and on JEV route:, DECISIONS: and RULE lines."
 ---
 # JEV router (System 1)
 
-Stage 1: up to 3 groups from `groups.json` (this folder). Stage 2: at most 2 skills inside them. Never more.
+Jev is the router and orchestrates the task audit layer; this skill only explains its output and decides nothing. Each prompt, Jev reads every package's generated `skills.json` outside your context, and the `JEV route:` line names every skill it picked, plus the groups that set the model tier (`groups.json`, this folder). With no index it lists every skill in the picked groups. There is no cap on groups or skills: load what the task needs from that list.
 
 Level and groups come from TypeSafe Jev, or from the keyword rules when Jev is unavailable. The `JEV route:` line ends with which: `via typesafe <model> conf <level>/<group>` or `via local-fallback (<reason>)`. `LOW: check it` means Jev was unsure. The MCP tool `jev.route_task` gives the same answer as JSON. `rm -rf`, force push and similar shapes hold L3 whatever Jev says.
 

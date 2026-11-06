@@ -24,6 +24,7 @@ export STUBPATH="$T/bin"
 rc=0
 node "$D/tests/check.mjs" "$D" "$T" </dev/null || rc=1
 node "$D/tests/check2.mjs" "$D" "$T" </dev/null || rc=1
+python3 -I "$D/tests/google_oauth_fake.py" >/dev/null && echo "PASS google-setup: fake OAuth flow" || { echo "FAIL google-setup fake OAuth flow"; rc=1; }
 # skills imported from a private folder: frontmatter intact, nothing private in a public repo
 for n in android-termux-operator termux-helper; do
   f="$D/skills/$n"

@@ -71,4 +71,7 @@ unset BURN_USAGE_FILE; usage 10 50 60; cp "$T/usage.json" "$BURN_STATE/usage.jso
 [ ! -d "$R/commands" ] && ! grep -rqi 'heavy-usage/usage-live' "$R/scripts"; ok "no stale heavy-usage path" $? 0
 [ -s "$R/licenses/notify.LICENSE" ]; ok "notify LICENSE kept" $? 0
 python3 -c "import json;json.load(open('$R/hooks/hooks.json'));json.load(open('$R/.claude-plugin/plugin.json'))"; ok "manifests parse" $? 0
+# MCP server, real stdio round trip (runs in its own temp state)
+bash "$R/mcp/burn-mcp/tests/selftest.sh" > "$T/mcp.out" 2>&1; r=$?; ok "burn-mcp selftest: $(grep -c '^PASS' "$T/mcp.out") checks" $r 0; [ $r = 0 ] || cat "$T/mcp.out"
+python3 -c "import json;assert list(json.load(open('$R/.mcp.json'))['mcpServers'])==['burn-mcp']"; ok ".mcp.json names burn-mcp" $? 0
 [ "$fail" = 0 ] && echo "SELFTEST PASS" || { echo "SELFTEST FAIL"; exit 1; }

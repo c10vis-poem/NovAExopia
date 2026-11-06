@@ -179,7 +179,7 @@ Sizes are bytes of files in the worktree today. "Whole" = copied verbatim per SO
 - **nvaex-burn** (76KB, 10 files): `burn.py` 7.7KB is a rewrite, nothing copied. Inert: `usage-live.json` source (heavy-usage statusLine) is not wired and heavy-usage is removed. See Conflicts 1.
 - **claw-mcp** (99KB): `claw.search` not implemented; CDP websocket actions not implemented; infer = openrouter only; Kotlin jar untested; no video, no crawl. Both python and kotlin ship (two implementations of the same tools).
 - **dumbass-memory-mcp** (47KB): Supabase/OB1 mirror not built; graphify reads JSON not the spec's sqlite.
-- **jev-rea-mcp** (43KB): taxonomy CSV, ag-bridge.sh, wiki-task-auditor not present; static inspect only.
+- **jev-rea-mcp** (43KB): taxonomy CSV, ag-bridge.sh, wiki-task-auditor not present; static inspect only. (Since 2026-11-06 inspect lives in `nvaex-rea-forge` `rea-mcp` and cloud dispatch in `nvaex-burn` `burn-mcp`.)
 
 ## Conflicts with the brief and with CONTRACT.md
 

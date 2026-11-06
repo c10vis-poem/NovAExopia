@@ -1,6 +1,6 @@
 ---
 name: backlog
-description: Use to keep a task list that survives sessions: add tasks, see what is next, mark progress, and hand off to the next session.
+description: "Keep a task list that survives sessions: add tasks, see what is next, mark progress, hand off to the next session."
 ---
 # Backlog
 

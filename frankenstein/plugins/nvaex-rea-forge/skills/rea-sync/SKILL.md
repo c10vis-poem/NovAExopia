@@ -1,6 +1,6 @@
 ---
 name: rea-sync
-description: Merge a new upstream release into a customized fork and re-apply local intent. Use when upstream tagged a release and the fork carries local SKILL.md changes.
+description: Merge a new upstream release into a customized fork and re-apply local intent. Use after upstream tags a release.
 ---
 # rea-sync (from turbocharge sync-plugin-customizations, trimmed)
 

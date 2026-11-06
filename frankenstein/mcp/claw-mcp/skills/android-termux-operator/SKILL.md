@@ -1,6 +1,6 @@
 ---
 name: android-termux-operator
-description: Use for any Android, native Termux, Termux:X11, DroidDesk, Proot Debian, ADB, shared storage, remote-control, audio/TTS, or device bootstrap task. Requires explicit operator approval before any state-changing action.
+description: Android, Termux, Termux:X11, Proot, ADB, shared storage, audio or bootstrap work; operator approves state changes.
 ---
 
 # Android Termux Operator

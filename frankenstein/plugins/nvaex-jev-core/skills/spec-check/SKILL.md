@@ -1,6 +1,6 @@
 ---
 name: spec-check
-description: Use at the start of a coding task to capture requirements, and whenever you are about to say done, to compare what was built against them.
+description: Capture requirements at the start of a coding task and compare built work against them before saying done.
 ---
 # Spec check (requirements versus built)
 

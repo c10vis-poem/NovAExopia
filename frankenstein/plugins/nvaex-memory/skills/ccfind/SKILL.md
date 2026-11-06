@@ -1,6 +1,6 @@
 ---
 name: ccfind
-description: Search past Claude Code sessions by keyword (local BM25, no network). Use when the user asks "did we do X before", "find the session where...", or needs context from an earlier conversation.
+description: Search past Claude Code sessions by keyword (local BM25). Use for 'did we do X before' or context from earlier sessions.
 ---
 Trimmed fold of ccfind 0.19.0 (index, search, show, stats; the install/open/pick TUI/bench commands were dropped).
 

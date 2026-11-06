@@ -1,6 +1,6 @@
 # Parked: emptied 2026-11-05
 
-Everything that was parked from `nvaex-ops` has been rebuilt as our own code and the parked copies were removed. Nothing remains here.
+Everything that was parked from `nvaex-ops` has been rebuilt as our own code and the parked copies were removed. Nothing remains here except `dumbass-memory-mcp.plugin.json`, added 2026-11-06: the manifest from when that server was its own plugin. The server now ships inside `nvaex-memory`, so nothing reads this file.
 
 | was parked | now |
 |---|---|

@@ -1,6 +1,6 @@
 ---
 name: rea-review
-description: Adversarial review of a contested claim or a fork-strip decision. Use when a fact, a "is X safe to strip", or a design choice needs several independent reviewers and only verified verbatim quotes may move the verdict.
+description: Adversarial multi-reviewer check of a contested claim or fork-strip decision; only verified quotes move the verdict.
 ---
 # rea-review (from colosseum, trimmed)
 

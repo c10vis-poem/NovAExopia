@@ -126,9 +126,17 @@ const js=s.match(/<script>([\s\S]*)<\/script>/)[1];new Function(js);
 if(!js.includes('\"id\":\"n1\"'))throw 'data missing'" || die code-map-render
 ok code-map
 
-# optional code-review-graph backend
-if command -v code-review-graph >/dev/null 2>&1; then
-  python3 "$R/scripts/harvest.py" "$F" --out "$T/out2" --crg >/dev/null || die crg
-  echo "INFO crg backend: $(python3 -c "import json;print(json.load(open('$T/out2/CAPABILITY_CARD.json'))['ast'].get('backend'))")"
+# code-review-graph is required: harvest must use it, and must fail without it
+command -v code-review-graph >/dev/null 2>&1 || die "crg-missing"
+python3 "$R/scripts/harvest.py" "$F" --out "$T/out2" >/dev/null || die crg
+[ "$(python3 -c "import json;print(json.load(open('$T/out2/CAPABILITY_CARD.json'))['ast'].get('backend'))")" = "code-review-graph" ] || die crg-backend
+if PATH="/usr/bin:/bin" sh -c 'command -v code-review-graph' >/dev/null 2>&1; then :; else
+  PATH="/usr/bin:/bin" "$(command -v python3)" "$R/scripts/harvest.py" "$F" --out "$T/out3" >/dev/null 2>&1 && die crg-should-fail
 fi
+echo "ok code-review-graph required"
+
+# rea-mcp server, real stdio round trip
+sh "$R/mcp/rea-mcp/tests/selftest.sh" > "$T/mcp.out" 2>&1 || { cat "$T/mcp.out"; die rea-mcp; }
+python3 -c "import json;assert list(json.load(open('$R/.mcp.json'))['mcpServers'])==['rea-mcp']" || die mcp-json
+ok "rea-mcp selftest: $(grep -c '^PASS' "$T/mcp.out") checks"
 echo "SELFTEST PASS"

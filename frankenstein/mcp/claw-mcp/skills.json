@@ -1,0 +1,83 @@
+{
+ "package": "claw-mcp",
+ "skills": [
+  {
+   "id": "android-adb",
+   "path": "skills/android-adb/SKILL.md",
+   "kind": "skill",
+   "purpose": "Control the phone via claw.device: Termux:API and adb (tap, shell, install, screenshot). Use when touching the phone.",
+   "triggers": [],
+   "tools": [
+    "claw.device"
+   ]
+  },
+  {
+   "id": "android-termux-operator",
+   "path": "skills/android-termux-operator/SKILL.md",
+   "kind": "skill",
+   "purpose": "Android, Termux, Termux:X11, Proot, ADB, shared storage, audio or bootstrap work; operator approves state changes.",
+   "triggers": [],
+   "tools": []
+  },
+  {
+   "id": "browser-cdp",
+   "path": "skills/browser-cdp/SKILL.md",
+   "kind": "skill",
+   "purpose": "Drive the phone's Chrome via claw.browser (CDP): read pages, click, type, snapshots, logged-in sites.",
+   "triggers": [],
+   "tools": [
+    "claw.browser",
+    "claw.scrape"
+   ]
+  },
+  {
+   "id": "gemini-genai",
+   "path": "skills/gemini-genai/SKILL.md",
+   "kind": "skill",
+   "purpose": "Call Gemini or OpenRouter models via claw.infer. Use for a second opinion, cross-model checks and bulk drafting.",
+   "triggers": [],
+   "tools": [
+    "claw.infer"
+   ]
+  },
+  {
+   "id": "google-access",
+   "path": "skills/google-access/SKILL.md",
+   "kind": "skill",
+   "purpose": "Read Drive, Gmail and Calendar for either Google account via claw.device or rclone. Use when a task needs Google data.",
+   "triggers": [],
+   "tools": [
+    "claw.device"
+   ]
+  },
+  {
+   "id": "google-setup",
+   "path": "skills/google-setup/SKILL.md",
+   "kind": "skill",
+   "purpose": "Set up, add or re-authorize a Google account for claw-mcp. Use on no credentials, Insufficient Permission, bad token.",
+   "triggers": [],
+   "tools": [
+    "claw.device"
+   ],
+   "user_only": true
+  },
+  {
+   "id": "phone-control",
+   "path": "skills/phone-control/SKILL.md",
+   "kind": "skill",
+   "purpose": "Operate the phone screen via claw.device: observe, act once, verify; stop at login or payment. Use to drive apps.",
+   "triggers": [],
+   "tools": [
+    "claw.device"
+   ]
+  },
+  {
+   "id": "termux-helper",
+   "path": "skills/termux-helper/SKILL.md",
+   "kind": "skill",
+   "purpose": "Termux on-device AI stack: llamad, aesopd bridge, termux-services, wake-lock, voice, NPU/HTP. Use for Termux work.",
+   "triggers": [],
+   "tools": []
+  }
+ ]
+}

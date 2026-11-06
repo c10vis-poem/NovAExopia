@@ -1,15 +1,12 @@
 #!/usr/bin/env python3
-"""jev-rea-mcp: stdlib stdio MCP server, 5 tools. Newline-delimited JSON-RPC."""
-import json, os, re, sys, time, urllib.request, uuid
+"""jev-rea-mcp: stdlib stdio MCP server, 3 jev.* tools. Newline-delimited JSON-RPC."""
+import json, os, re, sys, time, uuid
 
 NAME, VERSION, PROTO = "jev-rea-mcp", "0.2.0", "2024-11-05"
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.dont_write_bytecode = True
 sys.path.insert(0, os.path.normpath(os.path.join(HERE, "../../scripts")))
 import jev_route  # the one router, shared with the hook
-HOME = os.path.expanduser("~")
-JOBS = os.environ.get("JEV_JOBS_DIR") or os.path.join(HOME, ".claude/state/jev-rea-mcp/jobs")
-BRIDGE = os.environ.get("JEV_AG_BRIDGE_URL", "")
 ROUTE_TIMEOUT = 6.0  # a tool call can wait longer than a per-prompt hook
 
 # ---- jev.remember: local project memory (replaces the jevmem CLI; no network, no key) ----
@@ -96,56 +93,6 @@ def audit(gate, evidence):
     return {"gates": out, "blocking": False,
             "note": "Checklist only; never blocks. Missing fields are what the agent still owes."}
 
-SKIP = {".git", "node_modules", "__pycache__", ".venv", "dist", "build", ".gradle"}
-MANIFESTS = ["package.json", "pyproject.toml", "setup.py", "Cargo.toml", "go.mod", "build.gradle",
-             "build.gradle.kts", "AndroidManifest.xml", "Makefile", "Dockerfile", "plugin.json", "SKILL.md", "server.json"]
-def inspect(path, max_files=5000):
-    root = os.path.realpath(os.path.expanduser(path))
-    if not os.path.isdir(root): return {"error": "not a directory: " + root}
-    exts, manifests, entry, flags, n = {}, [], [], [], 0
-    for d, dirs, files in os.walk(root):
-        dirs[:] = [x for x in dirs if x not in SKIP]
-        for f in files:
-            n += 1
-            if n > max_files: break
-            rel = os.path.relpath(os.path.join(d, f), root)
-            e = os.path.splitext(f)[1].lower() or f
-            exts[e] = exts.get(e, 0) + 1
-            if f in MANIFESTS and rel.count(os.sep) <= 2: manifests.append(rel)
-            if re.match(r"(main|index|server|cli|app)\.\w+$", f) and rel.count(os.sep) <= 2: entry.append(rel)
-            if re.search(r"(\.env|id_rsa|\.pem|secret|credential)", f.lower()): flags.append(rel)
-        if n > max_files: break
-    head = ""
-    for r in ("README.md", "readme.md"):
-        try:
-            head = open(os.path.join(root, r), encoding="utf-8", errors="replace").read(600); break
-        except OSError: pass
-    git = None
-    try: git = open(os.path.join(root, ".git/HEAD")).read().strip()
-    except OSError: pass
-    return {"path": root, "files_scanned": min(n, max_files), "truncated": n > max_files,
-            "top_extensions": dict(sorted(exts.items(), key=lambda kv: -kv[1])[:10]),
-            "manifests": manifests[:20], "entrypoints": entry[:20], "sensitive_looking_files": flags[:20],
-            "git_head": git, "readme_head": head, "read_only": True}
-
-def dispatch(job, payload, target, send):
-    os.makedirs(JOBS, exist_ok=True)
-    jid = time.strftime("%Y%m%dT%H%M%S-") + uuid.uuid4().hex[:6]
-    rec = {"id": jid, "created": time.strftime("%Y-%m-%dT%H:%M:%S%z"), "job": job,
-           "target": target or "antigravity", "payload": payload, "sent": False}
-    p = os.path.join(JOBS, jid + ".json")
-    with open(p, "w") as f: json.dump(rec, f, indent=1)
-    res = {"job_file": p, "sent": False, "bridge_configured": bool(BRIDGE)}
-    if send and BRIDGE:
-        try:
-            rq = urllib.request.Request(BRIDGE, json.dumps(rec).encode(), {"Content-Type": "application/json"})
-            with urllib.request.urlopen(rq, timeout=15) as r: res.update(sent=True, http=r.status)
-        except Exception as e:
-            res["send_error"] = str(e)
-    elif send:
-        res["note"] = "send requested but JEV_AG_BRIDGE_URL not set; job file only"
-    return res
-
 S = lambda **p: {"type": "object", "properties": p}
 TOOLS = [
     ("jev.route_task", "Classify a task into JEV level L0-L3, domain groups and model tier with TypeSafe Jev; keyword rules if Jev is unavailable. source says which (typesafe or local-fallback), error says why.",
@@ -153,11 +100,6 @@ TOOLS = [
     ("jev.audit_gate", "5-gate task audit checklist (non-blocking). Pass evidence to see which fields are still missing.",
      S(gate={"type": ["string", "integer"], "description": "1-5 or all"}, evidence={"type": "object"}),
      lambda a: audit(a.get("gate"), a.get("evidence") or {})),
-    ("rea.inspect_target", "Read-only inspection of a repo/dir: extensions, manifests, entrypoints, sensitive-looking files.",
-     {**S(path={"type": "string"}), "required": ["path"]}, lambda a: inspect(a["path"])),
-    ("ag.cloud_dispatch", "Write a job file for cloud work. Only POSTs if JEV_AG_BRIDGE_URL is set AND send=true.",
-     {**S(job={"type": "string"}, payload={"type": "object"}, target={"type": "string"}, send={"type": "boolean"}), "required": ["job"]},
-     lambda a: dispatch(a["job"], a.get("payload"), a.get("target"), bool(a.get("send")))),
     ("jev.remember", "Local project memory (no network). action=add stores text with optional tags/project; action=recall returns the best matches for query/tags/project. Data dir: $JEV_MEMORY_DIR, default ~/.nvaex/jev-memory.",
      {**S(action={"type": "string", "enum": ["add", "recall"]}, text={"type": "string", "description": "add: the memory (max 2000 chars; secret shapes are redacted)"},
           tags={"type": "array", "items": {"type": "string"}}, project={"type": "string", "description": "optional scope; recall filters to it when given"},

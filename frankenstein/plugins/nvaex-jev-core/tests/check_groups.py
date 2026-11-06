@@ -7,7 +7,7 @@ groups, root = sys.argv[1], sys.argv[2]
 have = set()
 for top in ("plugins", "mcp"):
     for d, _, files in os.walk(os.path.join(root, top)):
-        if "SKILL.md" in files and "skills" in d.split(os.sep):
+        if "SKILL.md" in files and any(x == "skills" or x.startswith("skills-") for x in d.split(os.sep)):
             have.add(os.path.basename(d))
             m = re.search(r"^name:\s*(\S+)\s*$", open(os.path.join(d, "SKILL.md"), encoding="utf-8").read(), re.M)
             if m:

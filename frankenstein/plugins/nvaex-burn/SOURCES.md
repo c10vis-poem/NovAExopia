@@ -13,7 +13,14 @@ No upstream file was copied verbatim. Logic and constants were re-derived (not c
 
 Dropped on purpose: the 5-agent planner, quotes/toasts/mod UI (burn-baby-burn), statusLine chaining and sweep engine/scouts (heavy-usage), the `wake.ts` limit-reset scheduler, Slack/Teams/Lark/Telegram/desktop channels (notify), all `.tsx` mod code.
 
+## Moved in from this repo
+| Path here | From | Note |
+|---|---|---|
+| scripts/cloud_dispatch.py | `nvaex-jev-core/mcp/jev-rea-mcp/server.py` `dispatch()` (spec "ag.cloud_dispatch") | moved, env names and default job folder changed |
+| mcp/burn-mcp/ | written here | custom-first; no donor code |
+
 ## Missing
+- ag-bridge.sh (Antigravity GCP Cloud Run bridge): not found. `ag.cloud_dispatch` only writes job files unless `AG_BRIDGE_URL` is set.
 - `Claude-Trinity` / `code-janitor` cleanup recipes: not found on the phone (searched ~/.claude/plugins/{synced,cache,store}, ~/local-plugins, ~/repos by name). Not invented. Queue jobs can call any command, so a janitor sweep can be added as a queue line once the part exists.
 - `NovAExorpus/burn-queue.md`: does not exist yet on the device (probed the vault path). The reader treats a missing queue as empty.
 - A live usage source: `~/.claude/state/nvaex-burn/usage.json` is absent (the operator's custom usage display will write it). Status reports `unknown` and nothing burns until a source exists.

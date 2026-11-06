@@ -1,6 +1,6 @@
 ---
 name: simplify-process
-description: Use when producing a doc, plan, spec, PRD or tooling around work. Stops invented process, gates, metrics and repeat reviews nobody asked for.
+description: Use when producing a doc, plan, spec, PRD or tooling. Stops invented process, gates and reviews nobody asked for.
 ---
 # Simplify the process
 

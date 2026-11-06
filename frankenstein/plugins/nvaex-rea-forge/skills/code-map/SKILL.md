@@ -1,6 +1,6 @@
 ---
 name: code-map
-description: Generate an interactive, self-contained HTML map of a codebase — a pan/zoom node graph with a detail panel, search, layer filters, flow walkthroughs, and matrices, with every node cited to real files. Use when exploring or documenting a codebase's architecture, onboarding to an unfamiliar system, or explaining one specific pipeline / business-logic flow end to end. Two modes — architecture (whole system) and flow (one path).
+description: Generate an interactive HTML map of a codebase (node graph, search, cited files). Use to explore or document a codebase.
 allowed-tools: Bash(node *), Glob, Grep, Read, Write
 argument-hint: "[architecture | flow <topic>]"
 ---

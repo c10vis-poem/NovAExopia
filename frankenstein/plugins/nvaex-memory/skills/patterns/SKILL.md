@@ -1,6 +1,6 @@
 ---
 name: patterns
-description: Find recurring patterns in recent sessions (repeated corrections, long routine tasks, dead-end recoveries, non-obvious discoveries) and PROPOSE captures: a CLAUDE.md rule, a note, or a skill fix. Use on /patterns or when the user says "this keeps coming up". Never writes without approval.
+description: Find recurring patterns in recent sessions; propose captures (rule, note, fix). Use on /patterns or 'keeps coming up'.
 ---
 Folded from claude-patterns 1.0.0 (Instinct Engine). The vault prefs interview, journal reads and install-ping are dropped.
 

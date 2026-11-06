@@ -1,6 +1,6 @@
 ---
 name: delegate
-description: Use when Claude plans and reviews while outside coding agents (Codex, Gemini, cloud sessions) implement, or when coordinating several workers on one repo.
+description: Plan and review while outside coding agents (Codex, Gemini, cloud) implement. Use when coordinating workers on one repo.
 ---
 # Delegate to outside executors
 

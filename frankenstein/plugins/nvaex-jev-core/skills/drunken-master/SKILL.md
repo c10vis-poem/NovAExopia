@@ -1,6 +1,6 @@
 ---
 name: drunken-master
-description: Recover what the user meant when a message arrived garbled (speech-to-text, autocorrect, swipe typing, OCR, wrong keyboard layout) or dictated with fillers. Use when a word does not fit its neighbours, sounds like a project term ("sever" for server, "Jane" for Jev), is a nonsense cluster, or the sentence makes sense after swapping 1-3 words, even if the user never mentions typos.
+description: Repair garbled or dictated messages (speech-to-text, autocorrect, typos, fillers) and read back before acting.
 ---
 # Drunken master: Stage 0 readback
 

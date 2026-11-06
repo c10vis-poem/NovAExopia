@@ -1,6 +1,6 @@
 ---
 name: corpus-batch-processing
-description: Orchestrator+subagent workflow for converting a repo's raw/ dump into clean_md/ at scale. Use whenever a repo's raw/ folder has more source files than one agent should process serially (roughly 20+) inside project NovÆxorpus. Trigger on "process raw", "convert the dump", "run phase 1 on <repo>", or "clean up the raw sources for <repo>".
+description: Convert a repo's raw/ dump into clean_md/ with orchestrator and subagents. Use for 20+ files or 'process raw'.
 ---
 
 # Corpus Batch Processing (Phase 1: raw/ → clean_md/ + tools/)

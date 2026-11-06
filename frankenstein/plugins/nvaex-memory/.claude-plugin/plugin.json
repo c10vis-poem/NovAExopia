@@ -1,7 +1,7 @@
 {
   "name": "nvaex-memory",
-  "version": "0.2.0",
-  "description": "Unified memory-as-skill: anchor drift linter, continuity snapshot + task state + /freeze, branch handoff notes, nudge-only whydone, daily+weekly recap to NvAEx-Recaps, pre-compact transcript export, ccfind, MAP.md routers, cut-weight, memory-bank, patterns, workstreams. No daemons.",
+  "version": "0.3.0",
+  "description": "Unified memory-as-skill: anchor drift linter, continuity snapshot + task state + /freeze, branch handoff notes, nudge-only whydone, daily+weekly recap to NvAEx-Recaps, pre-compact transcript export, ccfind, MAP.md routers, cut-weight, memory-bank, patterns, workstreams. Memory server dumbass-memory-mcp (12 memory.* tools). No daemons.",
   "author": {
     "name": "The Builder"
   },

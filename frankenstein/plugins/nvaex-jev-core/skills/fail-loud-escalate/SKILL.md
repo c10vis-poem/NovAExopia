@@ -1,6 +1,6 @@
 ---
 name: fail-loud-escalate
-description: Use when writing error handling, fallbacks or retries, and when repeated attempts at the same problem keep failing without new evidence.
+description: Use when writing error handling, fallbacks or retries, or when repeated attempts keep failing without new evidence.
 ---
 # Fail loud, escalate don't thrash
 

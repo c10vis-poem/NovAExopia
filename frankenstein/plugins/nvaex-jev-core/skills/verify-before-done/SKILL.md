@@ -1,6 +1,6 @@
 ---
 name: verify-before-done
-description: Use before claiming work is done, fixed, passing, merged or relaying a subagent's success. Evidence first, from a command run this turn.
+description: Use before claiming work is done, fixed, passing or merged, or relaying a subagent's success. Run a command first.
 ---
 # Verify before done
 

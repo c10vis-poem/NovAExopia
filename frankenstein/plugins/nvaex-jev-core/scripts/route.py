@@ -30,10 +30,10 @@ if R["source"] == "typesafe":
     c = R["confidence"]
     via = f"via typesafe {R['jev_model']} conf {c['level']:.2f}/{c['group']:.2f}" + (" LOW: check it" if R["gated"] == "escalate" else "")
 else:
-    via = f"via local-fallback ({R['error']})"
+    via = f"via local-fallback ({R['error']})" + (" CONFIG FAULT: fix the Jev key or request, this is not Jev being unsure" if R["config_fault"] else "")
 gates = " | L2+: run the task-auditor gates" if lvl >= 2 else ""
-if top:
-    out.append(f"JEV route: L{lvl}{tier_s} | groups {'/'.join(top)} | try {', '.join(R['skills'])}{gates} | {via}")
+if top or R["skills"]:
+    out.append(f"JEV route: L{lvl}{tier_s} | groups {'/'.join(top) or 'none'} | try {', '.join(R['skills'])}{gates} | {via}")
 else:
     out.append(f"JEV route: L{lvl}{tier_s} | no group matched{gates} | {via}")
 

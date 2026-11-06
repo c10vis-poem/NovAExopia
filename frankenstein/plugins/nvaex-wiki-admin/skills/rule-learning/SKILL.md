@@ -1,6 +1,6 @@
 ---
 name: rule-learning
-description: Capture a behavioural rule from a user correction, with the user's approval, as a staged skill. Use when the user corrected your approach and the correction generalizes to a class of future requests ("no, search the web first when I ask for the latest version"). Also on "remember this rule" / "save this as a skill". Never saves without an explicit yes.
+description: Capture a behavioural rule from a user correction, with approval, as a staged skill. Use when a correction generalizes.
 ---
 
 # Rule learning (approval-gated)

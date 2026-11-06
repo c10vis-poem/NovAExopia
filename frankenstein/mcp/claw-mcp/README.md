@@ -13,9 +13,12 @@ Node.js stdio server (`node/`, built-ins only, Node 22+; phone has v26). `kotlin
 | `claw.infer` | openrouter or gemini (keys from env) |
 | `claw.workflows` | named tool sequences from `workflows.json`; a CHOICE pauses the sequence |
 
-Skills in `skills/`: browser-cdp, android-adb, google-access, gemini-genai, phone-control, termux-helper, android-termux-operator (with `references/audio-pipeline.md`).
+Skills in `skills/`: browser-cdp, android-adb, google-access, google-setup, gemini-genai, phone-control, termux-helper, android-termux-operator (with `references/audio-pipeline.md`).
 
 Logged-in sites: sign in yourself in the phone's Chrome; claw drives that tab and never handles passwords.
+
+## Chrome DevTools toolkit (`bin/chrome-devtools`)
+Second server in this package: the operator's fork `NvAEx-chrome-devtools-mcp`, 32 tools (console, network, performance traces, Lighthouse, screenshots, emulation). Connects to Chrome on `127.0.0.1:$CDP_PORT`; never launches its own browser. Fork path: `CLAW_DEVTOOLS_DIR`. Tools listed over stdio on 2026-11-06; not yet run against real Chrome.
 
 ## Platform layer (`node/platform.mjs`)
 One interface, `{name, available(), has(op), call(op, args)}`, two backends, chosen at runtime per call. `termux` runs Termux:API binaries. `aesc` forwards to the Aesc daemon once it has connected and registered its ops. Default prefers aesc for the ops it registered, then termux; if the daemon disconnects, the next call falls back. `CLAW_PLATFORM=termux|aesc` forces one, and then there is no silent fallback. `claw.device action=platform` shows who serves what. Outside tools (adb, rclone, yt-dlp, getprop) go the same way: Aesc registers `exec:<tool>` and serves `device/exec {cmd, args, ms}`. Search, scrape, crawl and browser are plain network calls from the server, so they need no backend. The server itself still needs a Node runtime, which Aesc must supply, or the Kotlin form must catch up (`kotlin/` has none of the newer tools).
@@ -58,7 +61,7 @@ Local REST route for Drive, Gmail and Calendar. One file per account, `$CLAW_GOO
 
 Writes are only Drive create, Gmail draft and Calendar create (no invitations), and each needs `confirm=true`. **Nothing sends mail, deletes or shares**, so the claude.ai connectors still cover those. All server output, errors included, passes through a redactor that knows every value read from a token file. `CLAW_GOOGLE_BASE` (tests) accepts only `http://127.0.0.1`, so an env var cannot send tokens elsewhere.
 
-Getting the token files is not done here and no OAuth flow is built: it needs an OAuth client and the operator's consent for each account.
+Getting the token files: the `google-setup` skill runs a loopback OAuth flow (`scripts/google_oauth.py`). It needs an OAuth client and the operator's consent for each account, and has only run against a fake token endpoint.
 
 ## Swap in / out
 Add to a repo's `.mcp.json` (swap out = delete the entry or `claude mcp remove claw`):

@@ -1,0 +1,26 @@
+{
+ "package": "nvaex-burn",
+ "skills": [
+  {
+   "id": "burn",
+   "path": "skills/burn/SKILL.md",
+   "kind": "skill",
+   "purpose": "Check or drive the usage pacer. Use for usage headroom, burn mode, brake mode, the burn queue or cache keep-alive.",
+   "triggers": [],
+   "tools": [
+    "burn.keepalive",
+    "burn.notify",
+    "burn.py",
+    "burn.status"
+   ]
+  },
+  {
+   "id": "sweep",
+   "path": "skills/sweep/SKILL.md",
+   "kind": "skill",
+   "purpose": "Checkpoint session state before a usage limit hits. Use when nvaex-burn reports BRAKE or on /nvaex-burn:sweep.",
+   "triggers": [],
+   "tools": []
+  }
+ ]
+}

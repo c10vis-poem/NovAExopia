@@ -1,6 +1,6 @@
 ---
 name: wiki-admin-lint
-description: Health check and promotion gate for the corpus wiki and the 01-inbox staging folder. Use before any promotion, after an ingest batch, or when the operator asks "check the wiki". Deterministic checks first (script), semantic checks second; never edits pages, only reports.
+description: Health check and promotion gate for the wiki and 01-inbox. Use before promotion, after ingest, or 'check the wiki'.
 ---
 
 # wiki-admin lint (and the cross-audit gate)

@@ -1,6 +1,6 @@
 ---
 name: obsidian-notes
-description: Check that a folder of Markdown is a valid, linked Obsidian vault that also renders on GitHub: lint broken/mis-cased/ambiguous links, orphans, duplicate basenames, missing indexes, bad frontmatter; write missing INDEX.md; convert wikilinks to relative links. Use for "is this a valid vault", "link these notes", "make an index". Operates on a folder you name, never on the live vault unless told.
+description: Lint a Markdown folder as an Obsidian vault, write INDEX.md, convert wikilinks. Use for 'valid vault', 'link notes'.
 ---
 
 # obsidian-notes (trimmed: lint + fixes only)

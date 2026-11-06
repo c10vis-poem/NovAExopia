@@ -1,0 +1,66 @@
+{
+ "package": "nvaex-rea-forge",
+ "skills": [
+  {
+   "id": "code-map",
+   "path": "skills/code-map/SKILL.md",
+   "kind": "skill",
+   "purpose": "Generate an interactive HTML map of a codebase (node graph, search, cited files). Use to explore or document a codebase.",
+   "triggers": [],
+   "tools": []
+  },
+  {
+   "id": "mcp2cli",
+   "path": "skills/mcp2cli/SKILL.md",
+   "kind": "skill",
+   "purpose": "Turn an MCP stdio server into a shell CLI plus a small SKILL.md to save context. Use for rarely used stateless servers.",
+   "triggers": [],
+   "tools": []
+  },
+  {
+   "id": "mindmap",
+   "path": "skills/mindmap/SKILL.md",
+   "kind": "skill",
+   "purpose": "Turn a file, text or topic into a Markmap mindmap .md. Use on /mindmap or for a quick visual outline.",
+   "triggers": [],
+   "tools": [
+    "claw.scrape"
+   ]
+  },
+  {
+   "id": "rea-customize",
+   "path": "skills/rea-customize/SKILL.md",
+   "kind": "skill",
+   "purpose": "Record why a fork's skill differs from upstream. Use when changing a forked SKILL.md so a later sync can re-apply it.",
+   "triggers": [],
+   "tools": []
+  },
+  {
+   "id": "rea-harvest",
+   "path": "skills/rea-harvest/SKILL.md",
+   "kind": "skill",
+   "purpose": "Turn a forked repo into a capability card. Use on /rea-harvest, mining a fork for algorithms or prompts, wrapping a CLI.",
+   "triggers": [],
+   "tools": []
+  },
+  {
+   "id": "rea-review",
+   "path": "skills/rea-review/SKILL.md",
+   "kind": "skill",
+   "purpose": "Adversarial multi-reviewer check of a contested claim or fork-strip decision; only verified quotes move the verdict.",
+   "triggers": [],
+   "tools": [
+    "claw.scrape",
+    "claw.search"
+   ]
+  },
+  {
+   "id": "rea-sync",
+   "path": "skills/rea-sync/SKILL.md",
+   "kind": "skill",
+   "purpose": "Merge a new upstream release into a customized fork and re-apply local intent. Use after upstream tags a release.",
+   "triggers": [],
+   "tools": []
+  }
+ ]
+}

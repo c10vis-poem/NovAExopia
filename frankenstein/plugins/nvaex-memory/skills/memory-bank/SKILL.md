@@ -1,6 +1,6 @@
 ---
 name: memory-bank
-description: Maintain a memory-bank/ folder of six markdown files that carry project context across sessions. Use on "initialize/update/read memory bank", or at the start of a task in a repo that already has memory-bank/.
+description: Maintain the six-file memory-bank/ folder. Use on 'initialize/update/read memory bank' or when a repo has memory-bank/.
 ---
 Folded from Memory Bank (templates condensed; its blocking Stop hook, CoC, SECURITY and PRIVACY docs are not included).
 

@@ -1,6 +1,6 @@
 ---
 name: memory-agent
-description: Daily episodic recap. At SessionEnd the plugin appends prompts and the last answer to NvAEx-Recaps/memory/YYYY-MM-DD.md plus a layers.jsonl row (autoPromote false). Use to explain where recaps go or to review them before promoting to MEMORY.md.
+description: Explain or review the daily episodic recap written at SessionEnd to NvAEx-Recaps/memory before promoting to MEMORY.md.
 ---
 Mechanical, no model calls, no daemon. Secrets are redacted, instruction-shaped text is filtered.
 Target: $NVAEX_RECAPS or config.json "recaps" (default ~/repos/NvAEx-Recaps) /memory/. If that repo is absent it falls back to ~/.claude/state/nvaex-memory/memory/ and never creates the repo.

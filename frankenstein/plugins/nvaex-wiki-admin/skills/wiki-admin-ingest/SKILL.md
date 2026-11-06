@@ -1,6 +1,6 @@
 ---
 name: wiki-admin-ingest
-description: Six-step intake for raw documents into staged wiki pages. Use when the operator says "ingest this", "process the dump", "add these files to the wiki", or drops files in a raw/ folder. Size gate, injection scan, convert/crush, 25-file batches with a ledger, independent verify, skill factory. Stages in 01-inbox/; never writes the live wiki.
+description: Six-step intake of raw documents into staged wiki pages. Use for 'ingest this', 'process the dump' or files in raw/.
 ---
 
 # wiki-admin ingest (6 steps)

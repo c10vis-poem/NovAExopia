@@ -1,6 +1,6 @@
 ---
 name: mindmap
-description: Turn a file, pasted text or a topic into a Markmap mindmap .md. Use for "/mindmap <input>" or when a document needs a quick visual outline.
+description: Turn a file, text or topic into a Markmap mindmap .md. Use on /mindmap or for a quick visual outline.
 ---
 # mindmap (trimmed from mindmap-skills by Haixia Cheng)
 

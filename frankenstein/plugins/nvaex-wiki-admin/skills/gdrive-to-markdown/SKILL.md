@@ -1,6 +1,6 @@
 ---
 name: gdrive-to-markdown
-description: Pull Google Docs/Sheets/Slides (or any Drive file) into raw/ as local files through rclone, then convert to Markdown. Use when the operator names a Drive folder/file to ingest. Local path, no claude.ai connector, no OAuth in this package (rclone remotes already hold the tokens).
+description: Pull Google Docs, Sheets, Slides or Drive files into raw/ via rclone and convert to Markdown. Use to ingest from Drive.
 ---
 
 # Drive to Markdown (step 3 of wiki-admin-ingest)

@@ -174,5 +174,10 @@ for f in pathlib.Path('$P/skills').rglob('SKILL.md'):
     assert 'name:' in t and 'description:' in t, f
 PY"
 
+# memory MCP server (dumbass-memory-mcp), real stdio round trip, its own temp dirs
+chk "dumbass-memory-mcp selftest" "bash $P/mcp/dumbass-memory-mcp/tests/selftest.sh > $T/mcp.out 2>&1 || { cat $T/mcp.out; false; }"
+echo "     ($(grep -c '^PASS' $T/mcp.out) checks in the server selftest)"
+chk ".mcp.json starts the server from inside this package" "python3 -c \"import json;m=json.load(open('$P/.mcp.json'))['mcpServers']['dumbass-memory'];assert m['args'][-1]=='\\\${CLAUDE_PLUGIN_ROOT}/mcp/dumbass-memory-mcp/server.py'\""
+
 [ $fail = 0 ] && echo "SELFTEST PASS" || echo "SELFTEST FAIL"
 exit $fail

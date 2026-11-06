@@ -1,13 +1,13 @@
 # nvaex-jev-core
 
-System-1 router and discipline set for the Frankenstein stack. Stdlib Python, no daemons, nothing blocks. One install gives the hooks, the skills and the `jev-rea-mcp` server with its 5 tools. The router asks TypeSafe Jev when a key is set; everything else is local.
+System-1 router and discipline set for the Frankenstein stack. Stdlib Python, no daemons, nothing blocks. One install gives the hooks, the skills and the `jev-rea-mcp` server with its 3 tools. The router asks TypeSafe Jev when a key is set; everything else is local.
 
 ## What is in it
 | Part | Does |
 |---|---|
 | `drunken-master` | Stage 0: repairs garbled or dictated input, prints `Read as: ...` first |
 | `jev-router` | gets the level (L0-L3) and skill group from TypeSafe Jev, or the keyword rules as fallback; picks a model tier (`tiers.json`); injects project decisions with a contradiction flag, rule files, the current time |
-| `mcp/jev-rea-mcp` | MCP server, 5 tools: `jev.route_task` (same router as the hook), `jev.audit_gate`, `rea.inspect_target`, `jev.remember`, `ag.cloud_dispatch`. See its README |
+| `mcp/jev-rea-mcp` | MCP server, 3 tools: `jev.route_task` (same router as the hook), `jev.audit_gate`, `jev.remember`. See its README |
 | `task-auditor` | 5 gates; Gate 3 nudges every 5 tool calls and on 3x repeat edits |
 | `verify-before-done`, `systematic-debugging`, `writing-plans` | trimmed from superpowers |
 | `fail-loud-escalate`, `simplify-process` | trimmed from no-cape, frontier-simplify |
@@ -57,7 +57,7 @@ Off for all: `touch ~/.nvaex-hooks-off`. Off for the package: `touch ~/.claude/s
 Origins, sizes, and what was not folded: `SOURCES.md`. Upstream licenses: `licenses/`.
 
 ## Tested on device
-Termux, Python 3.14, `bash tests/selftest.sh` (isolated HOME; runs the real `hooks.json` commands and scripts). 91 checks pass, 0 fail, including the 23 of `mcp/jev-rea-mcp/tests/selftest.sh`, a run of the package copied out of the tree, and a check that fails if `groups.json` names a skill no package holds.
+Termux, Python 3.14, `bash tests/selftest.sh` (isolated HOME; runs the real `hooks.json` commands and scripts). 97 checks pass, 0 fail, including the 21 of `mcp/jev-rea-mcp/tests/selftest.sh`, a run of the package copied out of the tree, and a check that fails if `groups.json` names a skill no package holds.
 
 The Jev checks marked `FAKE` run against `tests/fake_typesafe.py`, a local stand-in that enforces the documented request shape. They prove the client: request shape, redaction, each fallback reason, deadline, no redirect. They do not prove Jev's answers. Against the real endpoint, the real client was run only with a deliberately invalid key: it got a real 401 and fell back with `http-401` in 144 ms. A successful live answer has not been seen yet: no TypeSafe key was on the phone. Run `tests/live.sh` once a key is set.
 

@@ -1,6 +1,6 @@
 ---
 name: cut-weight
-description: Clean repo/folder residue (superseded plans, finished audits, duplicate docs, scratch output) by archiving, never deleting. Use for repo bloat, folder cleanup, or an audit-only review. Source, tests, lockfiles, migrations, CI and runtime assets are protected.
+description: Archive repo residue (old plans, audits, duplicate docs, scratch), never delete. Use for repo bloat or folder cleanup.
 ---
 Trimmed fold of cut-weight 0.4.5. Modes: **audit** (no project edits; write output outside the project) or **cleanup** (default).
 

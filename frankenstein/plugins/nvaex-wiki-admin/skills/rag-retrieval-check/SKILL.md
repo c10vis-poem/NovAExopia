@@ -1,6 +1,6 @@
 ---
 name: rag-retrieval-check
-description: Debug a wrong wiki/RAG answer by finding the earliest broken stage between source and the passages the answer saw. Use when the right page exists but the agent missed it, or retrieved passages do not answer the question. Includes a runnable harness (wiki_retrieval_eval.py) for hit@k and MRR on a cases file.
+description: Debug a wrong wiki or RAG answer by finding the earliest broken stage. Use when the page exists but the agent missed it.
 ---
 
 # Retrieval check (trimmed rag-evaluation)

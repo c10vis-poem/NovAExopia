@@ -21,3 +21,12 @@ Sizes are file bytes: donor whole plugin dir (before) -> what is shipped here (a
 - `wrap.py` is kept: it wraps a harvested CLI entrypoint from a CAPABILITY_CARD, which `mcp2cli` (MCP servers only) does not do.
 - `NvAEx-code-review-graph` fork dir: not at `~/repos/` by `ls`; the installed `code-review-graph` CLI is used.
 - `ECC-aesop`, `graphify` clustering: not bundled (graphify is a separate install).
+
+## Moved in from this repo
+| shipped path | from | note |
+|---|---|---|
+| scripts/inspect_target.py | `nvaex-jev-core/mcp/jev-rea-mcp/server.py` `inspect()` (spec "REA static repo inspection") | moved unchanged; read-only stdlib walk; no NvAEx-rea code used |
+| mcp/rea-mcp/ | written here | custom-first; no donor code |
+
+## Missing
+- REA dynamic inspection (NvAEx-rea is a TS/Node reverse-engineering suite, `~/repos/NvAEx-rea`): only static read-only inspection here; dynamic analysis would need a daemon/Node and is out of contract.

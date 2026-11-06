@@ -1,12 +1,6 @@
 ---
 name: corpus-verify
-description: >
-  Independent RLVR check. Reads source and clean files with different extraction
-  libraries than tools/clean.py used, compares by named-atom and segment
-  containment, and reports which details are missing. Hard rule 5: the tool that
-  cleaned a file does not get a vote on whether the cleaning was good. Use after
-  any corpus clean pass (first run, new sources, changes to tools/clean.py) or
-  whenever a source is suspected of losing detail through cleaning.
+description: Independent check of cleaned files against sources with different extractors; lists missing detail. Use after cleaning.
 allowed-tools: Bash, Read, Glob, Grep
 ---
 

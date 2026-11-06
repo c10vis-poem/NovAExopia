@@ -1,6 +1,6 @@
 ---
 name: rea-customize
-description: Record why a fork's skill differs from upstream. Use when you change a forked plugin's SKILL.md and want the intent kept so a later upstream sync can re-apply it.
+description: Record why a fork's skill differs from upstream. Use when changing a forked SKILL.md so a later sync can re-apply it.
 ---
 # rea-customize (from turbocharge customize-plugin + setup, trimmed)
 

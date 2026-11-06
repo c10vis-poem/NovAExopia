@@ -1,6 +1,6 @@
 ---
 name: research-on-failure
-description: Use when a command or tool keeps failing, or a fix comes from memory for a fast-moving tool. Looks up current, dated sources before patching.
+description: Use when a command or tool keeps failing or a fix comes from memory. Looks up current dated sources before patching.
 ---
 # Research on failure
 

@@ -1,0 +1,121 @@
+{
+ "package": "nvaex-jev-core",
+ "skills": [
+  {
+   "id": "backlog",
+   "path": "skills/backlog/SKILL.md",
+   "kind": "skill",
+   "purpose": "Keep a task list that survives sessions: add tasks, see what is next, mark progress, hand off to the next session.",
+   "triggers": [],
+   "tools": []
+  },
+  {
+   "id": "decision-gate",
+   "path": "skills/decision-gate/SKILL.md",
+   "kind": "skill",
+   "purpose": "Stop at human decision gates in an agentic build: starting a feature, approving a plan, judging a test, shipping.",
+   "triggers": [],
+   "tools": []
+  },
+  {
+   "id": "delegate",
+   "path": "skills/delegate/SKILL.md",
+   "kind": "skill",
+   "purpose": "Plan and review while outside coding agents (Codex, Gemini, cloud) implement. Use when coordinating workers on one repo.",
+   "triggers": [],
+   "tools": []
+  },
+  {
+   "id": "drunken-master",
+   "path": "skills/drunken-master/SKILL.md",
+   "kind": "skill",
+   "purpose": "Repair garbled or dictated messages (speech-to-text, autocorrect, typos, fillers) and read back before acting.",
+   "triggers": [],
+   "tools": []
+  },
+  {
+   "id": "fail-loud-escalate",
+   "path": "skills/fail-loud-escalate/SKILL.md",
+   "kind": "skill",
+   "purpose": "Use when writing error handling, fallbacks or retries, or when repeated attempts keep failing without new evidence.",
+   "triggers": [],
+   "tools": []
+  },
+  {
+   "id": "jev-router",
+   "path": "skills/jev-router/SKILL.md",
+   "kind": "skill",
+   "purpose": "Read and honor TypeSafe Jev routing. Use at the start of a multi-step task and on JEV route:, DECISIONS: and RULE lines.",
+   "triggers": [],
+   "tools": [
+    "jev.route_task"
+   ]
+  },
+  {
+   "id": "peer-sessions",
+   "path": "skills/peer-sessions/SKILL.md",
+   "kind": "skill",
+   "purpose": "List other live Claude Code sessions, message one, or debate with another agent through a shared file.",
+   "triggers": [],
+   "tools": []
+  },
+  {
+   "id": "research-on-failure",
+   "path": "skills/research-on-failure/SKILL.md",
+   "kind": "skill",
+   "purpose": "Use when a command or tool keeps failing or a fix comes from memory. Looks up current dated sources before patching.",
+   "triggers": [],
+   "tools": [
+    "claw.search"
+   ]
+  },
+  {
+   "id": "simplify-process",
+   "path": "skills/simplify-process/SKILL.md",
+   "kind": "skill",
+   "purpose": "Use when producing a doc, plan, spec, PRD or tooling. Stops invented process, gates and reviews nobody asked for.",
+   "triggers": [],
+   "tools": []
+  },
+  {
+   "id": "spec-check",
+   "path": "skills/spec-check/SKILL.md",
+   "kind": "skill",
+   "purpose": "Capture requirements at the start of a coding task and compare built work against them before saying done.",
+   "triggers": [],
+   "tools": []
+  },
+  {
+   "id": "systematic-debugging",
+   "path": "skills/systematic-debugging/SKILL.md",
+   "kind": "skill",
+   "purpose": "Use for any bug, test failure, build failure or unexpected behaviour, before proposing a fix. Find the root cause first.",
+   "triggers": [],
+   "tools": []
+  },
+  {
+   "id": "task-auditor",
+   "path": "skills/task-auditor/SKILL.md",
+   "kind": "skill",
+   "purpose": "5-gate audit for L2+ tasks (spec, dry-run, health, verification, handoff). Use before starting and before done.",
+   "triggers": [],
+   "tools": []
+  },
+  {
+   "id": "verify-before-done",
+   "path": "skills/verify-before-done/SKILL.md",
+   "kind": "skill",
+   "purpose": "Use before claiming work is done, fixed, passing or merged, or relaying a subagent's success. Run a command first.",
+   "triggers": [],
+   "tools": []
+  },
+  {
+   "id": "writing-plans",
+   "path": "skills/writing-plans/SKILL.md",
+   "kind": "skill",
+   "purpose": "Use when a spec spans several steps, before touching code. Writes a task-by-task plan another agent can execute.",
+   "triggers": [],
+   "tools": []
+  }
+ ]
+}

@@ -1,6 +1,6 @@
 ---
 name: phone-control
-description: How to operate an Android phone screen through claw.device: observe, act once, verify; app cards; recovery; when to stop at login, payment or destructive screens. Use when a task drives apps on the phone. Commands themselves are in android-adb.
+description: "Operate the phone screen via claw.device: observe, act once, verify; stop at login or payment. Use to drive apps."
 ---
 # Operating the phone
 

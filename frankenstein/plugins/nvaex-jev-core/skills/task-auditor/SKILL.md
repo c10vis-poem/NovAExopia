@@ -1,6 +1,6 @@
 ---
 name: task-auditor
-description: 5-gate audit for L2+ tasks (spec, dry-run, execution health, verification, handoff). Use before starting and before declaring done on any multi-step or irreversible task.
+description: 5-gate audit for L2+ tasks (spec, dry-run, health, verification, handoff). Use before starting and before done.
 ---
 # Task auditor: 5 gates
 

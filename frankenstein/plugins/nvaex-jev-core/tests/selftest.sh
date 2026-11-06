@@ -115,15 +115,22 @@ python3 "$R/tests/fake_typesafe.py" "$T/fake.port" "$T/fake.log" & FP=$!
 for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20; do [ -s "$T/fake.port" ] && break; sleep 0.1; done
 U="http://127.0.0.1:$(cat "$T/fake.port")"
 K=fake-test-key
-jev(){ ( export TYPESAFE_API_KEY="$K" TYPESAFE_BASE_URL="$U/$1" JEV_TIMEOUT="${3:-2}"; run UserPromptSubmit "$(Q "$2")" ); }
+jev(){ ( export JEV_SKILLS_INDEX="${JEV_SKILLS_INDEX-$T/no-index}" TYPESAFE_API_KEY="$K" TYPESAFE_BASE_URL="$U/$1" JEV_TIMEOUT="${3:-2}"; run UserPromptSubmit "$(Q "$2")" ); }
 fb(){ o=$(jev "$1" "write a haiku about spring" "$3"); has "$o" "via local-fallback ($2)" && has "$o" 'JEV route: L' && ok "FAKE $1 -> local-fallback ($2)" || { bad "fallback $1"; echo "$o"; }; }
 o=$(run UserPromptSubmit "$(Q 'add tests')"); has "$o" 'via local-fallback (no-key)' && ok "no key -> local-fallback, stated" || { bad "no key"; echo "$o"; }
 o=$(run UserPromptSubmit "$(Q 'hello there')"); has "$o" 'no group matched' && has "$o" 'via local-fallback (no-key)' && ok "no group: fallback still stated" || { bad "no group line"; echo "$o"; }
 o=$(jev ok "write a haiku about spring")
-has "$o" 'JEV route: L2 | tier claude-fable-5-1 | groups review/plan | try verify-before-done, writing-plans' && has "$o" 'via typesafe fake-jev-1.0 conf 0.90/0.90' && ok "FAKE ok: level and groups come from Jev, not the keywords" || { bad "jev ok"; echo "$o"; }
+has "$o" 'JEV route: L2 | tier claude-fable-5-1 | groups review/plan | try verify-before-done, spec-check, writing-plans, decision-gate' && has "$o" 'via typesafe fake-jev-1.0 conf 0.90/0.90' && ok "FAKE ok: level and groups come from Jev, not the keywords" || { bad "jev ok"; echo "$o"; }
 has "$o" "$K" && bad "key in hook output" || ok "key not in hook output"
+o=$(jev many "write a haiku about spring"); has "$o" 'groups review/plan/debug/memory/wiki |' && has "$o" 'corpus-verify' && ok "FAKE five groups: no cap on groups or skills" || { bad "caps"; echo "$o"; }
+py "import json;json.dump({'skills':[{'id':'s%03d'%i,'purpose':'skill %d'%i} for i in range(300)]},open('$T/idx.json','w'))"
+: > "$T/fake.log"; o=$(JEV_SKILLS_INDEX="$T/idx.json" jev ok "write a haiku about spring"); has "$o" 'try s000, s240, s001, s241 ' || has "$o" 'try s000, s240, s001, s241|' ; has "$o" 's000' && has "$o" 's240' && ! has "$o" 's002' && py "import json;q=json.loads(json.loads(open('$T/fake.log').readline())['body'])['questions'];assert sorted(k for k in q if k.startswith('skill_'))==['skill_0','skill_1'] and len(q['skill_0']['criteria'])==240" && ok "FAKE 300-skill roster: Jev reads all of it in one request, picks come from the index" || { bad "roster"; echo "$o"; }
+o=$(jev risky "write a haiku about spring"); has "$o" 'JEV route: L3' && ok "FAKE mode L2 with 40% on L3 holds L3" || { bad "L3 risk"; echo "$o"; }
+o=$(jev http401 "write a haiku about spring"); has "$o" 'CONFIG FAULT' && ok "FAKE 401 flagged as a config fault, not Jev unsure" || { bad "config fault"; echo "$o"; }
+o=$(jev http500 "write a haiku about spring"); ! has "$o" 'CONFIG FAULT' && ok "FAKE 500 is not a config fault" || bad "500 flagged"
+o=$(jev busy "write a haiku about spring"); has "$o" 'local-fallback (http-429)' && o=$(jev ok "write a haiku about spring"); has "$o" 'local-fallback (backoff)' && sleep 1 && o=$(jev ok "write a haiku about spring"); has "$o" 'via typesafe' && grep -q req-fake-1 "$T/.claude/state/nvaex-jev-core/route.jsonl" && ok "FAKE Retry-After honored, then Jev used again; request id logged" || { bad "backoff"; echo "$o"; }
 o=$(jev low "write a haiku about spring"); has "$o" 'conf 0.40/0.30 LOW: check it' && ok "FAKE low confidence flagged" || { bad "low conf"; echo "$o"; }
-o=$(jev none "write a haiku about spring"); has "$o" 'JEV route: L0' && has "$o" 'no group matched' && has "$o" 'via typesafe' && ok "FAKE none_of_the_above -> no group" || { bad "none"; echo "$o"; }
+o=$(jev none "write a haiku about spring"); has "$o" 'JEV route: L0' && has "$o" 'no group matched' && has "$o" 'via typesafe' && ok "FAKE companion Noul says nothing fits -> no group" || { bad "none"; echo "$o"; }
 o=$(jev none "force push the rewritten branch"); has "$o" 'JEV route: L3' && has "$o" 'via typesafe' && ok "FAKE Jev says L0, code floor holds L3 on force push" || { bad "floor"; echo "$o"; }
 : > "$T/fake.log"
 o=$(jev ok 'review my key sk-abcdefghijklmnopqrstuvwxyz1234 with password=hunter2hunter2 token: ghp_abcdefghijklmnop1234 TYPESAFE_API_KEY=plainvalue1 mail jo.doe@example.com at postgres://bob:pw9x@db.example.com/x Bearer abcdefgh12345678') # gitleaks:allow (fake test string)
@@ -150,14 +157,14 @@ o=$(M "fix the failing test then also review the diff" "$SV"); h=$(run UserPromp
 [ "$(find "$R" -name tiers.json | wc -l | tr -d ' ')" = 1 ] && ok "one tiers.json" || bad "tiers copies"
 grep -qE 'L3 = |GROUPS = |def route\(|def tier_for|def taxonomy_match' "$SV" "$R/scripts/route.py" && bad "routing logic outside jev_route.py" || ok "routing logic only in jev_route.py"
 kill $FP 2>/dev/null
-# package alone: copied out of the tree (no sibling packages), .mcp.json command run as written, hook run, 5 tools listed
+# package alone: copied out of the tree (no sibling packages), .mcp.json command run as written, hook run, 3 tools listed
 A="$T/alone/nvaex-jev-core"; mkdir -p "$T/alone"; cp -r "$R" "$A"
 o=$(printf '%s\n' '{"jsonrpc":"2.0","id":1,"method":"tools/list"}' | py "
 import json,subprocess,sys
 m=json.load(open('$A/.mcp.json'))['mcpServers']['jev-rea-mcp']
 sub=lambda s:s.replace('\${CLAUDE_PLUGIN_ROOT}','$A')
 r=subprocess.run([m['command']]+[sub(a) for a in m['args']],stdin=sys.stdin,capture_output=True,text=True)
-print(len(json.loads(r.stdout)['result']['tools']))"); [ "$o" = 5 ] && ok "package alone: .mcp.json starts jev-rea-mcp, 5 tools" || { bad "mcp alone"; echo "$o"; }
+print(len(json.loads(r.stdout)['result']['tools']))"); [ "$o" = 3 ] && ok "package alone: .mcp.json starts jev-rea-mcp, 3 tools" || { bad "mcp alone"; echo "$o"; }
 o=$(echo "{\"cwd\":\"$PRJ\",\"prompt\":\"add tests\"}" | CLAUDE_PLUGIN_ROOT="$A" python3 "$A/scripts/route.py"); has "$o" 'JEV route: L1' && ok "package alone: hook routes" || { bad "hook alone"; echo "$o"; }
 # groups.json names only skills that exist; the check itself fails on a bad name
 F="$(cd "$R/../.." && pwd)"

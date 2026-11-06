@@ -1,6 +1,6 @@
 ---
 name: android-adb
-description: Android device control from Termux through claw.device: Termux:API calls and adb (tap, shell, install, screenshot, forward). Use when the task touches the phone itself.
+description: "Control the phone via claw.device: Termux:API and adb (tap, shell, install, screenshot). Use when touching the phone."
 ---
 `claw.device action=<termux name>`: battery, wifi, location, clipboard-get/set, toast, tts, vibrate, notify (args [title, text]), open-url. Needs Termux:API app + `pkg install termux-api`.
 

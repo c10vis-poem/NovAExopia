@@ -1,6 +1,6 @@
 ---
 name: mcp2cli
-description: Turn an MCP stdio server into a shell CLI plus a small SKILL.md so its tool schemas stop costing context. Use when an MCP server is stateless request/response and rarely used, or to analyze whether a server is worth converting.
+description: Turn an MCP stdio server into a shell CLI plus a small SKILL.md to save context. Use for rarely used stateless servers.
 ---
 # mcp2cli (trimmed from mcp2cli by mason)
 

@@ -1,7 +1,7 @@
 {
   "name": "nvaex-burn",
-  "version": "0.1.0",
-  "description": "Lean usage pacer: brake near the 5h/7d limit, burn pre-approved queue jobs near the weekly reset, keep the prompt cache warm during active sessions.",
+  "version": "0.2.0",
+  "description": "Lean usage pacer: brake near the 5h/7d limit, burn pre-approved queue jobs near the weekly reset, keep the prompt cache warm during active sessions. burn-mcp server: status, keep-alive ping, notify, cloud job dispatch.",
   "author": { "name": "The Builder" },
   "license": "MIT"
 }

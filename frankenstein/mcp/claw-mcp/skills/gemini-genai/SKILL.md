@@ -1,6 +1,6 @@
 ---
 name: gemini-genai
-description: Call Gemini or OpenRouter models, and get a second opinion, through claw.infer. Use for cross-model checks and bulk drafting.
+description: Call Gemini or OpenRouter models via claw.infer. Use for a second opinion, cross-model checks and bulk drafting.
 ---
 `claw.infer provider=gemini model=gemini-2.5-flash prompt=...` (key `GEMINI_API_KEY`) or `provider=openrouter model=<id>` (key `OPENROUTER_API_KEY`). Keys come from the environment only.
 

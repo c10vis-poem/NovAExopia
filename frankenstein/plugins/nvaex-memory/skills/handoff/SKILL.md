@@ -1,6 +1,6 @@
 ---
 name: handoff
-description: Write or refresh the current git branch's handoff note: goal, status, open work, decisions and why, failed approaches, gotchas, file map, verify commands. Use when finishing a chunk of work, before ending a session, or on /handoff. SessionStart loads it automatically on that branch.
+description: Write or refresh the git branch's handoff note. Use when finishing work, before ending a session, or on /handoff.
 ---
 Capture what the diff cannot show. Folded from handoff 1.0.0 (branch notes) and context-handoff (field rules); the manifest MCP is not included.
 

@@ -1,6 +1,6 @@
 ---
 name: termux-helper
-description: "Termux on-device AI stack for Snapdragon 8 Elite. Use when working with Termux on Android: the llamad GGML plane (llama-server, Gemma 4 12B Q4_0, port 8081), the aesopd WebSocket bridge to the Horizons app (port 8765), termux-services daemon supervision, wake-lock persistence, and voice pipeline wiring. Also standard Termux operations: package management, $PREFIX paths, storage access, background services. Read Part 2 before any NPU/Hexagon work: it covers the GenieX GGUF→libggml-htp→HTP path, the HTP0/HTP1 weight split, and how to test NPU reach before claiming it."
+description: "Termux on-device AI stack: llamad, aesopd bridge, termux-services, wake-lock, voice, NPU/HTP. Use for Termux work."
 ---
 
 # Termux Helper — On-Device AI Stack, Snapdragon 8 Elite

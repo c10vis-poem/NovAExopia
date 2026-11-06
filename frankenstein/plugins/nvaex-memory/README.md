@@ -1,6 +1,6 @@
 # nvaex-memory
 
-Unified memory-as-skill. Files and four tiny hooks replace memory daemons. Stdlib Python plus the trimmed ccfind (Node). Parts and sizes: [SOURCES.md](SOURCES.md).
+Unified memory-as-skill. Files, four tiny hooks and one MCP server replace memory daemons. Stdlib Python plus the trimmed ccfind (Node). Parts and sizes: [SOURCES.md](SOURCES.md).
 
 | Piece | What it does |
 |---|---|
@@ -17,6 +17,7 @@ Unified memory-as-skill. Files and four tiny hooks replace memory daemons. Stdli
 | ccfind | BM25 search over past sessions: index, search, show, stats |
 | create-smartfolder | `memory.py map <dir>` writes tiered MAP.md routers |
 | cut-weight | archive-not-delete repo cleanup (SHA-256 manifest) |
+| `mcp/dumbass-memory-mcp` | MCP server, 12 tools: `memory.query`, `record_claim`, `ast_impact`, `cas_verify`, `scope_status`, plus `memory.snapshot`, `freeze`, `task`, `recap`, `export`, `map`, `lint`, which run `scripts/memory.py`. See its README |
 
 ## Swap in / out
 ```
@@ -85,6 +86,9 @@ PASS ccfind show prints the session
 PASS ccfind stats works
 PASS no skill references a missing file
 PASS every skill has frontmatter name+description
+PASS dumbass-memory-mcp selftest
+     (30 checks in the server selftest)
+PASS .mcp.json starts the server from inside this package
 SELFTEST PASS
 ```
 

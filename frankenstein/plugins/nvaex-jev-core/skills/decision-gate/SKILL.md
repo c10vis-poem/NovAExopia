@@ -1,6 +1,6 @@
 ---
 name: decision-gate
-description: Use before or during an agentic build when a human must decide: starting a feature, approving a plan, judging a test, shipping. Sizes the process to the blast radius and stops at each gate.
+description: "Stop at human decision gates in an agentic build: starting a feature, approving a plan, judging a test, shipping."
 ---
 # Decision gate
 

@@ -1,6 +1,6 @@
 ---
 name: wiki-dedup
-description: Find and (with confirmation) merge wiki pages that cover the same concept under different names. Audit by default; merges are never automatic. Not for link repair or general lint.
+description: Find and, with confirmation, merge wiki pages covering the same concept. Audit by default; not for link repair.
 ---
 
 # Wiki dedup

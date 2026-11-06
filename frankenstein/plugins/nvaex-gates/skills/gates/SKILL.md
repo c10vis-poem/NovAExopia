@@ -1,6 +1,6 @@
 ---
 name: gates
-description: What to do when an nvaex-gates hook blocks a call or a turn. Use when a tool call or Stop returns "BLOCKED (...)", when the operator asks about the rules, overrides, or gate status, or before telling the operator a hook is in the way.
+description: Handle an nvaex-gates block. Use when a tool call or Stop returns BLOCKED, or for questions on rules, overrides, status.
 ---
 
 # Working with the gates
