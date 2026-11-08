@@ -69,3 +69,6 @@ and the observation layer.
 
 **Bootstrap this repo**: `bash tools/bootstrap.sh` — thin wrapper that
 calls aesop-xi's canonical bootstrap first.
+
+## Plugins at this root (operator, 2026-11-08)
+Every NovÆxopia plugin is loaded from the root settings (`~/.claude/settings.json`, marketplace `novaexopia` = this repo). The rules and hooks plugin is `aesop-enforcements` (`frankenstein/plugins/aesop-enforcements`), always loaded at the root. greedy-crane (the wiki admin) lives in the vault and launches from the vault root.
