@@ -61,6 +61,7 @@ export async function device(a) {
 
 // ---- claw.infer: openrouter or gemini via REST, keys from env only.
 export async function infer({ provider = "openrouter", model, prompt }) {
+  if (provider === "gemini" && !model) model = process.env.GEMINI_MODEL || "gemini-3.8-flash";
   const j = (u, h, b) => fetch(u, { method: "POST", headers: { "Content-Type": "application/json", ...h }, body: JSON.stringify(b), signal: AbortSignal.timeout(120000) }).then(async (r) => { const d = await r.json(); if (!r.ok) throw new Error(`${provider} HTTP ${r.status}: ${JSON.stringify(d).slice(0, 300)}`); return d; });
   if (provider === "openrouter") {
     const k = process.env.OPENROUTER_API_KEY; if (!k) throw new Error("OPENROUTER_API_KEY not set"); addSecret(k);
