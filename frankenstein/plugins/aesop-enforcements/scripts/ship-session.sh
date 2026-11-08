@@ -122,6 +122,11 @@ ship_branch() { # $1 = local branch, in $top
   if [ -e "$STATE_DIR/nomerge-$sid" ]; then
     am="held (operator typed #no-merge)"
   elif [ -n "$pr" ] && [ $rc -eq 3 ]; then   # private + free plan: wait for green CI, then merge
+    # obs 0069: right after a push, "no checks reported" means "not registered yet", never "no CI".
+    # Wait (up to 120 s) until at least one check exists for the PR before watching it.
+    for _w in $(seq 24); do
+      [ -n "$(gh pr checks "$pr" --json name -q '.[].name' 2>/dev/null)" ] && break; sleep 5
+    done
     if timeout "$POLL_MAX" gh pr checks "$pr" --watch --fail-fast >/dev/null 2>&1 \
        && gh pr merge "$pr" --squash --delete-branch >/dev/null 2>&1; then am="merged after green CI (private repo)"
     else am="refused (CI not green; private repo, merge by hand)"; fi
