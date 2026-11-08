@@ -6,4 +6,4 @@ description: Call Gemini or OpenRouter models via claw.infer. Use for a second o
 
 Second opinion (consensus): call twice with different providers/models and the same prompt, then compare answers; state disagreements instead of averaging them.
 
-Model names, SDK use, embeddings, Live API and the Antigravity agent: load the `gemini-api-dev` skill from the `gemini-skills` plugin (fork `c10vis-poem/NxAEx-gemini-skills`, loaded beside this one) before writing or changing any Gemini call; it is the reference and its model list wins over this file. Shell route: `gemini-api-cli` (its `gemini-api` command is not installed on the phone yet). Not folded here: Vertex auth, streaming, multimodal input.
+Model names, SDK use, embeddings, Live API and the Antigravity agent: load this package's `gemini-api-dev` skill (copied from the fork `c10vis-poem/NxAEx-gemini-skills`) before writing or changing any Gemini call; it is the reference and its model list wins over this file. Not folded here: Vertex auth, streaming, multimodal input.
