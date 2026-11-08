@@ -4,7 +4,7 @@
 . "$(dirname "$(realpath "$0")")/lib/parts.sh"
 case $event:$tool in
   PostToolUse:*) run_parts build-doc-gate ;;
-  PreToolUse:Agent) run_parts agent-type-gate enforce-gate ;;
-  PreToolUse:Bash) run_parts build-doc-gate enforce-gate ;;
-  *) run_parts enforce-gate ;;
+  PreToolUse:Agent) run_parts subagent-task-gate agent-type-gate enforce-gate ;;
+  PreToolUse:Bash) run_parts subagent-task-gate build-doc-gate enforce-gate ;;
+  *) run_parts subagent-task-gate enforce-gate ;;
 esac

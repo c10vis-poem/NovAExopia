@@ -29,7 +29,7 @@ Not copied: hooks/settings.hooks.json and settings.hooks.v2.json (replaced by ga
 - ci-ready: hook entry for `gh pr merge --auto`; also requires a workflow that has run (obs 0026).
 - carryover: hook entry (report at RESUME read, record at SessionEnd).
 - subagent-stop-gate: progress files in subfolders of session-work/<date>/ now match.
-- enforce-prompt: `/wrapup-defer` (named in RULES.md, never implemented) and `/nvaex-gates:ok` forms; rows whose `read:` file is not on the device are dropped with a log line.
+- enforce-prompt: `/wrapup-defer` (named in RULES.md, never implemented) and `/aesop-enforcements:ok` forms; rows whose `read:` file is not on the device are dropped with a log line.
 - sync-on-use: `--sync` mode (plugin-fork-sync called it, it did not exist); cloud or no gh degrades.
 - absence-gate: message starts `BLOCKED (absence-gate):` like every gate.
 - RULES.md verbs that run-gate.sh did not implement now work: `#show-secret <path>` (it checked `#skip-secret`), `#no-ship` (it checked `#skip-ship`).
