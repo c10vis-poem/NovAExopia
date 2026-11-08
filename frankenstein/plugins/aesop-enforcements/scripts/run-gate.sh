@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # The one launcher. hooks/hooks.json calls `run-gate.sh --event <Event>`; rows of gates.tsv run in order.
 # `run-gate.sh <hook> [args]` runs one hook the same way.
-#   1. kill switches first: ~/.nvaex-hooks-off, off/nvaex-gates (killswitch.sh), then per hook off/<hook>,
-#      off/nvaex-gates.<hook>; #hooks-off typed by the operator sets state/hooks-off until #hooks-on.
+#   1. kill switches first: ~/.nvaex-hooks-off, off/aesop-enforcements (killswitch.sh), then per hook off/<hook>,
+#      off/aesop-enforcements.<hook>; #hooks-off typed by the operator sets state/hooks-off until #hooks-on.
 #   2. a script that is MISSING is logged, recorded in state/gate-missing, told to the agent and reported
 #      by `gate status`; it cannot pass silently. A crash or timeout is allowed and logged (fail-open).
 #   3. exit 2 counts as a block only with "BLOCKED (" on stderr: bash and jq also exit 2 on their own
@@ -16,7 +16,7 @@
 # Hard guards (secret-guard, guard) skip 4's phrases and 5: each stops one named
 # action, so it cannot deadlock a session, and yielding on retry would hand the agent the operator's
 # settings or secrets. The operator still has `! <command>` and `gate off <hook>`.
-here=$(cd "$(dirname "$(realpath "${BASH_SOURCE[0]}")")" && pwd); root=${here%/*}; pkg=nvaex-gates
+here=$(cd "$(dirname "$(realpath "${BASH_SOURCE[0]}")")" && pwd); root=${here%/*}; pkg=aesop-enforcements
 sh "$here/killswitch.sh" "$pkg" 2>/dev/null && exit 0
 st=${STATE_DIR:-$HOME/.claude/state}; off=$HOME/.claude/state/off; mkdir -p "$st" "$off" 2>/dev/null
 table=$here/gates.tsv; hard=" secret-guard guard direction-gate "
@@ -45,7 +45,7 @@ if [ "$event" = UserPromptSubmit ]; then
   fi
 fi
 if [ -e "$st/hooks-off" ]; then
-  [ "$event" = SessionStart ] && jq -n '{hookSpecificOutput:{hookEventName:"SessionStart",additionalContext:"NOTE: every nvaex-gates hook is OFF (operator master switch). The operator types #hooks-on to turn them back on."}}'
+  [ "$event" = SessionStart ] && jq -n '{hookSpecificOutput:{hookEventName:"SessionStart",additionalContext:"NOTE: every aesop-enforcements hook is OFF (operator master switch). The operator types #hooks-on to turn them back on."}}'
   exit 0
 fi
 

@@ -31,6 +31,16 @@
    ]
   },
   {
+   "id": "gemini-api-dev",
+   "path": "skills/gemini-api-dev/SKILL.md",
+   "kind": "skill",
+   "purpose": "Use this skill when writing code that calls the Gemini API for text generation, multi-turn chat, multimodal understanding, image generation, video generation, speech generation (TTS), voice design, voice replication, streaming responses, background research tasks, function calling, structured output, or migrating from the old generateContent API. Covers SDK usage and best practices for Gemini models and agents in Python and TypeScript.",
+   "triggers": [],
+   "tools": [
+    "claw.infer"
+   ]
+  },
+  {
    "id": "gemini-genai",
    "path": "skills/gemini-genai/SKILL.md",
    "kind": "skill",

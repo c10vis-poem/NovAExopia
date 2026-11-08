@@ -231,9 +231,28 @@ if [ -n "$wrap" ]; then
   done < "$st/ci-missing-$sid.txt"
 fi
 
+# ---------- Rule 8 W6c: a repo's own files are updated before it closes out to main ----------
+# Every touched repo with unpushed branch commits must change at least one of its own docs on that branch
+# (AGENTS.md, RESUME.md, PENDING.md, README.md, MEMORY.md, HANDOFF.md, CHANGELOG*), or the operator types #skip-docs.
+if [ -n "$wrap" ] && ! operator_typed '#skip-docs'; then
+  { [ -n "$rec" ] && awk '/^## Repos touched/{f=1;next} /^## /{f=0} f&&/^- /{sub(/^- /,"");print}' "$rec"; [ -n "$top" ] && echo "$top"; } | sort -u | while read -r t; do
+    git -C "$t" rev-parse --git-dir >/dev/null 2>&1 || continue
+    d=$(git -C "$t" symbolic-ref -q --short refs/remotes/origin/HEAD); d=${d:-origin/main}
+    git -C "$t" for-each-ref --format='%(refname:short)' refs/heads | while read -r b; do
+      [ "origin/$b" = "$d" ] && continue
+      [ -n "$(git -C "$t" log -1 --format=%H "refs/heads/$b" --not --remotes 2>/dev/null)" ] || continue
+      git -C "$t" diff --name-only "$d...refs/heads/$b" 2>/dev/null | grep -qiE '(^|/)(AGENTS|RESUME|PENDING|README|MEMORY|HANDOFF)\.md$|(^|/)CHANGELOG' \
+        || echo "${t##*/} branch $b"
+    done
+  done | sort -u > "$st/docs-missing-$sid.txt"
+  while read -r m; do
+    [ -n "$m" ] && miss+=("Rule 8: $m closes out to main without the repo's own files updated (AGENTS/RESUME/PENDING/README/MEMORY/HANDOFF/CHANGELOG): update them on that branch, or the operator types #skip-docs")
+  done < "$st/docs-missing-$sid.txt"
+fi
+
 # ---------- WRAP-UP W7: change review approved ----------
 if [ -n "$wrap" ] && [ -s "$st/changes-$sid.log" ] && [ ! -f "$st/pushok-$sid" ]; then
-  miss+=("Wrap-up W7: show the operator the change review (bash $HOOKS_DIR/review-changes.sh $sid; paste its tables and the outside-the-vault list) — it needs the operator's /ok push before anything ships")
+  miss+=("Wrap-up W7: show the operator the change review (bash $HOOKS_DIR/review-changes.sh $sid; paste its tables and the outside-the-vault list) — the wrap-up order (or an okay) ships it; #no-ship withholds")
 fi
 
 # ---------- W8: staged skill updates (Termux) ----------

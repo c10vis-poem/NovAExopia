@@ -52,3 +52,5 @@ Chrome DevTools toolkit: folded as claw.browser + skill. Playwright skills: fold
 **AEsopXi-mobile-harness** (c10vis-poem fork of droidrun/mobile-harness, synced at 321868e, MIT): it is Markdown only. `skills/phone-control` trims its Android guide, recovery and credential guides; `skills/phone-control/cards/` copies the Chrome, Settings and Gmail cards. Not taken: the `mobilerun_core` Python client and Portal app (claw.device and the built-in ADB client do this job), iOS, cloud, the eBay card, the memory guide (nvaex-memory owns memory).
 
 Goodbye-Termux-ADB, claude-android-skill, `Merovin-genai-for-developers-`, `NxAEx-gemini-skills` (find over ~/repos, ~/.claude/plugins, ~/local-plugins). Spec's "Device and browser toolkit architecture proposal.md" not read; tool arguments are my minimal design.
+
+| skills/gemini-api-dev | fork `c10vis-poem/NxAEx-gemini-skills` @ 7cfc690ba9c8 (upstream google-gemini/gemini-skills 2.4.0), copied unchanged | Apache-2.0 (`licenses/LICENSE.gemini-skills`) |

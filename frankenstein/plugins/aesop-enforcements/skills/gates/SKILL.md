@@ -1,6 +1,6 @@
 ---
 name: gates
-description: Handle an nvaex-gates block. Use when a tool call or Stop returns BLOCKED, or for questions on rules, overrides, status.
+description: Handle an aesop-enforcements block. Use when a tool call or Stop returns BLOCKED, or for questions on rules, overrides, status.
 ---
 
 # Working with the gates

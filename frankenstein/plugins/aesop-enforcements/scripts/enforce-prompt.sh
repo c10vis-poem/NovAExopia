@@ -3,7 +3,7 @@
 # stdout is added to Claude's context (one pointer line). Always exits 0.
 . "$(dirname "$(realpath "$0")")/lib/env.sh"
 in=$(cat); sid=$(jq -r '.session_id // "x"' <<<"$in")
-prompt=$(jq -r '.prompt // ""' <<<"$in" | sed -E 's#(^|[[:space:]])/nvaex-gates:#\1/#g; s#(^|[[:space:]])/wrapup-defer([[:space:]])#\1/defer\2#g'); cwd=$(jq -r '.cwd // ""' <<<"$in")
+prompt=$(jq -r '.prompt // ""' <<<"$in" | sed -E 's#(^|[[:space:]])/aesop-enforcements:#\1/#g; s#(^|[[:space:]])/wrapup-defer([[:space:]])#\1/defer\2#g'); cwd=$(jq -r '.cwd // ""' <<<"$in")
 st=$ST
 req="$st/required-$sid.tsv"; done_="$st/satisfied-$sid.tsv"; loaded="$st/loaded-$sid.txt"; log="$st/enforce-$sid.log"
 touch "$done_" "$loaded"
@@ -24,8 +24,12 @@ grep -qE "hold (the )?push|don'?t push|stop push" <<<"$lp" && rm -f "$st/pushnow
 # accepts the plan item. "#write N <text>" replaces item N's instruction with the operator's text (recorded in
 # written-<sid>.tsv and in the snapshot) and accepts it; "#write <text>" adds a new START HERE item.
 lp=$(sed -E 's#(^|[[:space:]])/(ok|defer|reject|write|edit|rewrite)([[:space:]]|$)#\1\#\2\3#g; s/#(edit|rewrite)([[:space:]]|$)/#write\2/g; s#(\#(ok|defer|reject|write))[[:space:]]+-([0-9])#\1 \3#g' <<<"$lp")
-# Operator approves the wrap-up change review: "#ok push" / "/ok push" (read by stop-gate and ship-session)
-grep -qE '#ok[[:space:]]+push' <<<"$lp" && touch "$st/pushok-$sid"
+# Rule 8: the operator's wrap-up order is the okay to ship (no separate "/ok push"); an okay/yes during
+# wrap-up and the old "#ok push" count too. "#no-ship" in the prompt withholds it (read by stop-gate, ship-session).
+if ! grep -qE '#no-ship' <<<"$lp"; then
+  { grep -qE '#ok[[:space:]]+push' <<<"$lp" || [ -n "$wrapcmd" ] \
+    || { [ -f "$st/wrapup-$sid" ] && grep -qiE '^[[:space:]]*#?(ok|okay|yes|go)([[:space:]]|[.!,]|$)' <<<"$lp"; }; } && touch "$st/pushok-$sid"
+fi
 snap="$st/resume-$sid.snap.md"; conf="$st/confirm-$sid.tsv"; written="$st/written-$sid.tsv"
 items_of() { awk '/^#+ .*START HERE/{f=1;next} f&&/^#/{exit} f&&/^[0-9]+\. /{sub(/\..*/,"");printf "%s ",$0}' "$snap"; }
 expand() {  # "1,3-5, 7" -> "1 3 4 5 7"; "all" -> every item
