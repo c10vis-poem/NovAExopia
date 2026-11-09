@@ -1,4 +1,4 @@
-# aesop-enforcements
+# aesops-enforcements
 
 The ten rules as one plugin, all on, on any device. `RULES.md` is the only rule text: ten rules, 14 hooks, 23 wirings on 10 lifecycle events. Enable the plugin and they run; nothing starts off.
 
@@ -21,7 +21,7 @@ The ten rules as one plugin, all on, on any device. `RULES.md` is the only rule 
 ## Operator controls
 
 - `gate status` (also lists any repo whose settings turn hooks off), `gate off <hook>|all`, `gate on <hook>|all`. `bin/` is on the Bash tool's PATH while the plugin is enabled, so `! gate off stop-gate` works at the Claude prompt. In a plain terminal use the full path every block message prints.
-- Kill switches, checked first: `~/.nvaex-hooks-off`, `~/.claude/state/off/aesop-enforcements`, `~/.claude/state/off/<hook>`, `~/.claude/state/off/aesop-enforcements.<hook>`.
+- Kill switches, checked first: `~/.nvaex-hooks-off`, `~/.claude/state/off/aesops-enforcements`, `~/.claude/state/off/<hook>`, `~/.claude/state/off/aesops-enforcements.<hook>`.
 - In a prompt: the rule's verb (`RULES.md`), an override phrase (`scripts/override-phrases.txt`, whole turn), `#hooks-off` / `#hooks-on`, `/ok`, `/defer`, `/reject`, `/write`, `/wrapup`, `/ok push`, `#no-ship`.
 - `housekeeping report` and `/housekeeping` run the weekly routine; a report builds in the background when it is due, and `/wrapup` is held until it is done or `#housekeeping-defer`.
 - `resume-item`, `observe-dismiss`, `review-changes`, `ship-session`, `vault-ship`, `plugin-fork-sync` are in `bin/`.

@@ -3,7 +3,7 @@
 # stdout is added to Claude's context (one pointer line). Always exits 0.
 . "$(dirname "$(realpath "$0")")/lib/env.sh"
 in=$(cat); sid=$(jq -r '.session_id // "x"' <<<"$in")
-prompt=$(jq -r '.prompt // ""' <<<"$in" | sed -E 's#(^|[[:space:]])/aesop-enforcements:#\1/#g; s#(^|[[:space:]])/wrapup-defer([[:space:]])#\1/defer\2#g'); cwd=$(jq -r '.cwd // ""' <<<"$in")
+prompt=$(jq -r '.prompt // ""' <<<"$in" | sed -E 's#(^|[[:space:]])/aesops-enforcements:#\1/#g; s#(^|[[:space:]])/wrapup-defer([[:space:]])#\1/defer\2#g'); cwd=$(jq -r '.cwd // ""' <<<"$in")
 st=$ST
 req="$st/required-$sid.tsv"; done_="$st/satisfied-$sid.tsv"; loaded="$st/loaded-$sid.txt"; log="$st/enforce-$sid.log"
 touch "$done_" "$loaded"

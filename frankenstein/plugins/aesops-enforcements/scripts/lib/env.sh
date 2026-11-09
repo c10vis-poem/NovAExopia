@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Shared environment for every aesop-enforcements hook. Sourced, never run. Works on the phone (Termux) and in
+# Shared environment for every aesops-enforcements hook. Sourced, never run. Works on the phone (Termux) and in
 # cloud sessions (CLAUDE_CODE_REMOTE=true) without changing what the gates require: the same rules
 # run everywhere; only the paths and the fail-open behaviour for missing phone-only tools differ.
 #

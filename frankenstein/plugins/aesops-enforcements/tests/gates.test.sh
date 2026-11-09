@@ -168,8 +168,8 @@ for h in $BLOCKERS; do
   scen "$h"; $G off "$h" >/dev/null; fire "$E" "$J"; ok "$rc" 0 "gate off $h"
   $G on "$h" >/dev/null; arm; fire "$E" "$J"; ok "$rc" 2 "gate on $h"
 done
-scen git-gate; mkdir -p "$off"; : > "$off/aesop-enforcements.push-gate"; fire "$E" "$J"; ok "$rc" 0 "off/aesop-enforcements.<hook> (CONTRACT form)"; $G on push-gate >/dev/null
-: > "$off/aesop-enforcements"; fire "$E" "$J"; ok "$rc" 0 "off/aesop-enforcements turns the package off"
+scen git-gate; mkdir -p "$off"; : > "$off/aesops-enforcements.push-gate"; fire "$E" "$J"; ok "$rc" 0 "off/aesops-enforcements.<hook> (CONTRACT form)"; $G on push-gate >/dev/null
+: > "$off/aesops-enforcements"; fire "$E" "$J"; ok "$rc" 0 "off/aesops-enforcements turns the package off"
 yes_ "status reports the package switch" '$G status | grep -q "KILL SWITCH"'; $G on all >/dev/null
 fire "$E" "$J"; ok "$rc" 2 "gate on all restores"
 $G off all >/dev/null; fire "$E" "$J"; ok "$rc" 0 "gate off all"; $G on all >/dev/null
