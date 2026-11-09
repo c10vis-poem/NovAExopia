@@ -1,9 +1,9 @@
 #!/bin/sh
 [ -n "$BASH_VERSION" ] || exec bash "$0" "$@"   # /usr/bin/env is absent on Termux without termux-exec
-# Operator switch for the aesop-enforcements hooks. Works mid-session, no restart, no settings edit.
+# Operator switch for the aesops-enforcements hooks. Works mid-session, no restart, no settings edit.
 #   gate off <hook>|all    gate on <hook>|all    gate status
 # Agents cannot run off/on: state-guard blocks it (RULES.md rule 4). Operator: `! gate off <hook>`.
-root=$(cd "$(dirname "$(realpath "${BASH_SOURCE[0]}")")/.." && pwd); here=$root/scripts; pkg=aesop-enforcements
+root=$(cd "$(dirname "$(realpath "${BASH_SOURCE[0]}")")/.." && pwd); here=$root/scripts; pkg=aesops-enforcements
 st=${STATE_DIR:-$HOME/.claude/state}; off=$HOME/.claude/state/off; mkdir -p "$off"
 names=$(awk -F'\t' '!/^#/{print $3}' "$here/gates.tsv" 2>/dev/null | awk '!s[$0]++')
 known() { grep -qxF "$1" <<<"$names" || { echo "gate: no hook named $1. Hooks: $(paste -sd' ' <<<"$names")" >&2; exit 1; }; }

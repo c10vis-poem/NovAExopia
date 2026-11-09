@@ -53,7 +53,7 @@ Not wired, not a hook on any event:
 
 ## Switches, checked first
 
-`~/.nvaex-hooks-off` (everything), `~/.claude/state/off/aesop-enforcements` (this package), `~/.claude/state/off/<hook>` and `~/.claude/state/off/aesop-enforcements.<hook>` (one hook). `#hooks-off` in a prompt turns every hook off on this device, across sessions, until `#hooks-on`.
+`~/.nvaex-hooks-off` (everything), `~/.claude/state/off/aesops-enforcements` (this package), `~/.claude/state/off/<hook>` and `~/.claude/state/off/aesops-enforcements.<hook>` (one hook). `#hooks-off` in a prompt turns every hook off on this device, across sessions, until `#hooks-on`.
 
 ## No hook can deadlock a session
 
@@ -68,8 +68,9 @@ direction-gate replaced resume-gate and checkin-gate on 2026-11-06. It is a hard
 
 ## 2026-11-08: renamed, Rule 8 tune-up, sub-agent write-to-task gates
 
-- **Name.** `nvaex-gates` is now `aesop-enforcements` (operator, 2026-11-08). Switches follow the name: `~/.claude/state/off/aesop-enforcements[.<hook>]`.
-- **Loaded at the root, always.** `~/.claude/settings.json` enables `aesop-enforcements@novaexopia`, so every project root gets it.
+- **Name.** `nvaex-gates` is now `aesops-enforcements` (operator, 2026-11-08). Switches follow the name: `~/.claude/state/off/aesops-enforcements[.<hook>]`.
+- **Loaded at the root, always.** `~/.claude/settings.json` enables `aesops-enforcements@novaexopia`, so every project root gets it.
 - **Rule 8, GitHub (the operator's numbering in RULES-DRAFT; Rule 10 in the table above).** The wrap-up order is the okay to ship: `/wrapup` (or an okay/yes during wrap-up, or the old `#ok push`) records it; `#no-ship` withholds it. Stop gate W6c: a touched repo cannot close out to main unless its own files (AGENTS, RESUME, PENDING, README, MEMORY, HANDOFF or CHANGELOG) changed on that branch; the operator's `#skip-docs` lifts it. The Stop answer check blocks any answer that tells the operator to merge: merging is the agent's job.
 - **Sub-agents (Rule 10 in RULES-DRAFT).** `subagent-task-gate` (PreToolUse, inside task-gate), to the operator's spec (Read this / Subagent Persuasion 04-05): a sub-agent that can write gets at most 2 read-only calls before its progress file exists; every state-changing call (Bash, Write, Edit, Agent, Skill, WebFetch, MCP) needs a progress-file write since the previous one; at most 3 read-only calls in a row without one; the file must have ## Last action. `subagent-stop-gate` (SubagentStop): no stop with no progress file, a skipped plan step not explained under ## Blocked, done steps with empty ## Findings, a progress file older than the last tool call, or a tool or skill that failed to load and is not explained under ## Blocked; plus the declared-scope check. Up to 4 blocks per sub-agent, then it stops with a logged notice. Exempt: agent types with no Write tool (web-fetch, Explore, Plan, claude-code-guide, statusline-setup).
 - **Ship wait (obs 0069).** On a private repo without auto-merge, ship-session waits up to 120 s for a check to register before watching CI; "no checks reported" right after a push is never read as "no CI".
+- **Wired in settings.json (operator 2026-11-08).** Root `~/.claude/settings.json` runs every event through `~/.claude/hooks/aesop-gate.sh`, which execs the installed copy of `run-gate.sh` with `AESOP_FROM_SETTINGS=1`; the plugin's own hooks.json copy then exits at once, so nothing runs twice.
