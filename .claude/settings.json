@@ -1,26 +1,12 @@
 {
-  "extraKnownMarketplaces": {
-    "novaexopia": {
-      "source": {
-        "source": "github",
-        "repo": "c10vis-poem/NovAExopia",
-        "ref": "rules-fix-2026-11-09"
-      }
-    },
-    "nvaex-vault": {
-      "source": {
-        "source": "github",
-        "repo": "c10vis-poem/NovAExorpus",
-        "ref": "rules-fix-2026-11-09"
-      }
-    },
-    "aesop-xi": {
-      "source": {
-        "source": "directory",
-        "path": "/data/data/com.termux/files/home/repos/Aesop-Xi"
-      }
-    }
-  },
+  "disabledMcpjsonServers": [
+    "burn-mcp",
+    "chrome-devtools",
+    "claw",
+    "dumbass-memory",
+    "jev-rea-mcp",
+    "rea-mcp"
+  ],
   "enabledPlugins": {
     "nvaex-jev-core@novaexopia": true,
     "nvaex-memory@novaexopia": true,
@@ -31,13 +17,27 @@
     "greedy-crane@nvaex-vault": true,
     "aesops-enforcements@aesop-xi": true
   },
-  "agent": "greedy-crane:wiki-admin",
-  "disabledMcpjsonServers": [
-    "burn-mcp",
-    "chrome-devtools",
-    "claw",
-    "dumbass-memory",
-    "jev-rea-mcp",
-    "rea-mcp"
-  ]
+  "extraKnownMarketplaces": {
+    "novaexopia": {
+      "source": {
+        "source": "github",
+        "repo": "c10vis-poem/NovAExopia",
+        "ref": "main"
+      }
+    },
+    "nvaex-vault": {
+      "source": {
+        "source": "github",
+        "repo": "c10vis-poem/NovAExorpus",
+        "ref": "main"
+      }
+    },
+    "aesop-xi": {
+      "source": {
+        "source": "directory",
+        "path": "/data/data/com.termux/files/home/repos/Aesop-Xi"
+      }
+    }
+  },
+  "agent": "greedy-crane:wiki-admin"
 }
