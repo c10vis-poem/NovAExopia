@@ -132,10 +132,14 @@ fi
 if [ "$ev" = Stop ]; then
   [ "$(jq -r '.stop_hook_active // false' <<<"$in")" = true ] && exit 0
   msg=$(jq -r '.last_assistant_message // ""' <<<"$in")
+  # one sentence per line; the operator's words restated ("Read as: ...") and quoted text are not claims
+  msg=$(sed -E '/^[[:space:]]*Read as:/d; s/"[^"]*"//g; s/“[^”]*”//g' <<<"$msg" | sed -E 's/([.!?])[[:space:]]+/\1\n/g')
+  F='(^|[^[:alnum:]])(install(s|ed|ing)?|features?|flags?|options?|supports?|setup|set up|config(ure|uration)?|spec|version|commands?)([^[:alnum:]]|$)'
   command grep -qiE '(^|[^[:alnum:]])(install(s|ed|ing)?|features?|flags?|options?|supports?|setup|set up|config(ure|uration)?|spec|version|commands?)([^[:alnum:]]|$)' <<<"$msg" || exit 0
   for d in "$REPOS"/*/; do
     n=${d%/}; n=${n##*/}; [ ${#n} -ge 4 ] || continue
-    command grep -qiE "(^|[^[:alnum:]_-])$(sed 's/[.[\*^$()+?{|]/\\&/g' <<<"$n")([^[:alnum:]_-]|$)" <<<"$msg" || continue
+    nre="(^|[^[:alnum:]_-])$(sed 's/[.[\*^$()+?{|]/\\&/g' <<<"$n")([^[:alnum:]_-]|$)"
+    command grep -iE "$nre" <<<"$msg" | command grep -qiE "$F" || continue   # name and feature word in one sentence
     is_read "$n" "${d%/}" || need "$n" "${d%/}" "This answer is about"
   done
   exit 0
