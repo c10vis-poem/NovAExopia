@@ -20,3 +20,11 @@ Durable facts about this repo. Dated; newest first. Updated at session wrap-up.
 ## 2026-11-05
 - `frankenstein/` holds 8 plugins and 2 standalone MCP servers; `jev-rea-mcp` now ships inside `nvaex-jev-core`. Not pushed, not installed. REA and JEV servers are being redefined from the operator's documents, so this build is a draft of them.
 - `nvaex-memory-vnext` renamed `nvaex-memory`. Router calls TypeSafe Jev with a visible local fallback; no live answer yet because no key is on the phone.
+
+## 2026-11-10 (session 437a362c)
+- `frankenstein/` is gone (operator never named it): plugins at `plugins/<name>/`, shared tools at
+  `tools/plugin-shared/`, plugin docs at `docs/plugins/`. Commit 2641767.
+- `aesops-enforcements` moved to Aesop-Xi (marketplace `aesop-xi`); the copy here and `nvaex-gates` are deleted.
+- Default agent in `.claude/settings.json`: greedy-crane:wiki-admin. Root `.mcp.json` servers are disabled for Claude
+  (plugins carry them); they stay for AGY and other MCP clients.
+- Marketplace: gas-gauge entry removed (operator builds his own mod); odometer and speedometer still listed.

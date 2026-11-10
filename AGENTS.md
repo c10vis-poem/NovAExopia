@@ -71,11 +71,18 @@ and the observation layer.
 **Bootstrap this repo**: `bash tools/bootstrap.sh` — thin wrapper that
 calls aesop-xi's canonical bootstrap first.
 
-## What loads in this repo, for every agent (operator, 2026-11-09)
-This file is the authority. `CLAUDE.md` only points here. Launch from the repo root.
-- **Claude Code:** `.claude/settings.json` enables `aesops-enforcements` (the rules and hooks), `nvaex-jev-core`, `nvaex-memory`, `nvaex-rea-forge`, `nvaex-burn`, `claw-mcp`, `nvaex-ui-cockpit` (marketplace `novaexopia`, this repo on GitHub) and `greedy-crane` (marketplace `nvaex-vault`, the NovAExorpus repo). The plugins bring their own hooks and MCP servers.
-- **Every agent (Claude, AGY and any MCP client):** `.mcp.json` starts `claw`, `chrome-devtools`, `jev-rea-mcp`, `dumbass-memory`, `rea-mcp` and `burn-mcp` from this repo, by repo-relative path.
-- **AGY:** `.agents/plugins.json` registers the plugins in `plugins/`.
-- **Rules:** the eleven rules (NvAEx-Recaps `handoff/2026-11-06/RULES-DRAFT.md`) are enforced by `plugins/aesops-enforcements`; open gaps are in `PENDING.md`.
-- **Wiki admin:** greedy-crane lives in NovAExorpus (`plugins/greedy-crane`) and launches as its agent from the NovAExorpus root.
-- Marketplace sources point at branch `rules-fix-2026-11-09` until it reaches main; then they point at `main`.
+## What loads in this repo, for every agent (operator, 2026-11-10)
+This file is the authority. `CLAUDE.md` only points here. Launch from the repo root (or `crane`).
+- **Plugins** live at `plugins/<name>/` (two folders deep): jev-core, memory, rea-forge, burn, ui-cockpit, claw-mcp,
+  wiki-admin (the old wiki package; greedy-crane in NovAExorpus is the wiki admin). Marketplace `novaexopia` = this repo.
+- **Rules and hooks:** the `aesops-enforcements` plugin lives in Aesop-Xi (`plugins/aesops-enforcements/`, marketplace
+  `aesop-xi`), with its RULES.md. Every repo's settings and the user settings enable it from there.
+- **Claude Code:** `.claude/settings.json` enables every plugin above, `aesops-enforcements@aesop-xi` and
+  `greedy-crane@nvaex-vault`, sets the default agent (`"agent": "greedy-crane:wiki-admin"`; `claude --agent <name>`
+  picks another), and turns off the root `.mcp.json` copies of the plugins' MCP servers (`disabledMcpjsonServers`), so
+  Claude uses the plugins' own copies.
+- **Every other agent (AGY, any MCP client):** `.mcp.json` starts the same six servers (claw, chrome-devtools,
+  jev-rea-mcp, dumbass-memory, rea-mcp, burn-mcp) by repo-relative path; `.agents/plugins.json` registers `plugins/`.
+- **Launchers:** `~/bin/crane` = greedy-crane, this repo as root, the vault, Aesop-Xi and shared storage attached.
+  One launcher per agent (copy it, change `--agent`).
+- Shared plugin tools: `tools/plugin-shared/`. Plugin design docs: `docs/plugins/`.

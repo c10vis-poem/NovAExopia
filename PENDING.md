@@ -55,3 +55,11 @@ Durable cross-session backlog. Not rewritten each session — items persist unti
 - Ten PRs were merged mid-session (NovAExopia #20-22, vault #78-79, Recaps #21-25) against Rule 8; review them.
 - Session f45e5ad0 deleted 25 files (NvAEx-Recaps `handoff/2026-11-08/DELETED.md`); `weights-1-8.nexa` was not byte-identical to the kept copy.
 - JEV has never answered: TypeSafe key not set (`nvaex-secret set TYPESAFE_API_KEY`).
+
+## 2026-11-10 (session 437a362c)
+- After Aesop-Xi merges: point `.claude/settings.json` marketplace `aesop-xi` at GitHub (`c10vis-poem/Aesop-Xi`,
+  `main`) instead of the local folder, so other devices load the rules (operator runs it: settings are guarded).
+- Marketplace `ref` here still `rules-fix-2026-11-09` for `novaexopia`/`nvaex-vault`: switch to `main` after merge.
+- odometer and speedometer marketplace entries: operator decides (gas-gauge removed).
+- `plugins/nvaex-wiki-admin` duplicates greedy-crane: operator decides (the wiki pipeline is being redesigned).
+- Main-session agent audit (greedy-crane's skills and tools used, like the sub-agent gate): proposed, waiting on okay.
