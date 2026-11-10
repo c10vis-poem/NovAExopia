@@ -12,7 +12,7 @@ command grep -qiE '\b(ok|okay)\b.*\bamend\b|\bamend\b.*\boverride\b|\bdefer\b.*\
 yn="(want me to|should i|shall i|do you want|would you like|can i |could i |may i |is that (ok|okay|fine|right|alright)|does that work|sound good|sounds good|yes or no|y/n)"
 hit=
 if command grep -qiE '\?$' <<<"$last"; then
-  command grep -qiE "$yn" <<<"$last" && hit=yes/no
+  command grep -qiE "$yn" <<<"$last" && ! command grep -qiE "(^|[.!:;]\s*)(what|which|where|how|why|when|who)\b[^.!?]*\?$" <<<"$last" && hit=yes/no   # open wh-questions are not yes/no
   command grep -qiE '(^|[[:space:]])(ok|okay|right|yes|no)\?$' <<<"$last" && hit=yes/no
   command grep -qiE '[[:space:]]or[[:space:]]' <<<"$last" && ! command grep -qiE 'or[^?]*(some|any)(thing|where|one|body) else|or other' <<<"$last" && hit=either/or   # an open alternative is a write-in, not either/or (operator 2026-11-10)
 fi
