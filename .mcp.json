@@ -1,0 +1,64 @@
+{
+  "mcpServers": {
+    "claw": {
+      "command": "sh",
+      "args": [
+        "frankenstein/mcp/claw-mcp/bin/claw-mcp"
+      ],
+      "env": {
+        "CLAUDE_PLUGIN_ROOT": "frankenstein/mcp/claw-mcp"
+      }
+    },
+    "chrome-devtools": {
+      "command": "sh",
+      "args": [
+        "frankenstein/mcp/claw-mcp/bin/chrome-devtools"
+      ],
+      "env": {
+        "CLAUDE_PLUGIN_ROOT": "frankenstein/mcp/claw-mcp"
+      }
+    },
+    "jev-rea-mcp": {
+      "command": "python3",
+      "args": [
+        "-I",
+        "frankenstein/plugins/nvaex-jev-core/mcp/jev-rea-mcp/server.py"
+      ],
+      "env": {
+        "CLAUDE_PLUGIN_ROOT": "frankenstein/plugins/nvaex-jev-core",
+        "TYPESAFE_API_KEY": "${TYPESAFE_API_KEY:-}"
+      }
+    },
+    "dumbass-memory": {
+      "command": "python3",
+      "args": [
+        "-I",
+        "frankenstein/plugins/nvaex-memory/mcp/dumbass-memory-mcp/server.py"
+      ],
+      "env": {
+        "CLAUDE_PLUGIN_ROOT": "frankenstein/plugins/nvaex-memory",
+        "DUMBASS_DATA_DIR": "~/.nvaex/memory"
+      }
+    },
+    "rea-mcp": {
+      "command": "python3",
+      "args": [
+        "-I",
+        "frankenstein/plugins/nvaex-rea-forge/mcp/rea-mcp/server.py"
+      ],
+      "env": {
+        "CLAUDE_PLUGIN_ROOT": "frankenstein/plugins/nvaex-rea-forge"
+      }
+    },
+    "burn-mcp": {
+      "command": "python3",
+      "args": [
+        "-I",
+        "frankenstein/plugins/nvaex-burn/mcp/burn-mcp/server.py"
+      ],
+      "env": {
+        "CLAUDE_PLUGIN_ROOT": "frankenstein/plugins/nvaex-burn"
+      }
+    }
+  }
+}

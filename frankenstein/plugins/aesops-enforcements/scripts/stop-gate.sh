@@ -258,7 +258,7 @@ fi
 # ---------- W8: staged skill updates (Termux) ----------
 stg=$(bash "$HOOKS_DIR/staged-updates.sh" names 2>/dev/null)
 if [ -n "$stg" ] && ! operator_typed '#staged-defer'; then
-  miss+=("Staged skill updates pending ($(paste -sd ';' <<<"$stg")): tell the operator; install, then mark each heading [installed <date>] in $vault/skill-updates/PENDING.md, or the operator types #staged-defer")
+  notes+=("$(advise staged "Staged skill updates pending ($(paste -sd ';' <<<"$stg")): logged in PENDING.md; the operator installs them (a note, never a block: TO-DO 2026-11-06)")")
 fi
 
 # ---------- Rule 10: every pushed branch gets a PR, auto-merge, then is deleted once merged ----------

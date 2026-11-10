@@ -70,5 +70,11 @@ and the observation layer.
 **Bootstrap this repo**: `bash tools/bootstrap.sh` — thin wrapper that
 calls aesop-xi's canonical bootstrap first.
 
-## Plugins at this root (operator, 2026-11-08)
-Every NovÆxopia plugin is loaded from the root settings (`~/.claude/settings.json`, marketplace `novaexopia` = this repo). The rules and hooks plugin is `aesops-enforcements` (`frankenstein/plugins/aesops-enforcements`), always loaded at the root. greedy-crane (the wiki admin) lives in the vault and launches from the vault root.
+## What loads in this repo, for every agent (operator, 2026-11-09)
+This file is the authority. `CLAUDE.md` only points here. Launch from the repo root.
+- **Claude Code:** `.claude/settings.json` enables `aesops-enforcements` (the rules and hooks), `nvaex-jev-core`, `nvaex-memory`, `nvaex-rea-forge`, `nvaex-burn`, `claw-mcp`, `nvaex-ui-cockpit` (marketplace `novaexopia`, this repo on GitHub) and `greedy-crane` (marketplace `nvaex-vault`, the NovAExorpus repo). The plugins bring their own hooks and MCP servers.
+- **Every agent (Claude, AGY and any MCP client):** `.mcp.json` starts `claw`, `chrome-devtools`, `jev-rea-mcp`, `dumbass-memory`, `rea-mcp` and `burn-mcp` from this repo, by repo-relative path.
+- **AGY:** `.agents/plugins.json` registers the Frankenstein plugins in `frankenstein/plugins` and `frankenstein/mcp/claw-mcp`.
+- **Rules:** the eleven rules (NvAEx-Recaps `handoff/2026-11-06/RULES-DRAFT.md`) are enforced by `frankenstein/plugins/aesops-enforcements`; open gaps are in `PENDING.md`.
+- **Wiki admin:** greedy-crane lives in NovAExorpus (`plugins/greedy-crane`) and launches as its agent from the NovAExorpus root.
+- Marketplace sources point at branch `rules-fix-2026-11-09` until it reaches main; then they point at `main`.

@@ -12,14 +12,16 @@ ev=$(jq -r '.hook_event_name // ""' <<<"$in"); job="$ST/job-$sid"; open="$ST/ope
 
 if [ "$ev" = UserPromptSubmit ]; then
   p=$(jq -r '.prompt // ""' <<<"$in" | sed -E '/^[[:space:]]*$/d' | head -1 | sed -E 's/^[[:space:]]+//' | tr '[:upper:]' '[:lower:]')
+  pall=$(jq -r '.prompt // ""' <<<"$in" | tr '[:upper:]' '[:lower:]')   # every line: a direction can sit anywhere in the message
   # the session-started marker other gates key off (was written by resume-gate)
   cwd=$(jq -r '.cwd // ""' <<<"$in"); top=$(git -C "${cwd:-$HOME}" rev-parse --show-toplevel 2>/dev/null)
   r="$top/RESUME.md"; [ -n "$top" ] && [ -f "$r" ] || r="${VAULT:-/nonexistent}/RESUME.md"
   [ -f "$ST/resume-$sid.ok" ] || { if [ -f "$r" ]; then sha256sum "$r" | cut -d" " -f1 > "$ST/resume-$sid.ok"; else : > "$ST/resume-$sid.ok"; fi; }
-  case $p in
-    \#*|hashtag*) echo direction > "$job" ;;
-    *) if grep -qE "^(ok|okay|yes|yep|yup|yeah|go|go ahead|do it|override|approved)([[:space:][:punct:]]|$)" <<<"$p"; then echo affirmation > "$job"; else rm -f "$job"; fi ;;
-  esac
+  # Direction: a # word anywhere ("#go ahead" at the end of a message counts), or "hashtag" (dictation).
+  # Affirmation: the Rule 2 check-in answers (okay, amend, override, defer) or a plain yes/go, at the start of any line.
+  if grep -qE '(^|[[:space:]])#[[:space:]]?[[:alnum:]]|(^|[[:space:]])hashtag([[:space:]]|$)' <<<"$pall"; then echo direction > "$job"
+  elif grep -qE "^[[:space:]]*[0-9.)-]*[[:space:]]*(ok|okay|yes|yep|yup|yeah|go|go ahead|do it|override|amend|defer|approved)([[:space:][:punct:]]|$)" <<<"$pall"; then echo affirmation > "$job"
+  else rm -f "$job"; fi
   exit 0
 fi
 
@@ -40,8 +42,18 @@ named() {   # is this path named in a document already read this session?
   done < "$open"
   return 1
 }
+reqd() {   # the opening protocol includes what ENFORCEMENTS requires this prompt: those reads and skills always pass
+  [ -s "$ST/required-$sid.tsv" ] || return 1
+  grep -qF -- "$1" "$ST/required-$sid.tsv" || grep -qF -- "${1/#$HOME/\~}" "$ST/required-$sid.tsv"
+}
 case $tool in
-  AskUserQuestion|ToolSearch) exit 0 ;;
+  AskUserQuestion|ToolSearch|TodoWrite) exit 0 ;;
+  Read) [ -n "$rf" ] && reqd "$rf" && exit 0 ;;
+esac
+case $tool in
+  Skill) reqd "skill: $(jq -r '.tool_input.skill // ""' <<<"$in")" && exit 0 ;;
+esac
+case $tool in
   Read) [ -n "$rf" ] && { isdoc "$rf" && exit 0; [ -f "$open" ] && named "$rf" && exit 0; } ;;
   Skill) [ "$(jq -r '.tool_input.skill // ""' <<<"$in")" = task-observer ] && exit 0 ;;
   Bash) grep -qE '^bash [^;&|]*session-start-scan\.sh [^;&|]*$' <<<"$(jq -r '.tool_input.command // ""' <<<"$in")" && exit 0 ;;

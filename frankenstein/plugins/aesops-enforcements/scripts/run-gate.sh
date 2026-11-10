@@ -17,10 +17,6 @@
 # action, so it cannot deadlock a session, and yielding on retry would hand the agent the operator's
 # settings or secrets. The operator still has `! <command>` and `gate off <hook>`.
 here=$(cd "$(dirname "$(realpath "${BASH_SOURCE[0]}")")" && pwd); root=${here%/*}; pkg=aesops-enforcements
-# Operator 2026-11-08: every rule, hook and stop gate is wired in ~/.claude/settings.json through
-# the root launcher aesop-gate.sh (sets AESOP_FROM_SETTINGS=1). When that wiring exists, the copy fired by the
-# plugin's own hooks.json steps aside, so each hook runs once.
-if [ -z "${AESOP_FROM_SETTINGS:-}" ] && grep -q 'aesop-gate.sh' "$HOME/.claude/settings.json" 2>/dev/null; then exit 0; fi
 sh "$here/killswitch.sh" "$pkg" 2>/dev/null && exit 0
 st=${STATE_DIR:-$HOME/.claude/state}; off=$HOME/.claude/state/off; mkdir -p "$st" "$off" 2>/dev/null
 table=$here/gates.tsv; hard=" secret-guard guard direction-gate "
