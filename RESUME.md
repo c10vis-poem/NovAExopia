@@ -8,7 +8,7 @@
 - Branch `rules-fix-2026-11-09`, shipped at this wrap-up (PR, auto-merge).
 
 ## Next
-1. Test session (operator): launch with `crane`; check plugins, rules, hooks, MCP servers, greedy-crane as agent.
+1. The opening deadlock in `crane` (Aesop-Xi, observation 0090), then the test session: plugins, rules, hooks, MCP, greedy-crane.
 2. Fix whatever the test session finds.
 3. PENDING.md 2026-11-10 items.
 
