@@ -3,29 +3,29 @@
     "claw": {
       "command": "sh",
       "args": [
-        "frankenstein/mcp/claw-mcp/bin/claw-mcp"
+        "plugins/claw-mcp/bin/claw-mcp"
       ],
       "env": {
-        "CLAUDE_PLUGIN_ROOT": "frankenstein/mcp/claw-mcp"
+        "CLAUDE_PLUGIN_ROOT": "plugins/claw-mcp"
       }
     },
     "chrome-devtools": {
       "command": "sh",
       "args": [
-        "frankenstein/mcp/claw-mcp/bin/chrome-devtools"
+        "plugins/claw-mcp/bin/chrome-devtools"
       ],
       "env": {
-        "CLAUDE_PLUGIN_ROOT": "frankenstein/mcp/claw-mcp"
+        "CLAUDE_PLUGIN_ROOT": "plugins/claw-mcp"
       }
     },
     "jev-rea-mcp": {
       "command": "python3",
       "args": [
         "-I",
-        "frankenstein/plugins/nvaex-jev-core/mcp/jev-rea-mcp/server.py"
+        "plugins/nvaex-jev-core/mcp/jev-rea-mcp/server.py"
       ],
       "env": {
-        "CLAUDE_PLUGIN_ROOT": "frankenstein/plugins/nvaex-jev-core",
+        "CLAUDE_PLUGIN_ROOT": "plugins/nvaex-jev-core",
         "TYPESAFE_API_KEY": "${TYPESAFE_API_KEY:-}"
       }
     },
@@ -33,10 +33,10 @@
       "command": "python3",
       "args": [
         "-I",
-        "frankenstein/plugins/nvaex-memory/mcp/dumbass-memory-mcp/server.py"
+        "plugins/nvaex-memory/mcp/dumbass-memory-mcp/server.py"
       ],
       "env": {
-        "CLAUDE_PLUGIN_ROOT": "frankenstein/plugins/nvaex-memory",
+        "CLAUDE_PLUGIN_ROOT": "plugins/nvaex-memory",
         "DUMBASS_DATA_DIR": "~/.nvaex/memory"
       }
     },
@@ -44,20 +44,20 @@
       "command": "python3",
       "args": [
         "-I",
-        "frankenstein/plugins/nvaex-rea-forge/mcp/rea-mcp/server.py"
+        "plugins/nvaex-rea-forge/mcp/rea-mcp/server.py"
       ],
       "env": {
-        "CLAUDE_PLUGIN_ROOT": "frankenstein/plugins/nvaex-rea-forge"
+        "CLAUDE_PLUGIN_ROOT": "plugins/nvaex-rea-forge"
       }
     },
     "burn-mcp": {
       "command": "python3",
       "args": [
         "-I",
-        "frankenstein/plugins/nvaex-burn/mcp/burn-mcp/server.py"
+        "plugins/nvaex-burn/mcp/burn-mcp/server.py"
       ],
       "env": {
-        "CLAUDE_PLUGIN_ROOT": "frankenstein/plugins/nvaex-burn"
+        "CLAUDE_PLUGIN_ROOT": "plugins/nvaex-burn"
       }
     }
   }

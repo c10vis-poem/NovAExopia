@@ -1,19 +1,14 @@
 {
   "entries": [
     {
-      "path": "frankenstein/plugins",
+      "path": "plugins",
       "include_only": [
         "aesops-enforcements",
         "nvaex-jev-core",
         "nvaex-memory",
         "nvaex-rea-forge",
         "nvaex-burn",
-        "nvaex-ui-cockpit"
-      ]
-    },
-    {
-      "path": "frankenstein/mcp",
-      "include_only": [
+        "nvaex-ui-cockpit",
         "claw-mcp"
       ]
     }
