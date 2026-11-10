@@ -14,4 +14,4 @@ if [ -f "$sa_tp" ]; then
   sa_pf=$(grep -m1 -oE '(~|/[^" \\]*)?/?\.claude/session-work/[0-9-]+/([A-Za-z0-9._-]+/)*agent-[A-Za-z0-9._-]+\.md|session-work/[0-9-]+/([A-Za-z0-9._-]+/)*agent-[A-Za-z0-9._-]+\.md' "$sa_tp" | head -1)
   case $sa_pf in "~"*) sa_pf=${sa_pf/#\~/$HOME} ;; session-work/*) sa_pf="$HOME/.claude/$sa_pf" ;; .claude/*) sa_pf="$HOME/$sa_pf" ;; esac
 fi
-SA_HOW="Your progress file is ~/.claude/session-work/$(date +%F)/agent-<topic>.md with ## Plan (every step a checkbox), ## Last action (timestamp + what you are doing), ## Findings, ## Blocked."
+SA_HOW="Your progress file is ~/.claude/session-work/$(date +%F)/agent-<topic>.md with ## Plan (every step a checkbox), ## Last action (timestamp + what you are doing), ## Findings, ## Skills used, ## Blocked. Every file your brief assigns (Files:, Paths file:, Folder:) is read whole before you stop."

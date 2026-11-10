@@ -20,6 +20,9 @@ add() {  # kind detail [epoch] -> appends an event, prints its id
   echo "$id"
 }
 
+if [ "${1:-}" = add ]; then   # add <sid> <kind> <detail>: queue a friction event from another hook (subagent-stop-gate)
+  sid=$2; q="$st/observe-queue-$sid.tsv"; add "$3" "$4"; exit 0
+fi
 if [ "${1:-}" = sync ]; then   # import the enforce log's new gate BLOCK lines (stop-gate runs this)
   sid=$2; q="$st/observe-queue-$sid.tsv"; log="$st/enforce-$sid.log"; off="$st/observe-off-$sid"
   [ -f "$log" ] || exit 0

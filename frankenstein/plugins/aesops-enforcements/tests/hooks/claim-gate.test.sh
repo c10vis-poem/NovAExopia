@@ -37,4 +37,7 @@ ok "$(G "It isn't supported (README).")" 0 "README read this turn -> pass"
 ok "$(G "Tried it: that flag won't work.")" 0 "trial run this turn -> pass"
 { U "can it do X?"; A Bash '{"command":"grep flag notes.txt"}'; R; } > "$T/tr.jsonl"
 ok "$(G "That flag won't work.")" 2 "a grep is not a trial -> block"
+{ U "q"; A Read '{"file_path":"/r/notes.txt"}'; R; } > "$T/tr.jsonl"
+ok "$(G 'No. "Modified tests" does not mean these will not work.')" 0 "negated (doesn't mean ... won't work) -> not a claim"
+ok "$(G 'You asked whether it "won'"'"'t work on Termux".')" 0 "quoted phrase -> not a claim"
 echo "== $pass passed, $fail failed"; rm -rf "$T"; [ "$fail" -eq 0 ]

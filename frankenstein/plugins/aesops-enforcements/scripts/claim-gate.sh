@@ -34,7 +34,9 @@ fi
 # 3. "false / won't work / not supported / not possible" needs, this turn, official documentation fetched
 #    (WebFetch, WebSearch, an MCP docs/fetch/search tool, the web-fetch agent, or a Read of a README / docs /
 #    INSTALL / CHANGELOG file) or a real trial (a Bash run that is not just a read). Training data is not a source.
-neg=$(command grep -iE "(won['’]?t|will not|wouldn['’]?t|doesn['’]?t|does not|can['’]?t|cannot) (work|be done|support|run|install|exist)|(isn['’]?t |is not |not |un)supported|not possible|impossible|(is|that['’]?s|it['’]?s) (false|not true)|isn['’]?t true|no longer (exists|works|available)|never existed|was removed in" <<<"$msg" | head -1)
+# quoted text and "doesn't mean ... won't work" are not claims (false positive, 2026-11-10)
+plain=$(sed -E "s/\"[^\"]*\"//g; s/“[^”]*”//g; s/(doesn.?t|does not|didn.?t) mean[^.]*//Ig" <<<"$msg")
+neg=$(command grep -iE "(won['’]?t|will not|wouldn['’]?t|doesn['’]?t|does not|can['’]?t|cannot) (work|be done|support|run|install|exist)|(isn['’]?t |is not |not |un)supported|not possible|impossible|(is|that['’]?s|it['’]?s) (false|not true)|isn['’]?t true|no longer (exists|works|available)|never existed|was removed in" <<<"$plain" | head -1)
 if [ -n "$neg" ]; then
   probes=$(tac "$tp" | head -n 4000 | jq -s '
     (map(.type=="user" and (.isMeta|not) and (.message.content | if type=="string" then true

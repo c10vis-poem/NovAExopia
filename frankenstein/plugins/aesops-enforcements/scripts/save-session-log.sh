@@ -34,6 +34,10 @@ fi
   echo "# Task log: session $sid ($date)"
   [ -n "$ledger" ] && { echo; sed '1{/^# /d}' "$ledger"; }
   [ -s "$ST/changes-$sid.log" ] && { echo; echo "## Changes"; echo; sed 's/^/- /' "$ST/changes-$sid.log"; }
+  if [ -s "$ST/subagent-audit-$sid.tsv" ]; then
+    echo; echo "## Sub-agent audits"; echo
+    awk -F'\t' '{print "- " $1 " " $2 " (" $3 "): " $4 "; " $5 "; task file: " $6}' "$ST/subagent-audit-$sid.tsv"
+  fi
   if [ -f "$tp" ]; then
     echo; echo "## Skills used"; echo
     jq -r 'select(.type=="assistant") | .message.content[]? | select(.type=="tool_use" and .name=="Skill") | .input.skill // empty' "$tp" 2>/dev/null \
@@ -43,6 +47,12 @@ fi
       | sort | uniq -c | sort -rn | awk '{print "- " $2 " (" $1 ")"}'
   fi
 } > "$d/task-log.md"
+# the sub-agents' own task files belong to the task log
+if [ -s "$ST/subagent-audit-$sid.tsv" ]; then
+  cut -f6 "$ST/subagent-audit-$sid.tsv" | sort -u | while IFS= read -r f; do
+    [ -f "$f" ] && { mkdir -p "$d/subagents"; cp "$f" "$d/subagents/"; }
+  done
+fi
 
 git -C "$wt" add "$rel"
 if git -C "$wt" commit -q -m "session log: $date $s8" -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>" >/dev/null 2>&1; then
