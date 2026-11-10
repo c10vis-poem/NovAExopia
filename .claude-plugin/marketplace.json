@@ -16,15 +16,6 @@
       }
     },
     {
-      "name": "gas-gauge",
-      "description": "A fuel gauge above the prompt: how much of your Claude plan is left, and when it refills.",
-      "source": {
-        "source": "git-subdir",
-        "url": "https://github.com/DJPalefaceSD/rostech-mods.git",
-        "path": "plugins/gas-gauge"
-      }
-    },
-    {
       "name": "iceberg",
       "description": "Apply Hemingway writing rules to technical documentation — inline, intentional, clean.",
       "source": {
@@ -224,50 +215,44 @@
     },
     {
       "name": "nvaex-burn",
-      "source": "./frankenstein/plugins/nvaex-burn",
+      "source": "./plugins/nvaex-burn",
       "description": "Lean usage pacer: brake near 5h/7d limits, burn pre-approved queue jobs near weekly reset, cache keep-alive, burn-mcp server (status, keep-alive ping, notify, cloud job dispatch).",
       "version": "0.2.0"
     },
     {
       "name": "nvaex-jev-core",
-      "source": "./frankenstein/plugins/nvaex-jev-core",
+      "source": "./plugins/nvaex-jev-core",
       "description": "System-1 router: Stage-0 STT readback, JEV router that asks TypeSafe Jev for level and group (keyword fallback), jev-rea-mcp server (3 tools), 5-gate task auditor, non-blocking dark-pattern Stop scorecard.",
       "version": "0.4.0"
     },
     {
       "name": "nvaex-rea-forge",
-      "source": "./frankenstein/plugins/nvaex-rea-forge",
+      "source": "./plugins/nvaex-rea-forge",
       "description": "Fork harvester: /rea-harvest -> CAPABILITY_CARD.json, CLI wrap + SKILL.md, adversarial strip agents, fork patch sync, rea-mcp server (rea.inspect_target).",
       "version": "0.3.0"
     },
     {
       "name": "nvaex-memory",
-      "source": "./frankenstein/plugins/nvaex-memory",
+      "source": "./plugins/nvaex-memory",
       "description": "Unified memory-as-skill: anchor drift linter, continuity snapshot + freeze, nudge-only whydone, daily recap to NvAEx-Recaps (autoPromote false), ccfind, MAP.md routers, cut-weight, dumbass-memory-mcp server (12 memory.* tools). No daemons.",
       "version": "0.3.0"
     },
     {
       "name": "nvaex-wiki-admin",
-      "source": "./frankenstein/plugins/nvaex-wiki-admin",
+      "source": "./plugins/nvaex-wiki-admin",
       "description": "Corpus intake, verify and skill factory: 6-step staging-only pipeline, 25-file batches with ledger, injection scan, trimmed llm-wiki, provenance.",
       "version": "0.1.0"
     },
     {
       "name": "claw-mcp",
-      "source": "./frankenstein/mcp/claw-mcp",
+      "source": "./plugins/claw-mcp",
       "description": "Frankenstein package claw-mcp",
       "version": "0.1.0"
     },
     {
       "name": "nvaex-ui-cockpit",
-      "source": "./frankenstein/plugins/nvaex-ui-cockpit",
+      "source": "./plugins/nvaex-ui-cockpit",
       "description": "Four swappable UI mods: plugins-panel, env-customizer-panel, obsidian-config-tree, token-cache-gauge",
-      "version": "0.1.0"
-    },
-    {
-      "name": "aesops-enforcements",
-      "source": "./frankenstein/plugins/aesops-enforcements",
-      "description": "The ten rules, all on, everywhere: every hook runs under one of them, one launcher, override and revoke named in every block, loop breaker, gate CLI, kill switches, cloud degrade.",
       "version": "0.1.0"
     }
   ]

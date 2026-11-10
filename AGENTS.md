@@ -48,7 +48,8 @@ every session, no exceptions.
 PR required. No direct pushes to main. CI runs gitleaks + structure check.
 Before every push, scan the diff for secrets/keys and refuse to push if any
 are found. On green CI, auto-merge into `main` immediately — do not wait for
-a manual merge step. Leave the branch in place after merge; do not delete it.
+a manual merge step. Auto-merge and auto-delete are set together while CI runs; GitHub deletes the
+branch on merge (operator, 2026-11-10).
 
 The point of this workflow is that everything reaches `main` — a branch
 that never gets a PR opened, or a PR that never gets merged, is a failure
@@ -70,5 +71,18 @@ and the observation layer.
 **Bootstrap this repo**: `bash tools/bootstrap.sh` — thin wrapper that
 calls aesop-xi's canonical bootstrap first.
 
-## Plugins at this root (operator, 2026-11-08)
-Every NovÆxopia plugin is loaded from the root settings (`~/.claude/settings.json`, marketplace `novaexopia` = this repo). The rules and hooks plugin is `aesops-enforcements` (`frankenstein/plugins/aesops-enforcements`), always loaded at the root. greedy-crane (the wiki admin) lives in the vault and launches from the vault root.
+## What loads in this repo, for every agent (operator, 2026-11-10)
+This file is the authority. `CLAUDE.md` only points here. Launch from the repo root (or `crane`).
+- **Plugins** live at `plugins/<name>/` (two folders deep): jev-core, memory, rea-forge, burn, ui-cockpit, claw-mcp,
+  wiki-admin (the old wiki package; greedy-crane in NovAExorpus is the wiki admin). Marketplace `novaexopia` = this repo.
+- **Rules and hooks:** the `aesops-enforcements` plugin lives in Aesop-Xi (`plugins/aesops-enforcements/`, marketplace
+  `aesop-xi`), with its RULES.md. Every repo's settings and the user settings enable it from there.
+- **Claude Code:** `.claude/settings.json` enables every plugin above, `aesops-enforcements@aesop-xi` and
+  `greedy-crane@nvaex-vault`, sets the default agent (`"agent": "greedy-crane:wiki-admin"`; `claude --agent <name>`
+  picks another), and turns off the root `.mcp.json` copies of the plugins' MCP servers (`disabledMcpjsonServers`), so
+  Claude uses the plugins' own copies.
+- **Every other agent (AGY, any MCP client):** `.mcp.json` starts the same six servers (claw, chrome-devtools,
+  jev-rea-mcp, dumbass-memory, rea-mcp, burn-mcp) by repo-relative path; `.agents/plugins.json` registers `plugins/`.
+- **Launchers:** `~/bin/crane` = greedy-crane, this repo as root, the vault, Aesop-Xi and shared storage attached.
+  One launcher per agent (copy it, change `--agent`).
+- Shared plugin tools: `tools/plugin-shared/`. Plugin design docs: `docs/plugins/`.
