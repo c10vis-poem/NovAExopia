@@ -9,20 +9,24 @@ SessionStart	*	observe-event	10	-
 UserPromptSubmit	*	direction-gate	8	!
 UserPromptSubmit	*	enforce-prompt	10	-
 UserPromptSubmit	*	observe-event	10	-
+UserPromptSubmit	*	source-gate	8	-
 PreToolUse	*	direction-gate	8	!
 PreToolUse	Bash|Read	secret-guard	8	#show-secret
 PreToolUse	Bash|Edit|Write	guard	8	!	\.claude|gate|nvaex-hooks|disableAllHooks
 PreToolUse	Bash	push-gate	40	#skip-git	push|gh
 PreToolUse	AskUserQuestion	answer-gate	8	#skip-answer
 PreToolUse	Bash|Edit|Write|Read	repo-gate	70	#skip-repo
+PreToolUse	Bash	source-gate	8	#skip-source	install|clone|pkg|add
 PreToolUse	*	task-gate	8	#skip-enforce
 PreToolUse	Write|Edit|NotebookEdit|Bash	session-log	8	-
 PostToolUse	Edit|Write|Bash|Read	session-log	10	-
 PostToolUse	Read	task-gate	8	-
+PostToolUse	Read|Bash|WebFetch|WebSearch|mcp__.*	source-gate	8	-
 PostToolUseFailure	*	observe-event	8	-
 PermissionDenied	*	observe-event	8	-
 Stop	*	stop-gate	60	#skip-stop
 Stop	*	answer-gate	10	#skip-answer
+Stop	*	source-gate	10	#skip-source
 SubagentStop	*	stop-gate	10	#skip-stop
 SessionEnd	*	session-log	60	-
 SessionEnd	*	ship-session	30	#no-ship

@@ -8,7 +8,7 @@
 # observe-dismiss) and the hook scripts, none of which reach here. An interpreter (python/node/perl/ruby)
 # or a shell -c string that names the state dir counts as a write (it can open() anything).
 in=$(cat); tool=$(jq -r '.tool_name // ""' <<<"$in" 2>/dev/null) || exit 0
-P='((resume|confirm|plan|required|satisfied|observe-queue|checkin|pushnow|pushok|written|opening|advised|defer-why|wrapup|override|blocks|prompt|noship|nomerge|shown|direct4|job)-|hooks-off|off([/[:space:]"'"'"']|$))'
+P='((resume|confirm|plan|required|satisfied|observe-queue|checkin|pushnow|pushok|written|opening|advised|defer-why|wrapup|override|blocks|prompt|noship|nomerge|shown|direct4|job|source|source-mode)-|hooks-off|off([/[:space:]"'"'"']|$))'
 say(){ echo "BLOCKED (state-guard): $1 is enforcement state. Only the operator, resume-item, observe-dismiss or the hooks change it (obs 0017)." >&2; exit 2; }
 if [ "$tool" != Bash ]; then
   f=$(jq -r '.tool_input.file_path // ""' <<<"$in"); f=${f/#\~/$HOME}
