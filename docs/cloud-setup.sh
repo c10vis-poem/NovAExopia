@@ -6,11 +6,11 @@
 # environment's variables, never here. Needs network access that reaches github.com.
 set -u
 mk() { claude plugin marketplace add "$1" >/dev/null 2>&1 && echo "marketplace $1" || echo "marketplace $1 FAILED"; }
-in() { claude plugin install "$1" --scope user >/dev/null 2>&1 && echo "installed $1" || echo "install $1 FAILED"; }
+inst() { claude plugin install "$1" --scope user >/dev/null 2>&1 && echo "installed $1" || echo "install $1 FAILED"; }
 mk c10vis-poem/Aesop-Xi        # marketplace aesop-xi: the rules and hooks
 mk c10vis-poem/NovAExopia      # marketplace novaexopia: tools, agents, MCP servers
 mk c10vis-poem/NovAExorpus     # marketplace nvaex-vault: greedy-crane
-in aesops-enforcements@aesop-xi
-for p in nvaex-jev-core nvaex-memory nvaex-rea-forge nvaex-burn claw-mcp nvaex-ui-cockpit; do in "$p@novaexopia"; done
-in greedy-crane@nvaex-vault
+inst aesops-enforcements@aesop-xi
+for p in nvaex-jev-core nvaex-memory nvaex-rea-forge nvaex-burn claw-mcp nvaex-ui-cockpit; do inst "$p@novaexopia"; done
+inst greedy-crane@nvaex-vault
 claude plugin list 2>&1 | grep -cE 'enabled' | sed 's/^/plugins enabled: /'
