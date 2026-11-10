@@ -4,7 +4,7 @@ All from `c10vis-poem/Aesop-Xi` at origin/main 9867c79 (the operator's own repo;
 
 | Package file | Origin | Changed |
 |---|---|---|
-| scripts/{absence-gate,agent-type-gate,archive-scratchpad,branch-current-gate,build-doc-gate,carryover,change-log,checkin-gate,ci-ready,classify,context-diff,delegation-tripwire,enforce-gate,enforce-prompt,git-gate,housekeeping-check,observe-event,plugin-fork-sync,review-changes,secret-guard,session-ledger,settings-guard,ship-session,staged-updates,state-guard,stop-gate,subagent-stop-gate,sync-on-use,vault-ship}.sh | hooks/ | shebang, phone paths to lib/env.sh; hook-specific changes below |
+| scripts/{absence-gate,agent-type-gate,branch-current-gate,build-doc-gate,carryover,change-log,checkin-gate,ci-ready,classify,context-diff,delegation-tripwire,enforce-gate,enforce-prompt,git-gate,housekeeping-check,observe-event,plugin-fork-sync,review-changes,secret-guard,session-ledger,settings-guard,ship-session,staged-updates,state-guard,stop-gate,subagent-stop-gate,sync-on-use,vault-ship}.sh | hooks/ | shebang, phone paths to lib/env.sh; hook-specific changes below |
 | scripts/direction-gate.sh | new, 2026-11-06 | Rule 1 in the operator's words; replaces resume-gate and checkin-gate |
 | scripts/run-gate.sh | hooks/run-gate.sh + run-hook.sh + PR #84 run-hook.sh safety net | rewritten: event dispatcher, MISSING loud, exit 2 needs a block message, same-call loop breaker, hard guards |
 | scripts/override-phrases.txt | PR #84 hooks/override-phrases.txt | `#skip-enforce` line removed so it stays rule 6's verb, not a lift of every gate |

@@ -16,10 +16,10 @@
 #   W5 RESUME.md rewritten: content differs from the session-start hash AND its first 40 lines carry today's date
 #   W6 nothing uncommitted: session work in c10vis-poem repos committed; the vault has no uncommitted changes
 #      (vault-ship), and every touched repo with commits to ship has CI + required checks (ci-ready)
-#   W7 change review shown and approved by the operator (/ok push)
+#   W7 (removed 2026-11-10: the wrap-up order is the okay to ship; no change review, no /ok push)
 #   W8 staged skill updates installed or #staged-defer (Termux)
 #   W9 housekeeping done when due (/housekeeping), or #housekeeping-defer
-# Always: every pushed branch has a PR with auto-merge and is deleted once merged (rule 10); pending ENFORCEMENTS requirements; after a compaction, task-observer loaded again + new scan.
+# Always: every pushed branch has a PR with auto-merge set (Rule 8; GitHub deletes it on merge); pending ENFORCEMENTS requirements; after a compaction, task-observer loaded again + new scan.
 # Operator-only items block once, then yield (stop_hook_active) so the operator can answer.
 # Bypass hardening: #skip-enforce / #staged-defer count only in prompts the operator typed, never inside a
 # subagent hand-back (<agent-message>, <task-notification>). Items/statuses come from the session-start snapshot.
@@ -255,21 +255,16 @@ if [ -n "$wrap" ] && ! operator_typed '#skip-docs'; then
   done < "$st/docs-missing-$sid.txt"
 fi
 
-# ---------- WRAP-UP W7: change review approved ----------
-if [ -n "$wrap" ] && [ -s "$st/changes-$sid.log" ] && [ ! -f "$st/pushok-$sid" ]; then
-  miss+=("Wrap-up W7: show the operator the change review (bash $HOOKS_DIR/review-changes.sh $sid; paste its tables and the outside-the-vault list) — the wrap-up order (or an okay) ships it; #no-ship withholds")
-fi
-
 # ---------- W8: staged skill updates (Termux) ----------
 stg=$(bash "$HOOKS_DIR/staged-updates.sh" names 2>/dev/null)
 if [ -n "$stg" ] && ! operator_typed '#staged-defer'; then
   notes+=("$(advise staged "Staged skill updates pending ($(paste -sd ';' <<<"$stg")): logged in PENDING.md; the operator installs them (a note, never a block: TO-DO 2026-11-06)")")
 fi
 
-# ---------- Rule 10: every pushed branch gets a PR, auto-merge, then is deleted once merged ----------
+# ---------- Rule 8: every pushed branch gets a PR with auto-merge set (GitHub deletes it on merge) ----------
 pf="$st/pushed-$sid.tsv"
 if [ -s "$pf" ] && [ ! -e "$st/nomerge-$sid" ]; then
-  if ! command -v gh >/dev/null 2>&1; then notes+=("$(advise pushed "gh is not available here: pushed branches not checked for merge and delete (rule 10)")")
+  if ! command -v gh >/dev/null 2>&1; then notes+=("$(advise pushed "gh is not available here: pushed branches not checked for merge and delete (Rule 8)")")
   else
     : > "$pf.new"
     while IFS=$'\t' read -r t b; do
@@ -280,18 +275,13 @@ if [ -s "$pf" ] && [ ! -e "$st/nomerge-$sid" ]; then
       d=$(git -C "$t" symbolic-ref -q --short refs/remotes/origin/HEAD); d=${d#origin/}
       [ "$b" = "${d:-main}" ] && continue
       pr=$(ghq pr list -R "$s" --head "$b" --state all --json number,state,autoMergeRequest --jq 'sort_by(.number)|last|[.number,.state,(.autoMergeRequest!=null)]|@tsv'); rc=$?
-      if [ $rc -ne 0 ]; then notes+=("$(advise "pushed-$b" "could not read the PR for $b in $s: not checked this turn (rule 10)")"); printf '%s\t%s\n' "$t" "$b" >> "$pf.new"; continue; fi
+      if [ $rc -ne 0 ]; then notes+=("$(advise "pushed-$b" "could not read the PR for $b in $s: not checked this turn (Rule 8)")"); printf '%s\t%s\n' "$t" "$b" >> "$pf.new"; continue; fi
       IFS=$'\t' read -r num state auto <<<"$pr"
       case ${state:-NONE} in
-        NONE) miss+=("Rule 10: $b in $s was pushed with no PR. Open one and merge it: gh pr create, then gh pr merge --auto --squash --delete-branch. The operator can type #no-merge")
+        NONE) miss+=("Rule 8: $b in $s was pushed with no PR. Open one and merge it: gh pr create, then gh pr merge --auto --squash. The operator can type #no-merge")
               printf '%s\t%s\n' "$t" "$b" >> "$pf.new" ;;
-        OPEN) [ "$auto" = true ] || miss+=("Rule 10: PR #$num ($b in $s) has no auto-merge. Run gh pr merge $num -R $s --auto --squash --delete-branch; if the repo has no required checks, wait for green CI and merge it. The operator can type #no-merge")
+        OPEN) [ "$auto" = true ] || miss+=("Rule 8: PR #$num ($b in $s) has no auto-merge. Run gh pr merge $num -R $s --auto --squash (GitHub deletes the branch on merge); if the repo has no required checks, wait for green CI and merge it. The operator can type #no-merge")
               printf '%s\t%s\n' "$t" "$b" >> "$pf.new" ;;
-        MERGED) grep -qxF "$b" "$st/keep-$sid.txt" 2>/dev/null && continue
-              if git -C "$t" ls-remote -q --exit-code --heads origin "$b" >/dev/null 2>&1 || git -C "$t" rev-parse -q --verify "refs/heads/$b" >/dev/null 2>&1; then
-                miss+=("Rule 10: $b in $s is merged but not deleted. Delete it locally and on origin. The operator can type #keep-branch $b")
-                printf '%s\t%s\n' "$t" "$b" >> "$pf.new"
-              fi ;;
       esac
     done < "$pf"
     mv "$pf.new" "$pf"

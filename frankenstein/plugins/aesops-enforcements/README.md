@@ -1,6 +1,6 @@
 # aesops-enforcements
 
-The ten rules as one plugin, all on, on any device. `RULES.md` is the only rule text: ten rules, 14 hooks, 23 wirings on 10 lifecycle events. Enable the plugin and they run; nothing starts off.
+The ten rules as one plugin, all on, on any device. `RULES.md` is the only rule text: ten rules, 14 hooks, 22 wirings on 9 lifecycle events. Enable the plugin and they run; nothing starts off.
 
 ## How it runs
 
@@ -15,7 +15,6 @@ The ten rules as one plugin, all on, on any device. `RULES.md` is the only rule 
 | PostToolUseFailure (1), PermissionDenied (1) | observe-event |
 | Stop (2) | stop-gate, answer-gate |
 | SubagentStop (1) | stop-gate |
-| PreCompact (1) | session-log |
 | SessionEnd (2) | session-log, ship-session |
 
 ## Operator controls
@@ -68,7 +67,7 @@ Everything runs from the plugin root. The table names the checks inside the hook
 | observe-event | vault checkpoints.log | compaction scan count starts at 0 |
 | sync-on-use (repo-gate) | gh, network, `~/repos` | logged, not blocked (on the phone a failed sync blocks) |
 | ci-ready | gh, GitHub reachable | preflight skipped |
-| archive-scratchpad | a scratchpad under `$TMPDIR` | skipped |
+| save-session-log | the NvAEx-Recaps checkout | logged, session log not saved |
 | ship-session | gitleaks, gh | repo reported NOT SHIPPED, nothing pushed |
 | vault-ship | a vault checkout | says so, ships nothing |
 

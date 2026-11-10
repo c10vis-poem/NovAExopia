@@ -48,7 +48,8 @@ every session, no exceptions.
 PR required. No direct pushes to main. CI runs gitleaks + structure check.
 Before every push, scan the diff for secrets/keys and refuse to push if any
 are found. On green CI, auto-merge into `main` immediately — do not wait for
-a manual merge step. Leave the branch in place after merge; do not delete it.
+a manual merge step. Auto-merge and auto-delete are set together while CI runs; GitHub deletes the
+branch on merge (operator, 2026-11-10).
 
 The point of this workflow is that everything reaches `main` — a branch
 that never gets a PR opened, or a PR that never gets merged, is a failure

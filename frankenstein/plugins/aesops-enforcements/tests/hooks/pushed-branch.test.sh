@@ -19,7 +19,7 @@ L 'git push'; ok "$(wc -l < "$st/pushed-S.tsv" | tr -d ' ')" 1 "bare push: curre
 : > "$T/pr"; ok "$(Stop 'with no PR')" 1 "no PR: held"
 printf '7\tOPEN\tfalse\n' > "$T/pr"; ok "$(Stop 'has no auto-merge')" 1 "PR without auto-merge: held"
 printf '7\tOPEN\ttrue\n' > "$T/pr"; ok "$(Stop 'Rule 10')" 0 "auto-merge on: not held"
-printf '7\tMERGED\tfalse\n' > "$T/pr"; ok "$(Stop 'not deleted')" 1 "merged, branch still here: held"
+printf '7\tMERGED\tfalse\n' > "$T/pr"; ok "$(Stop 'not deleted')" 0 "merged, branch still here: not held (GitHub deletes it)"
 touch "$st/nomerge-S"; printf '7\tOPEN\tfalse\n' > "$T/pr"; ok "$(Stop 'Rule 10')" 0 "#no-merge lifts it"; rm "$st/nomerge-S"
 echo topic > "$st/keep-S.txt"; printf '7\tMERGED\tfalse\n' > "$T/pr"; ok "$(Stop 'not deleted')" 0 "#keep-branch keeps it"
 ok "$(wc -c < "$st/pushed-S.tsv" | tr -d ' ')" 0 "kept branch is done with"

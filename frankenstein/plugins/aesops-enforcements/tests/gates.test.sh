@@ -67,10 +67,10 @@ CHECKS="state-guard ci-ready agent-type-gate build-doc-gate branch-current-gate 
 verb() { awk -F'\t' -v n="$1" '$3==n{print $5; exit}' "$PKG/scripts/gates.tsv"; }
 
 echo "--- wiring"
-ok "$(jq '.hooks|length' "$PKG/hooks/hooks.json")" 10 "10 lifecycle events"
-ok "$(jq '[.hooks[][]|.hooks[]]|length' "$PKG/hooks/hooks.json")" 10 "one hook entry per event (CONTRACT rule 4)"
-ok "$(jq -r '[.hooks[][]|.hooks[].command]|map(select(test("^bash \"\\$\\{CLAUDE_PLUGIN_ROOT\\}/scripts/run-gate.sh\" --event ")))|length' "$PKG/hooks/hooks.json")" 10 "every entry is the one launcher on CLAUDE_PLUGIN_ROOT"
-ok "$(awk -F'\t' '!/^#/{print $1}' "$PKG/scripts/gates.tsv" | sort -u | wc -l | tr -d ' ')" 10 "table covers the same 10 events"
+ok "$(jq '.hooks|length' "$PKG/hooks/hooks.json")" 9 "9 lifecycle events (PreCompact removed 2026-11-10: nothing runs there)"
+ok "$(jq '[.hooks[][]|.hooks[]]|length' "$PKG/hooks/hooks.json")" 9 "one hook entry per event (CONTRACT rule 4)"
+ok "$(jq -r '[.hooks[][]|.hooks[].command]|map(select(test("^bash \"\\$\\{CLAUDE_PLUGIN_ROOT\\}/scripts/run-gate.sh\" --event ")))|length' "$PKG/hooks/hooks.json")" 9 "every entry is the one launcher on CLAUDE_PLUGIN_ROOT"
+ok "$(awk -F'\t' '!/^#/{print $1}' "$PKG/scripts/gates.tsv" | sort -u | wc -l | tr -d ' ')" 9 "table covers the same 9 events"
 for h in $(awk -F'\t' '!/^#/{print $3}' "$PKG/scripts/gates.tsv" | sort -u); do
   yes_ "RULES.md lists $h with its revoke" 'grep -q "gate off $h" "$PKG/RULES.md"'
   v=$(verb "$h"); case $v in -|!) ;; *) yes_ "RULES.md names the verb of $h" 'grep -qF -- "$v" "$PKG/RULES.md"' ;; esac
@@ -124,15 +124,13 @@ fresh; fire PostToolUseFailure "$(jq -nc '{session_id:"S",hook_event_name:"PostT
 yes_ "observe-event PostToolUseFailure: queued" 'grep -q "tool-fail" "$st/observe-queue-S.tsv"'
 fire PermissionDenied "$(jq -nc '{session_id:"S",hook_event_name:"PermissionDenied",tool_name:"Edit",reason:"no"}')"
 yes_ "observe-event PermissionDenied: queued" 'grep -q "denied" "$st/observe-queue-S.tsv"'
-fresh; mkdir -p "$T/tmp/claude-1/p/S/scratchpad"; echo note > "$T/tmp/claude-1/p/S/scratchpad/n.md"
-TMPDIR=$T/tmp fire PreCompact "$(ev PreCompact)"
-yes_ "archive-scratchpad PreCompact: archived" 'ls "$HOME"/.claude/scratchpad-archive/*_S/n.md >/dev/null 2>&1'
-rm -rf "$HOME/.claude/scratchpad-archive"; TMPDIR=$T/tmp fire SessionEnd "$(ev SessionEnd)"
-yes_ "archive-scratchpad SessionEnd: archived" 'ls "$HOME"/.claude/scratchpad-archive/*_S/n.md >/dev/null 2>&1'
+fresh; RECAPS_REPO=$T/no-recaps fire SessionEnd "$(ev SessionEnd)"
+yes_ "save-session-log SessionEnd: no Recaps checkout is logged, not fatal" 'grep -q "save-session-log: .* not a git repo" "$st/hooks.log"'
+yes_ "no device copy of the scratchpad (one place only)" '[ ! -d "$HOME/.claude/scratchpad-archive" ]'
 fresh; mkdir -p "$st/recaps"; printf '# Session\n\n## Repos touched\n\n## Files written\n\n## Git actions\n' > "$st/recaps/2026-11-05-S.md"
 fire SessionEnd "$(ev SessionEnd)"; ok "$rc" 0 "ship-session: SessionEnd returns"
-for i in 1 2 3 4 5 6 7 8 9 10; do grep -q 'held: change review' "$HOME/.claude/logs/ship-session.log" 2>/dev/null && break; sleep 0.5; done
-yes_ "ship-session: worker ran and held without /ok push" 'grep -q "held: change review not approved" "$HOME/.claude/logs/ship-session.log"'
+for i in 1 2 3 4 5 6 7 8 9 10; do grep -q 'held: no wrap-up' "$HOME/.claude/logs/ship-session.log" 2>/dev/null && break; sleep 0.5; done
+yes_ "ship-session: worker ran and held without the wrap-up order" 'grep -q "held: no wrap-up order" "$HOME/.claude/logs/ship-session.log"'
 fresh; mkdir -p "$st/recaps"; printf '# Session\n\n## Repos touched\n\n## Files written\n\n## Git actions\n' > "$st/recaps/2026-11-05-S.md"; : > "$st/pushok-S"
 ups "all done #no-ship"; fire SessionEnd "$(ev SessionEnd)"
 for i in 1 2 3 4 5 6 7 8 9 10; do grep -q 'held: operator' "$HOME/.claude/logs/ship-session.log" 2>/dev/null && break; sleep 0.5; done
@@ -229,10 +227,9 @@ r=$HOME/repos/sy; mkdir -p "$r"; git init -q "$r"; git -C "$r" remote add origin
 cloud PreToolUse "$(tool Read "$(jq -nc --arg f "$r/a" '{file_path:$f}')" "$r")"; [ $rc = 0 ] || { bad=6; cat "$T/err"; }
 cloud PostToolUse "$(post Write '{"file_path":"/x/a"}')"; [ $rc = 0 ] || bad=7
 cloud Stop "$(ev Stop)"; [ $rc = 0 ] || { bad=8; cat "$T/err"; }
-cloud PreCompact "$(ev PreCompact)"; [ $rc = 0 ] || bad=9
 cloud SessionEnd "$(ev SessionEnd)"; [ $rc = 0 ] || bad=10
 ok "$bad" 0 "cloud with no vault, no phone paths, no working gh: nothing blocks"
-for k in 'housekeeping-check' 'staged-updates' 'context-diff' 'enforce-prompt: row' 'sync-on-use: sy' 'archive-scratchpad'; do
+for k in 'housekeeping-check' 'staged-updates' 'context-diff' 'enforce-prompt: row' 'sync-on-use: sy'; do
   yes_ "cloud degrade logged: $k" 'grep -q "DEGRADE $k" "$st/hooks.log"'
 done
 fresh; export VAULT=$HOME/v; mkdir -p "$VAULT"; echo R > "$VAULT/RESUME.md"; rm -f "$st/job-S"; cloud PreToolUse "$(tool Bash '{"command":"ls"}')"; ok "$rc" 2 "cloud: direction-gate still blocks"

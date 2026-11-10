@@ -19,6 +19,13 @@ if [ "$ev" = UserPromptSubmit ]; then
   [ -f "$ST/resume-$sid.ok" ] || { if [ -f "$r" ]; then sha256sum "$r" | cut -d" " -f1 > "$ST/resume-$sid.ok"; else : > "$ST/resume-$sid.ok"; fi; }
   # Direction: a # word anywhere ("#go ahead" at the end of a message counts), or "hashtag" (dictation).
   # Affirmation: the Rule 2 check-in answers (okay, amend, override, defer) or a plain yes/go, at the start of any line.
+  # Rule 4, "unless the operator directs it": a direction (#) that names settings, hooks, gates or the
+  # switches lets guard (settings-guard, state-guard) through for this prompt only; the next prompt re-decides.
+  rm -f "$ST/direct4-$sid"
+  if grep -qE '(^|[[:space:]])#[[:space:]]?[[:alnum:]]|(^|[[:space:]])hashtag([[:space:]]|$)' <<<"$pall" \
+     && grep -qE '(settings|hooks?|gates?|switch(es)?|disableallhooks|kill switch)' <<<"$pall"; then
+    echo "$(date '+%F %T')" > "$ST/direct4-$sid"; hook_log "Rule 4: operator direction names settings/hooks/rules ($sid)"
+  fi
   if grep -qE '(^|[[:space:]])#[[:space:]]?[[:alnum:]]|(^|[[:space:]])hashtag([[:space:]]|$)' <<<"$pall"; then echo direction > "$job"
   elif grep -qE "^[[:space:]]*[0-9.)-]*[[:space:]]*(ok|okay|yes|yep|yup|yeah|go|go ahead|do it|override|amend|defer|approved)([[:space:][:punct:]]|$)" <<<"$pall"; then echo affirmation > "$job"
   # Rule 1: one opening covers the whole job. A comment or question mid-job does not close it

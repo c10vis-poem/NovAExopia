@@ -29,7 +29,7 @@ ok "$(C Write "$T/repos/x/.claude/settings.local.json" '{"disableAllHooks":true}
 ok "$(C Edit "$T/repos/x/.claude/settings.json" '"disableAllHooks": false')" 0 "setting it false -> pass"
 ok "$(C Edit "$T/repos/x/notes.md" '"disableAllHooks": true')" 0 "the words in a notes file -> pass"
 ok "$(B "jq '.disableAllHooks=true' a.json > .claude/settings.json")" 2 "jq writes it through a redirect -> block"
-ok "$(B "python3 -c 'x={\"disableAllHooks\": true}'")" 2 "interpreter with it -> block"
+ok "$(B "python3 -c 'x={\"disableAllHooks\": true}'")" 0 "interpreter mentioning it, no settings target -> pass (operator 2026-11-09 false-positive fix)"
 ok "$(B "claude --settings '{\"disableAllHooks\": true}'")" 2 "session started with it -> block"
 ok "$(B 'jq -e ".disableAllHooks==true" .claude/settings.json 2>/dev/null')" 0 "reading it -> pass"
 ok "$(B 'grep disableAllHooks .claude/settings.json')" 0 "grep for it -> pass"

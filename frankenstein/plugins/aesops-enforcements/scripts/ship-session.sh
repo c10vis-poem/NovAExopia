@@ -1,16 +1,17 @@
 #!/usr/bin/env bash
-# SessionEnd: ship what this session made, in one pass (policy: mid-session commits stay on LOCAL topic
-# branches; no push/PR/merge until here). Nothing ships until the operator approved the change review
-# ("/ok push"), and only repos in the session-ledger.sh recap's "## Repos touched" are looked at: never
+# SessionEnd: the operator's GitHub rule (Rule 8), in one pass. Forks touched are synced first (repo-gate);
+# every push and merge waits until here. Nothing ships until the operator's wrap-up order (/wrapup, recorded
+# by enforce-prompt); only repos in the session-ledger.sh recap's "## Repos touched" are looked at: never
 # a repo merely because it has worktrees or unpushed branches. #no-ship skips the SessionEnd run.
+# The session log (scratchpad and task log) is the wrap-up's job, not this one: save-session-log.sh.
 # Per touched repo (origin must match ORIGIN_RE):
 #   1. leftovers = ledger "Files written" in that repo + dirty files newer than the start marker
 #      -> committed onto a session branch (never `git add -A`).
 #   2. every local branch (any worktree) except the default with commits not on any remote branch
 #      and committed after the start marker -> gitleaks scan (no gitleaks, no gh: not shipped) -> push
-#      -> PR (reuse open one) -> ci-ready preflight -> gh pr merge --auto --squash --delete-branch.
-#   3. poll PR state up to POLL_MAX s; local+remote branch deleted ONLY once state is MERGED.
-#   (also) the recap is copied to $RECAPS_REPO/recaps/<repo>/ for every repo touched, shipped on its own branch.
+#      -> PR (reuse open one) -> ci-ready preflight -> the repo's "delete head branches on merge" setting on
+#      -> gh pr merge --auto --squash, set while CI runs. No watching CI, no deleting by hand: GitHub merges
+#      on green and deletes the branch. (Private free-plan repos cannot auto-merge: wait for green, merge.)
 #   (also) the vault ships (vault-ship, then the vault-sync PR) only when the session touched it.
 #   (also) a repo with no origin is reported "NO REMOTE, NOT SHIPPED", never silently skipped.
 #   4. append "## Shipped" (+ RESUME: rewritten|NOT REWRITTEN) and "## Title" to the recap;
@@ -51,11 +52,10 @@ vault_touched=; [ -n "$vault_top" ] && section 'Repos touched' | grep -qxF -- "$
 echo "=== $(date '+%F %T') session=$sid dry=${dry:-0}"
 [ "$1" = --worker ] && [ -e "$STATE_DIR/noship-$sid" ] && { echo "held: operator typed #no-ship"; printf '\n## Shipped\n\n- NOT SHIPPED: the operator typed #no-ship. Ship by hand with: ship-session --now %s\n' "$sid" >> "$ledger"; exit 0; }
 
-# Nothing ships until the operator has approved the change review ("#ok push"; review-changes.sh).
-# Always required, not only with a change log: a commit made through Bash leaves no line there.
+# Nothing ships until the operator's wrap-up order (/wrapup; enforce-prompt records it).
 if [ ! -f "$STATE_DIR/pushok-$sid" ]; then
-  echo "held: change review not approved"
-  [ -z "$dry" ] && printf '\n## Shipped\n\n- NOT SHIPPED: the operator has not approved the change review (#ok push). Run review-changes %s, then ship with: ship-session --now %s\n' "$sid" "$sid" >> "$ledger"
+  echo "held: no wrap-up order"
+  [ -z "$dry" ] && printf '\n## Shipped\n\n- NOT SHIPPED: the operator did not give the wrap-up order (/wrapup). Ship with: ship-session --now %s\n' "$sid" >> "$ledger"
   exit 0
 fi
 
@@ -97,7 +97,7 @@ commit_leftovers() { # in $top; sets $result (empty if nothing to commit)
 
 ship_branch() { # $1 = local branch, in $top
   local br=$1 out pr am=refused
-  if [ -n "$dry" ]; then lines+=("- $top: DRY-RUN: would push $br, PR to $def, auto-merge, delete after MERGED"); return; fi
+  if [ -n "$dry" ]; then lines+=("- $top: DRY-RUN: would push $br, PR to $def, auto-merge and auto-delete"); return; fi
   # The pipeline's secret scan runs here too: a device without the global git hooks must not push unscanned.
   command -v gitleaks >/dev/null 2>&1 || { degrade ship-scan "ship-session: no gitleaks here, $top not shipped"; lines+=("- $top: branch $br: NOT SHIPPED: no gitleaks on this device (pipeline needs the secret scan)"); return; }
   command -v gh >/dev/null 2>&1 || { degrade ship-gh "ship-session: no gh here, $top not shipped"; lines+=("- $top: branch $br: NOT SHIPPED: no gh on this device (no PR, so no push)"); return; }
@@ -133,9 +133,11 @@ ship_branch() { # $1 = local branch, in $top
   elif [ -n "$pr" ] && [ $rc -ne 0 ]; then
     am="refused ($why)"
   else
-    [ -n "$pr" ] && gh pr merge "$pr" --auto --squash --delete-branch >/dev/null 2>&1 && am=on
+    # GitHub deletes the branch on merge (repo setting); auto-merge set now, while CI runs. No watching.
+    gh repo edit "$slug" --delete-branch-on-merge >/dev/null 2>&1 && ad=on || ad="not set (gh repo edit failed)"
+    [ -n "$pr" ] && gh pr merge "$pr" --auto --squash >/dev/null 2>&1 && am="on, auto-delete $ad"
   fi
-  B_top+=("$top") B_br+=("$br") B_pr+=("${pr:-none}") B_am+=("$am") B_mg+=("$([ -e "$STATE_DIR/nomerge-$sid" ] && echo held || { [ -n "$pr" ] && echo pending || echo no-PR; })")
+  B_top+=("$top") B_br+=("$br") B_pr+=("${pr:-none}") B_am+=("$am")
 }
 
 ship_repo() { # $1 = repo toplevel
@@ -209,31 +211,7 @@ ship_extra() {
   done
   lines=("${lines[@]:0:n}" "${keep[@]}")
 }
-# Copy the recap into the recaps repo (one folder per repo touched) on its own branch off origin; it is shipped last.
-copy_recaps() {
-  local names=() t m n wt rdef br
-  while IFS= read -r t; do m=$(main_top "$t") || continue; names+=("${m##*/}"); done < <(section 'Repos touched')
-  [ ${#names[@]} -gt 0 ] || return
-  mapfile -t names < <(printf '%s\n' "${names[@]}" | sort -u)
-  [ -d "$RECAPS_REPO/.git" ] || { lines+=("- recaps: $RECAPS_REPO missing, recap NOT copied"); return; }
-  if [ -n "$dry" ]; then lines+=("- recaps: DRY-RUN: would copy ${ledger##*/} to recaps/{${names[*]}}/ in $RECAPS_REPO"); return; fi
-  # Rule 9: the recap is the one session log, so it carries every recorded action too.
-  [ -s "$STATE_DIR/changes-$sid.log" ] && ! grep -q '^## Changes' "$ledger" && { printf '\n## Changes\n\n'; sed 's/^/- /' "$STATE_DIR/changes-$sid.log"; } >> "$ledger"
-  git -C "$RECAPS_REPO" fetch -q origin 2>/dev/null
-  rdef=$(git -C "$RECAPS_REPO" symbolic-ref -q --short refs/remotes/origin/HEAD); rdef=${rdef:-origin/main}
-  br="recaps/$date-${sid:0:8}"; wt="$RECAPS_REPO/.wt-recaps-${sid:0:8}"
-  git -C "$RECAPS_REPO" worktree add -q -b "$br" "$wt" "$rdef" 2>/dev/null \
-    || { lines+=("- recaps: cannot create worktree $wt, recap NOT copied"); return; }
-  for n in "${names[@]}"; do mkdir -p "$wt/recaps/$n"; cp "$ledger" "$wt/recaps/$n/${ledger##*/}"; done
-  git -C "$wt" add recaps
-  if git -C "$wt" commit -q -m "recaps: session $date ${sid:0:8}" -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>" >/dev/null 2>&1; then
-    lines+=("- recaps: copied ${ledger##*/} to recaps/{${names[*]}}/ on $br")
-  else lines+=("- recaps: commit BLOCKED on $br (secret found or commit failed)"); fi
-  git -C "$RECAPS_REPO" worktree remove --force "$wt" 2>/dev/null
-}
-
 while IFS= read -r top; do ship_repo "$top" </dev/null; done < <(section 'Repos touched')
-copy_recaps
 [ -n "$dry" ] || [ ! -d "$RECAPS_REPO/.git" ] || ship_extra "$RECAPS_REPO"
 # upload the vault first (vault-ship replaces GitSync's upload); then the vault-sync -> main PR
 if [ -n "$vault_touched" ]; then
@@ -243,29 +221,8 @@ fi
 
 if [ -n "$dry" ]; then printf '%s\n' "${lines[@]}"; echo "RESUME: $resume"; exit 0; fi
 
-# Poll until every PR is MERGED or POLL_MAX elapses; delete branches only after MERGED.
-end=$((SECONDS + POLL_MAX))
-while :; do
-  left=0
-  for i in "${!B_br[@]}"; do
-    [ "${B_mg[i]}" = pending ] || continue
-    if [ "$(gh pr view "${B_pr[i]}" --json state -q .state 2>/dev/null)" = MERGED ]; then
-      B_mg[i]=yes
-      git -C "${B_top[i]}" branch -q -D "${B_br[i]}" 2>/dev/null   # fails if checked out somewhere
-      git -C "${B_top[i]}" ls-remote -q --exit-code --heads origin "${B_br[i]}" >/dev/null \
-        && git -C "${B_top[i]}" push -q origin --delete "${B_br[i]}"
-    else left=1; fi
-  done
-  if [ -n "$vault_pr" ]; then [ "$(gh pr view "$vault_pr" --json state -q .state 2>/dev/null)" = MERGED ] && vault_pr="" || left=1; fi
-  [ $left = 0 ] || [ $SECONDS -ge $end ] && break
-  sleep "$POLL_SECS"
-done
 for i in "${!B_br[@]}"; do
-  del=no
-  [ "${B_mg[i]}" = yes ] && ! git -C "${B_top[i]}" rev-parse -q --verify "refs/heads/${B_br[i]}" >/dev/null \
-    && ! git -C "${B_top[i]}" ls-remote -q --exit-code --heads origin "${B_br[i]}" >/dev/null && del=yes
-  mg=${B_mg[i]}; [ "$mg" = pending ] && mg="pending (awaiting merge)"
-  lines+=("- ${B_top[i]}: branch ${B_br[i]}, PR ${B_pr[i]}, auto-merge ${B_am[i]}, merged $mg, branch deleted $del")
+  lines+=("- ${B_top[i]}: branch ${B_br[i]}, PR ${B_pr[i]}, auto-merge ${B_am[i]}")
 done
 
 [ -n "$vault_touched" ] && vault_realign

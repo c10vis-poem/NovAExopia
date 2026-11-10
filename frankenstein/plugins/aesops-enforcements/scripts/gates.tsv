@@ -24,6 +24,5 @@ PermissionDenied	*	observe-event	8	-
 Stop	*	stop-gate	60	#skip-stop
 Stop	*	answer-gate	10	#skip-answer
 SubagentStop	*	stop-gate	10	#skip-stop
-PreCompact	*	session-log	60	-
 SessionEnd	*	session-log	60	-
 SessionEnd	*	ship-session	30	#no-ship

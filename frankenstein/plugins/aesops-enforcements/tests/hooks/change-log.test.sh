@@ -36,9 +36,9 @@ ok "$(grep -c '^## Change review' "$RECAPS_DIR/2026-10-08-S1.md")" 1 "review wri
 bash "$S/review-changes.sh" S1 >/dev/null
 ok "$(grep -c '^## Change review' "$RECAPS_DIR/2026-10-08-S1.md")" 1 "re-running replaces, not duplicates"
 
-# ship-session holds until "#ok push"
-ok "$(bash "$S/ship-session.sh" --dry-run S1 2>/dev/null | grep -c 'held: change review not approved')" 1 "ship held before approval"
-jq -n '{session_id:"S1",prompt:"/ok push",cwd:"/"}' | bash "$S/enforce-prompt.sh" >/dev/null 2>&1
-ok "$([ -f "$STATE_DIR/pushok-S1" ] && echo yes)" yes "/ok push records approval"
-ok "$(bash "$S/ship-session.sh" --dry-run S1 2>/dev/null | grep -c 'held: change review')" 0 "ship proceeds after approval"
+# ship-session holds until the operator's wrap-up order (/wrapup); no separate /ok push
+ok "$(bash "$S/ship-session.sh" --dry-run S1 2>/dev/null | grep -c 'held: no wrap-up order')" 1 "ship held before /wrapup"
+jq -n '{session_id:"S1",prompt:"/wrapup",cwd:"/"}' | bash "$S/enforce-prompt.sh" >/dev/null 2>&1
+ok "$([ -f "$STATE_DIR/pushok-S1" ] && echo yes)" yes "/wrapup records the okay to ship"
+ok "$(bash "$S/ship-session.sh" --dry-run S1 2>/dev/null | grep -c 'held: no wrap-up')" 0 "ship proceeds after /wrapup"
 echo "== $pass passed, $fail failed"; rm -rf "$T"; [ "$fail" = 0 ]

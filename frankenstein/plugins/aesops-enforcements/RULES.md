@@ -11,13 +11,19 @@ Every hook serves a rule, and runs through `scripts/run-gate.sh`; `scripts/gates
 | 1 | No actions, no reading, no tool use without explicit permission or direction. A `#` message is a direction; okay or yes opens the job; one opening covers the whole job. Inference is not an okay. Once directed, what the job requires gets done first | direction-gate | operator's `#`, okay or yes | `gate off direction-gate` |
 | 2 | No state change before check-in: answer is okay, amend or override | direction-gate | okay, override or `#` | `gate off direction-gate`, `gate off enforce-prompt` |
 | 3 | Secrets never printed unredacted; git hooks never skipped | secret-guard | `#show-secret <path>` for one call | `gate off secret-guard` |
-| 4 | The agent cannot edit settings, enforcement state or the off switches, cannot run `gate off/on`, and cannot set `disableAllHooks` true in any repo | guard | none for the agent; the operator uses a `!` line | `gate off guard` |
+| 4 | The agent cannot edit settings, enforcement state or the off switches, cannot run `gate off/on`, and cannot set `disableAllHooks` true in any repo, **unless the operator directs it**: a `#` direction that names settings, hooks, gates or the switches opens guard for that prompt only (direction-gate writes the marker; state-guard keeps the agent from writing it) | guard | the operator's `#` direction naming the target, or a `!` line | `gate off guard` |
 | 5 | Questions: every menu has a write-in option; no turn ends on a yes/no or either/or question | answer-gate | `#skip-answer` | `gate off answer-gate` |
 | 6 | What the task requires gets done before other tools run, and still-owed work carries across prompts: the skills, tools and files in ENFORCEMENTS.md, build docs, a capable subagent | task-gate; enforce-prompt works out what each prompt requires | `#skip-enforce` | `gate off task-gate` |
 | 7 | A turn cannot end with required steps missing: skills, tools and reads still owed, opening and wrap-up steps, a subagent's plan and scope, and housekeeping when due (`/housekeeping`, or `#housekeeping-defer`) | stop-gate; session-start and observe-event feed it | `#skip-stop`, `/wrapup-defer N why: ...`; `observe-dismiss <id> "<reason>"` closes a friction event | `gate off stop-gate`, `gate off session-start`, `gate off observe-event` |
-| 8 | No "not found / doesn't exist" answer without a search this turn | answer-gate | `#skip-answer` | `gate off answer-gate` |
-| 9 | One session log: every repo touch, file write, commit, move, delete and script run. It is the recap that goes to NvAEx-Recaps. The scratchpad's files are saved on the device | session-log (never blocks) | n/a | `gate off session-log` |
-| 10 | Everything GitHub: forks synced before touching, no work on a branch behind main, nothing ships mid-session; it ships at the end, touched repos only, after `/ok push`, through secret scan, PR and CI. A pushed branch gets auto-merge right away and is deleted once merged, unless the operator types `#no-merge` or `#keep-branch <name>`. The Stop gate holds the turn until that is done | repo-gate (`#skip-repo`); push-gate (`#skip-git`, or "push now"; "hold push" revokes, `/wrapup` opens it); stop-gate; ship-session (`#no-ship`) | as listed | `gate off repo-gate`, `gate off push-gate`, `gate off ship-session` |
+| 8 | Read and verify before saying it (operator's Rule 9): no "not found / doesn't exist" answer without a search this turn (absence-gate); no claim cited by file and line unless that file was read this session, and no "done / fixed / passing" after edits unless something ran after the last edit, and no claim that something is false, unsupported or won't work without official documentation fetched or a real trial run that turn; training data is not a source (claim-gate) | answer-gate | `#skip-answer` | `gate off answer-gate` |
+| 9 | One session log (operator's Rule 7), two parts in one place: the scratchpad (the agent's notes on what was done all session) and the task log (every repo touch, file write, commit, move, delete, script run, skill used and tool used). At SessionEnd save-session-log commits both to NvAEx-Recaps `session-logs/<date>-<session>/`; no other copy is kept. Part of the wrap-up protocol, not of the GitHub rule | session-log (never blocks) | n/a | `gate off session-log` |
+| 10 | Everything GitHub (operator's Rule 8): any fork touched is synced with its main branch first; any repo changed keeps every push and merge until the end; at the end: secret scan, push, PR, CI, with auto-merge and auto-delete set while CI runs. Nobody watches CI and nobody deletes branches by hand. The wrap-up order (`/wrapup`) is the okay to ship; there is no `/ok push`. `#no-merge` and `#keep-branch <name>` are the operator's exceptions | repo-gate (`#skip-repo`); push-gate (`#skip-git`, or "push now"; "hold push" revokes, `/wrapup` opens it); stop-gate; ship-session (`#no-ship`) | as listed | `gate off repo-gate`, `gate off push-gate`, `gate off ship-session` |
+
+## 2026-11-10: operator decisions (session 437a362c)
+
+- **Rule 11, routed items (operator):** a routed skill, tool or read that goes unused is a stop gate everywhere, except on automated (unattended) tasks, where it is a highlight, not a stop. task-gate already stops; the automated-task highlight is not built yet.
+- **Numbering:** the table above still uses the old ten-rule numbers; the operator's eleven (NvAEx-Recaps `handoff/2026-11-06/RULES-DRAFT.md`) are the authority. Rows 4, 8 and 9 above carry the operator's numbers in brackets. Renumbering the table is still owed.
+- **Rule 10, sub-agents:** has no row in this table yet; the gates that exist are under 2026-11-08 below.
 
 ## The 14 hooks
 
@@ -34,7 +40,7 @@ Each is one switch. Some run several checks, which stay as separate files in `sc
 | stop-gate | itself, subagent-stop-gate | no ending with required steps missing |
 | session-start | context-diff, housekeeping-check, staged-updates | what the session must know |
 | observe-event | itself | queues failures, denials and corrections |
-| session-log | change-log, session-ledger, carryover, archive-scratchpad | the one session log |
+| session-log | change-log, session-ledger, carryover, save-session-log | the one session log |
 | repo-gate | sync-on-use, branch-current-gate | repo synced and branch current |
 | push-gate | git-gate, ci-ready | no mid-session pushes, no auto-merge without CI |
 | ship-session | itself | ships at session end after `/ok push` |

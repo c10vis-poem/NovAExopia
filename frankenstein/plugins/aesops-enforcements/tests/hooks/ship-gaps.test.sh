@@ -2,7 +2,7 @@
 # ship-session.sh scope: (1) a worktree the session never touched is NOT shipped (operator order 2026-11-05),
 # while one reached with `git -C` IS listed and shipped,
 # (2) a repo with no origin is reported "NO REMOTE, NOT SHIPPED" (not silently skipped),
-# (3) the recap is copied to <recaps repo>/recaps/<repo>/ for every repo touched.
+# (3) no recap copy per repo: the session log is save-session-log's (Rule 7), one place only.
 source "$(dirname "$0")/lib.sh"
 SID=55555555-aaaa-bbbb-cccc-000000000000
 export REPOS_DIR=$T/repos RECAPS_REPO=$T/work/rr POLL_MAX=2 POLL_SECS=1
@@ -27,7 +27,7 @@ dry=$(bash "$HOOKS/ship-session.sh" --dry-run "$SID" 2>&1); echo "$dry"
 check "dry-run: unlisted worktree branch NOT planned" '! grep -q "pending-fold" <<<"$dry"'
 check "dry-run: git -C worktree planned" 'grep -q "would push reached" <<<"$dry"'
 check "dry-run: no-remote repo reported" 'grep -q "/rw: NO REMOTE, NOT SHIPPED" <<<"$dry"'
-check "dry-run: recap copy planned for rn and rw" 'grep -qE "would copy .* to recaps/\{rn rw\}/" <<<"$dry"'
+check "dry-run: no recap copy planned" '! grep -q "would copy" <<<"$dry"'
 
 bash "$HOOKS/ship-session.sh" --worker "$SID" > "$SHIP_LOG" 2>&1; cat "$SHIP_LOG"; echo ----; cat "$L"; echo ----; cat "$T/gh.log"
 check "untouched repo rx: not pushed, no PR" '! git -C "$T/remotes/rx.git" rev-parse -q --verify refs/heads/pending-fold >/dev/null && ! grep -q -- "--head pending-fold" "$T/gh.log"'
@@ -35,8 +35,7 @@ check "untouched repo rx: not in the recap" '! grep -q "/rx" "$L"'
 check "git -C worktree branch pushed with a PR" 'git -C "$T/remotes/rn.git" rev-parse -q --verify refs/heads/reached >/dev/null && grep -q -- "--head reached" "$T/gh.log"'
 check "no-remote repo: loud line in recap" 'grep -q "/rw: NO REMOTE, NOT SHIPPED" "$L"'
 check "no-remote repo: not described as a non-fork skip" '! grep -q "/rw: skipped: origin not" "$L"'
-check "recaps branch pushed with a copy per repo" 'b=recaps/$(date +%F)-55555555; git -C "$T/remotes/rr.git" rev-parse -q --verify refs/heads/$b >/dev/null && for n in rn rw; do git -C "$T/remotes/rr.git" cat-file -e $b:recaps/$n/$(basename "$L") || exit 1; done'
-check "recaps PR created" 'grep -q -- "--head recaps/$(date +%F)-55555555" "$T/gh.log"'
+check "no recaps/<repo> branch made by ship-session" '! git -C "$T/remotes/rr.git" rev-parse -q --verify refs/heads/recaps/$(date +%F)-55555555 >/dev/null'
 check "recaps worktree cleaned up" '[ ! -e "$W/rr/.wt-recaps-55555555" ]'
 check "untouched nothing-to-ship repos stay out of the recap" '! grep -q "/rr: skipped" "$L"'
 finish
