@@ -202,7 +202,21 @@ def main():
                       "skills_equipped": skills, "skills_unused": sunused}))
 
 
+def cov_cli():
+    """--coverage <transcript> <path>...: whole-file coverage of each path (a folder: its text files)."""
+    rows = load(sys.argv[2]); files = []
+    for t in sys.argv[3:]:
+        t = ex(t)
+        if os.path.isdir(t):
+            for root, dirs, fs in os.walk(t):
+                dirs[:] = [x for x in dirs if x not in SKIP_DIRS]
+                files += [os.path.realpath(os.path.join(root, f)) for f in fs if not SKIP_RE.search(f)]
+        else:
+            files.append(t)
+    print(json.dumps(coverage(rows, files)))
+
+
 try:
-    main()
+    cov_cli() if len(sys.argv) > 1 and sys.argv[1] == "--coverage" else main()
 except Exception:
     print("{}")

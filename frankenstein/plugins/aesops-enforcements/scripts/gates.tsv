@@ -16,7 +16,6 @@ PreToolUse	Bash|Edit|Write	guard	8	!	\.claude|gate|nvaex-hooks|disableAllHooks
 PreToolUse	Bash	push-gate	40	#skip-git	push|gh
 PreToolUse	AskUserQuestion	answer-gate	8	#skip-answer
 PreToolUse	Bash|Edit|Write|Read	repo-gate	70	#skip-repo
-PreToolUse	Bash	source-gate	8	#skip-source	install|clone|pkg|add
 PreToolUse	*	task-gate	8	#skip-enforce
 PreToolUse	Write|Edit|NotebookEdit|Bash	session-log	8	-
 PostToolUse	Edit|Write|Bash|Read	session-log	10	-

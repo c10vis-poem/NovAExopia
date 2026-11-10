@@ -10,6 +10,7 @@ ok "$(M '[{"question":"1","options":[{"label":"Other"}]},{"question":"2","option
 ok "$(echo 'not json{' | bash "$S/menu-gate.sh" 2>/dev/null; echo $?)" 0 "malformed -> pass"
 ok "$(Q 'Done.\n\nWant me to ship it?')" 2 "want me to -> block"
 ok "$(Q 'A or B?')" 2 "either/or -> block"
+ok "$(Q 'Which one first, or is there something else you want to bring up?')" 0 "list plus an open alternative -> not either/or"
 ok "$(Q 'Is that ok?')" 2 "is that ok -> block"
 ok "$(Q 'Press 2, or I will keep approving.')" 2 "or I will -> block"
 ok "$(Q 'Which package did you mean?')" 0 "open question -> pass"

@@ -1,6 +1,6 @@
 # aesops-enforcements
 
-The ten rules as one plugin, all on, on any device. `RULES.md` is the only rule text: ten rules, 14 hooks, 26 wirings on 9 lifecycle events. Enable the plugin and they run; nothing starts off.
+The ten rules as one plugin, all on, on any device. `RULES.md` is the only rule text: ten rules, 14 hooks, 25 wirings on 9 lifecycle events. Enable the plugin and they run; nothing starts off.
 
 ## How it runs
 

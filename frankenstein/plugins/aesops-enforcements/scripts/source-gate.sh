@@ -80,19 +80,24 @@ need() {       # name root what mode -> block with what is missing
     say "$what $n (brief): look it up in $idx/chunk.jsonl, or read the current $idx/manifest.jsonl plus the file it points to (or do the deep read). Training data and another model's word are not sources."
   fi
 }
-mode=$(cat "$ST/source-mode-$sid" 2>/dev/null); mode=${mode:-brief}
+mode=brief
 
-# ---------- mode, from the operator's prompt ----------
+# ---------- the operator's read orders (operator 2026-11-10: "every time I want Claude to read something, I
+# tell it, with the reason, and I say full read or brief analysis; the stop gate makes sure it does it") ----------
+# A prompt with a read verb and a target (a path, or an asset named) records an order: mode<TAB>kind<TAB>target.
+# Mode: full (default; full, deep, whole, entire, every, all of, thorough) or brief (brief, quick, rundown, skim,
+# summary, fact check). The order stands until it is done; nothing is required that the operator did not order.
 if [ "$ev" = UserPromptSubmit ]; then
-  p=$(jq -r '.prompt // ""' <<<"$in" | tr '[:upper:]' '[:lower:]')
-  if grep -qE '(breakdown|break down|full install|install|compar(e|ison)|user guide|walkthrough|walk through|deep (read|dive)|evaluat|eval\b|in depth|in-depth|audit|everything about)' <<<"$p"; then m=deep; else m=brief; fi
-  mkdir -p "$ST"; echo "$m" > "$ST/source-mode-$sid"
-  # Answers are checked only for assets the operator's prompt names (operator 2026-11-10: "you should only have
-  # to read something if I tell you to"). Installs are always checked.
-  : > "$ST/source-asked-$sid"
+  p=$(jq -r '.prompt // ""' <<<"$in"); pl=$(tr '[:upper:]' '[:lower:]' <<<"$p")
+  grep -qE '(^|[^[:alnum:]])(read|reread|re-read|go through|digest|ingest)([^[:alnum:]]|$)' <<<"$pl" || exit 0
+  if grep -qE '(brief|quick|rundown|run-down|skim|summary|fact[ -]check)' <<<"$pl"; then m=brief; else m=full; fi
+  grep -qE '(full|deep|whole|entire|every|all of|thorough|in depth|in-depth)' <<<"$pl" && m=full
+  mkdir -p "$ST"; o="$ST/source-asked-$sid"
+  for w in $p; do w=${w//[\"\'\`,;()]/}; w=${w%.}; w=${w/#\~/$HOME}; case $w in /*) [ -e "$w" ] && printf '%s\tpath\t%s\n' "$m" "$(realpath -m "$w")" >> "$o" ;; esac; done
   for d in "$REPOS"/*/; do n=${d%/}; n=${n##*/}; [ ${#n} -ge 4 ] || continue
-    grep -qiE "(^|[^[:alnum:]_-])$(sed 's/[.[\*^$()+?{|]/\\&/g' <<<"$n" | tr '[:upper:]' '[:lower:]')([^[:alnum:]_-]|$)" <<<"$p" && echo "$n" >> "$ST/source-asked-$sid"
-  done; exit 0
+    grep -qiE "(^|[^[:alnum:]_-])$(sed 's/[.[\*^$()+?{|]/\\&/g' <<<"$n" | tr '[:upper:]' '[:lower:]')([^[:alnum:]_-]|$)" <<<"$pl" && printf '%s\tasset\t%s\n' "$m" "$n" >> "$o"
+  done
+  [ -f "$o" ] && sort -u -o "$o" "$o"; exit 0
 fi
 
 # ---------- recording ----------
@@ -122,33 +127,28 @@ if [ "$ev" = PostToolUse ]; then
   exit 0
 fi
 
-# ---------- installs and clones ----------
-if [ "$ev" = PreToolUse ] && [ "$tool" = Bash ]; then
-  c=$(jq -r '.tool_input.command // ""' <<<"$in")
-  I='(^|[;&|[:space:]])(pip3? install|pipx install|uv (pip )?install|npm (i|install|ci)|pnpm (add|install)|yarn add|pkg install|apt(-get)? install|cargo install|go install|make install|git clone|gh repo clone|claude plugin install)([[:space:]]|$)'
-  command grep -qE "$I" <<<"$c" || exit 0
-  a=$(asset_of "$cwd")
-  for w in $c; do w=${w//[\"\']/}; w=${w/#\~/$HOME}; case $w in /*) b=$(asset_of "$w"); [ -n "$b" ] && a=$b ;; esac; done
-  if [ -n "$a" ]; then IFS=$'\t' read -r n r <<<"$a"; is_read "$n" "$r" deep && exit 0; need "$n" "$r" "Before installing from" deep; fi
-  has "*" webdoc && exit 0
-  say "Before this install or clone, fetch its official install guide or README (WebFetch, gh repo view, the vendor's docs) and read it. Training data is not a source."
-fi
-
-# ---------- answers about an asset ----------
+# ---------- the turn cannot end with a read order undone ----------
 if [ "$ev" = Stop ]; then
   [ "$(jq -r '.stop_hook_active // false' <<<"$in")" = true ] && exit 0
-  msg=$(jq -r '.last_assistant_message // ""' <<<"$in")
-  # one sentence per line; the operator's words restated ("Read as: ...") and quoted text are not claims
-  msg=$(sed -E '/^[[:space:]]*Read as:/d; s/"[^"]*"//g; s/“[^”]*”//g' <<<"$msg" | sed -E 's/([.!?])[[:space:]]+/\1\n/g')
-  F='(^|[^[:alnum:]])(install(s|ed|ing)?|features?|flags?|options?|supports?|setup|set up|config(ure|uration)?|spec|version|commands?)([^[:alnum:]]|$)'
-  command grep -qiE '(^|[^[:alnum:]])(install(s|ed|ing)?|features?|flags?|options?|supports?|setup|set up|config(ure|uration)?|spec|version|commands?)([^[:alnum:]]|$)' <<<"$msg" || exit 0
-  for d in "$REPOS"/*/; do
-    n=${d%/}; n=${n##*/}; [ ${#n} -ge 4 ] || continue
-    grep -qxF -- "$n" "$ST/source-asked-$sid" 2>/dev/null || continue   # only assets the operator asked about
-    nre="(^|[^[:alnum:]_-])$(sed 's/[.[\*^$()+?{|]/\\&/g' <<<"$n")([^[:alnum:]_-]|$)"
-    command grep -iE "$nre" <<<"$msg" | command grep -qiE "$F" || continue   # name and feature word in one sentence
-    is_read "$n" "${d%/}" || need "$n" "${d%/}" "This answer is about"
-  done
+  o="$ST/source-asked-$sid"; [ -s "$o" ] || exit 0
+  tp=$(jq -r '.transcript_path // empty' <<<"$in"); tp=${tp/#\~/$HOME}
+  left=; keep=
+  while IFS=$'\t' read -r m k t; do
+    [ -n "$t" ] || continue; done_=
+    if [ "$k" = asset ]; then
+      is_read "$t" "$REPOS/$t" "$([ "$m" = full ] && echo deep || echo brief)" && done_=1
+    elif [ -f "$tp" ]; then
+      c=$(python3 "$(dirname "$(realpath "$0")")/subagent_audit.py" --coverage "$tp" "$t" 2>/dev/null)
+      if [ "$m" = full ]; then [ "$(jq -r '(.partial|length)+(.unread|length)' <<<"$c" 2>/dev/null)" = 0 ] && done_=1
+      else [ "$(jq -r '(.full|length)+(.partial|length)' <<<"$c" 2>/dev/null)" -gt 0 ] 2>/dev/null && done_=1; fi
+      [ -z "$done_" ] && left+="$t ($m read: $(jq -r '[(.unread+.partial)[]|split("/")|last]|.[:5]|join(", ")' <<<"$c" 2>/dev/null) still unread or partial); "
+    fi
+    if [ -n "$done_" ]; then continue; fi
+    keep+="$m"$'\t'"$k"$'\t'"$t"$'\n'
+    [ "$k" = asset ] && left+="$t ($m read; $([ "$m" = full ] && echo "every clean MD in $(idx_of "$t" "$REPOS/$t")/clean_md/, or its tree and every doc file" || echo "its chunk.jsonl, or its manifest plus a file it points to")); "
+  done < "$o"
+  printf '%s' "$keep" > "$o"
+  [ -n "$left" ] && say "You were told to read: ${left:0:600} Do the read the operator ordered (every line of every file for a full read), then answer."
   exit 0
 fi
 exit 0
