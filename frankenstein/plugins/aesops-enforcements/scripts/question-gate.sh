@@ -14,7 +14,7 @@ hit=
 if command grep -qiE '\?$' <<<"$last"; then
   command grep -qiE "$yn" <<<"$last" && hit=yes/no
   command grep -qiE '(^|[[:space:]])(ok|okay|right|yes|no)\?$' <<<"$last" && hit=yes/no
-  command grep -qiE '[[:space:]]or[[:space:]]' <<<"$last" && ! command grep -qiE 'or[^?]*(something|anything) else|or other' <<<"$last" && hit=either/or   # an open alternative is a write-in, not either/or (operator 2026-11-10)
+  command grep -qiE '[[:space:]]or[[:space:]]' <<<"$last" && ! command grep -qiE 'or[^?]*(some|any)(thing|where|one|body) else|or other' <<<"$last" && hit=either/or   # an open alternative is a write-in, not either/or (operator 2026-11-10)
 fi
 command grep -qiE ",? or i('|’)?(ll| will) " <<<"$last" && hit=either/or
 # Rule 8: the agent never tells the operator to merge; merging is the agent's job (auto-merge on green CI).
