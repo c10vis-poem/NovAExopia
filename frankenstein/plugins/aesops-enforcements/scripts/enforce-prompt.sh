@@ -15,7 +15,8 @@ lp=$(tr '[:upper:]' '[:lower:]' <<<"$prompt")
 # Wrap-up mode ONLY from the /wrapup command at the start of the prompt (mentions of "wrap up" don't count).
 wrapcmd=; grep -qE '^/wrap-?up([[:space:]]|$)' <<<"$lp" && { touch "$st/wrapup-$sid"; wrapcmd=1; }
 # "push now" lasts for the rest of the session (a later prompt doesn't revoke it); "hold push" / "don't push" does.
-grep -q 'push now' <<<"$lp" && touch "$st/pushnow-$sid"
+# Rule 8 "unless the operator says otherwise": "push now", or a # direction that orders a push, opens pushing (obs 0081).
+{ grep -q 'push now' <<<"$lp" || { grep -qE '(^|[[:space:]])#' <<<"$lp" && grep -qE "(^|[^a-z'])push(ed)?([^a-z]|$)" <<<"$lp" && ! grep -qE "(don'?t|do not|never|no|hold( the)?|stop) push" <<<"$lp"; }; } && touch "$st/pushnow-$sid"
 grep -qE "hold (the )?push|don'?t push|stop push" <<<"$lp" && rm -f "$st/pushnow-$sid"
 # Operator check-off (sessions with a RESUME snapshot):
 #   #ok | #ok 1,3 | #ok 1-4 | #ok all | #defer 2 | #reject 2 | #write 2 <text> | #write <text>
