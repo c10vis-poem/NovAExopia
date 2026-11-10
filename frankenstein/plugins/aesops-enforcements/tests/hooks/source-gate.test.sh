@@ -18,6 +18,7 @@ P(){ jq -cn --arg s "$1" --arg p "$2" '{session_id:$s,hook_event_name:"UserPromp
 RD(){ E "$1" PostToolUse Read "$(jq -cn --arg f "$2" '{file_path:$f}')" >/dev/null; }
 BA(){ E "$1" PostToolUse Bash "$(jq -cn --arg c "$2" '{command:$c}')" "${3:-/}" >/dev/null; }
 INST='{"command":"pip install -e ."}'
+P S1 "what flags does jevtool have?"
 
 # S1: full read (no clean MD yet)
 ok "$(E S1 PreToolUse Bash "$INST" "$R")" 2 "install in an unread repo -> block"
@@ -27,6 +28,8 @@ ok "$(ST S1 "jevtool supports a --fast flag." true)" 0 "stop_hook_active -> pass
 ok "$(ST S1 "The weather is nice.")" 0 "answer not about an asset -> pass"
 ok "$(ST S1 "Read as: launch with jevtool attached, then set up the flags.")" 0 "the operator's words restated -> not a claim"
 ok "$(ST S1 "jevtool is attached. The settings file has flags.")" 0 "name and feature word in different sentences -> pass"
+P S6 "how is the weather"
+ok "$(ST S6 "jevtool supports a --fast flag.")" 0 "operator did not ask about jevtool -> no read required"
 RD S1 "$R/README.md"; RD S1 "$R/INSTALL.md"
 ok "$(E S1 PreToolUse Bash "$INST" "$R")" 2 "docs read but no tree, one doc missing -> block"
 BA S1 "find $R -not -path '*/.git/*'"; RD S1 "$R/docs/guide.md"
@@ -36,6 +39,7 @@ ok "$(E S1 PreToolUse Bash '{"command":"git clone https://github.com/x/newthing"
 E S1 PostToolUse WebFetch '{"url":"https://github.com/x/newthing#readme"}' >/dev/null
 ok "$(E S1 PreToolUse Bash '{"command":"git clone https://github.com/x/newthing"}')" 0 "clone after its README was fetched -> pass"
 ok "$(E S1 PreToolUse Bash '{"command":"ls -la"}')" 0 "not an install -> pass"
+P S2 "what does jevtool support?"
 ok "$(AESOP_AUTOMATED=1 bash -c "jq -cn '{session_id:\"S2\",hook_event_name:\"Stop\",last_assistant_message:\"jevtool supports x\"}' | bash '$S/source-gate.sh'" 2>/dev/null; echo $?)" 0 "automated run: highlight, not a block"
 ok "$(command grep -c 'HIGHLIGHT (source-gate' "$STATE_DIR/hooks.log")" 1 "automated highlight logged"
 

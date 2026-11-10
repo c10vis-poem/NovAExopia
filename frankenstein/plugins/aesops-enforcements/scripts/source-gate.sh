@@ -14,8 +14,8 @@
 #     manifest  its current manifest read (vault Assets-Index/<name>/manifest.jsonl, or the vendor folder's
 #            manifest.jsonl; current = its "head" matches the repo's HEAD) AND at least one file it points to read.
 #   PostToolUse Read|Bash: records reads.   PreToolUse Bash: an install or clone needs its asset read (a clone or
-#   a package with no local repo needs official docs fetched this session).   Stop: an answer about an asset's
-#   features, flags, install or setup needs that asset read. Blocks once per turn (stop_hook_active allows).
+#   a package with no local repo needs official docs fetched this session).   Stop: when the operator's prompt names
+#   an asset and asks about its features, flags, install or setup, the answer needs that asset read. Blocks once per turn (stop_hook_active allows).
 #   Automated runs (AESOP_AUTOMATED=1): a highlight in hooks.log, never a block (Rule 11).
 . "$(dirname "$(realpath "$0")")/lib/env.sh"
 in=$(cat)
@@ -86,7 +86,13 @@ mode=$(cat "$ST/source-mode-$sid" 2>/dev/null); mode=${mode:-brief}
 if [ "$ev" = UserPromptSubmit ]; then
   p=$(jq -r '.prompt // ""' <<<"$in" | tr '[:upper:]' '[:lower:]')
   if grep -qE '(breakdown|break down|full install|install|compar(e|ison)|user guide|walkthrough|walk through|deep (read|dive)|evaluat|eval\b|in depth|in-depth|audit|everything about)' <<<"$p"; then m=deep; else m=brief; fi
-  mkdir -p "$ST"; echo "$m" > "$ST/source-mode-$sid"; exit 0
+  mkdir -p "$ST"; echo "$m" > "$ST/source-mode-$sid"
+  # Answers are checked only for assets the operator's prompt names (operator 2026-11-10: "you should only have
+  # to read something if I tell you to"). Installs are always checked.
+  : > "$ST/source-asked-$sid"
+  for d in "$REPOS"/*/; do n=${d%/}; n=${n##*/}; [ ${#n} -ge 4 ] || continue
+    grep -qiE "(^|[^[:alnum:]_-])$(sed 's/[.[\*^$()+?{|]/\\&/g' <<<"$n" | tr '[:upper:]' '[:lower:]')([^[:alnum:]_-]|$)" <<<"$p" && echo "$n" >> "$ST/source-asked-$sid"
+  done; exit 0
 fi
 
 # ---------- recording ----------
@@ -138,6 +144,7 @@ if [ "$ev" = Stop ]; then
   command grep -qiE '(^|[^[:alnum:]])(install(s|ed|ing)?|features?|flags?|options?|supports?|setup|set up|config(ure|uration)?|spec|version|commands?)([^[:alnum:]]|$)' <<<"$msg" || exit 0
   for d in "$REPOS"/*/; do
     n=${d%/}; n=${n##*/}; [ ${#n} -ge 4 ] || continue
+    grep -qxF -- "$n" "$ST/source-asked-$sid" 2>/dev/null || continue   # only assets the operator asked about
     nre="(^|[^[:alnum:]_-])$(sed 's/[.[\*^$()+?{|]/\\&/g' <<<"$n")([^[:alnum:]_-]|$)"
     command grep -iE "$nre" <<<"$msg" | command grep -qiE "$F" || continue   # name and feature word in one sentence
     is_read "$n" "${d%/}" || need "$n" "${d%/}" "This answer is about"
