@@ -11,7 +11,13 @@ st=$ST
 ck="${VAULT:-/nonexistent}/skill-observations/checkpoints.log"
 add() {  # kind detail [epoch] -> appends an event, prints its id
   local id=e$RANDOM; while grep -q "^$id	" "$q" 2>/dev/null; do id=e$RANDOM; done
-  printf '%s\t%s\t%s\t%s\n' "$id" "${3:-$(date +%s)}" "$1" "$(tr '\t\n' '  ' <<<"$2" | cut -c1-120)" >> "$q"; echo "$id"
+  printf '%s\t%s\t%s\t%s\n' "$id" "${3:-$(date +%s)}" "$1" "$(tr '\t\n' '  ' <<<"$2" | cut -c1-120)" >> "$q"
+  # operator 2026-11-09: friction events go into the session log as they happen, not into a stop-hook demand
+  local led; mkdir -p "$RECAPS_DIR" 2>/dev/null
+  led=$(ls "$RECAPS_DIR/"*-"${sid:0:8}".md 2>/dev/null | head -1); [ -n "$led" ] || led="$RECAPS_DIR/$(date +%F)-${sid:0:8}.md"
+  grep -q '^## Friction events' "$led" 2>/dev/null || printf '\n## Friction events\n' >> "$led"
+  printf -- '- %s %s %s: %s\n' "$(date -d @"${3:-$(date +%s)}" +%T 2>/dev/null)" "$id" "$1" "$(tr '\t\n' '  ' <<<"$2" | cut -c1-200)" >> "$led"
+  echo "$id"
 }
 
 if [ "${1:-}" = sync ]; then   # import the enforce log's new gate BLOCK lines (stop-gate runs this)

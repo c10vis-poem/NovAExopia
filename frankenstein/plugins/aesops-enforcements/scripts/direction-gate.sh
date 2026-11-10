@@ -21,7 +21,10 @@ if [ "$ev" = UserPromptSubmit ]; then
   # Affirmation: the Rule 2 check-in answers (okay, amend, override, defer) or a plain yes/go, at the start of any line.
   if grep -qE '(^|[[:space:]])#[[:space:]]?[[:alnum:]]|(^|[[:space:]])hashtag([[:space:]]|$)' <<<"$pall"; then echo direction > "$job"
   elif grep -qE "^[[:space:]]*[0-9.)-]*[[:space:]]*(ok|okay|yes|yep|yup|yeah|go|go ahead|do it|override|amend|defer|approved)([[:space:][:punct:]]|$)" <<<"$pall"; then echo affirmation > "$job"
-  else rm -f "$job"; fi
+  # Rule 1: one opening covers the whole job. A comment or question mid-job does not close it
+  # (operator 2026-11-09); only a stop word does.
+  elif grep -qE "^[[:space:]]*(stop|hold|hold on|wait|halt)([[:space:][:punct:]]|$)" <<<"$pall"; then rm -f "$job"
+  fi
   exit 0
 fi
 

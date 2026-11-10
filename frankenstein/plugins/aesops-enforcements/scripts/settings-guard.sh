@@ -18,9 +18,12 @@ if [ "$tool" != Bash ]; then
 fi
 c=$(jq -r '.tool_input.command // ""' <<<"$in")
 # Anywhere, any file: a command that writes disableAllHooks true, or starts a session with it.
+# Only when a settings file is the write target (or --settings is passed): a note, a commit message or a
+# PENDING line that merely mentions the key is not a write (false positive, operator 2026-11-09).
 if command grep -qE "$KILL" <<<"$c"; then
   w=$(sed -E 's/[0-9]*>+[[:space:]]*(\/dev\/null|&[0-9])//g' <<<"$c")
-  command grep -qE '>|(^|[;&|[:space:](])(tee|mv|cp|python3?|node|perl|ruby)[[:space:]]|sed[[:space:]]+-[a-zA-Z]*i|--settings' <<<"$w" && kill_say
+  T='settings[A-Za-z0-9._-]*\.json'
+  command grep -qE -- "--settings|>>?[[:space:]]*[\"']?[^[:space:];&|]*$T|(tee|cp|mv|install)[[:space:]][^;&|]*$T|(sed|perl)[[:space:]]+-[a-zA-Z]*i[^;&|]*$T|open\([^)]*$T[^)]*,[[:space:]]*[\"'][wa]|$T[\"']?[^;&|]*(write_text|json\.dump)" <<<"$w" && kill_say
 fi
 H="(~|\\\$HOME|\\\$\\{HOME\\}|${HOME//./\\.})"
 F="$H/\\.claude(/settings(\\.local)?\\.json|\\.json)"

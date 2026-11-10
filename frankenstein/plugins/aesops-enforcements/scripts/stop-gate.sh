@@ -118,10 +118,15 @@ openev=$(awk -F'\t' -v nw="${newest%.*}" '$1=="dismiss"{d[$2]=1;next} {o[++n]=$1
   END{for(i=1;i<=n;i++){x=o[i]; if(!(x in d) && e[x]+0>=nw+0) printf "%s\t%s\t%s\n", x, strftime("%H:%M",e[x]), s[x]}}' "$st/observe-queue-$sid.tsv" 2>/dev/null)
 nfr=0; [ -n "$openev" ] && nfr=$(wc -l <<<"$openev")
 pfr=$(cat "$st/observe-blocked-$sid" 2>/dev/null || echo 0); echo "$nfr" > "$st/observe-blocked-$sid"
-[ "$nfr" -gt 0 ] && while IFS=$'\t' read -r id t s; do
-  miss+=("Friction event $id ($t, $s): log a task-observer observation about it, or: observe-dismiss $id \"<reason>\"")
-done < <(head -5 <<<"$openev")
-[ "$nfr" -gt 5 ] && miss+=("Friction event list: $((nfr-5)) more (observe-dismiss list)")
+# operator 2026-11-09: friction events are written to the session log as they happen (observe-event.sh).
+# The stop hook holds only at wrap-up, and only for an event that did not reach the session log.
+recl=$(ls -t "$RECAPS_DIR"/*-"${sid:0:8}".md 2>/dev/null | head -1)
+if [ -n "$wrap" ] && [ "$nfr" -gt 0 ]; then
+  while IFS=$'\t' read -r id t s; do
+    grep -qF -- " $id " "$recl" 2>/dev/null && continue
+    miss+=("Wrap-up: friction event $id ($t, $s) is missing from the session log (${recl:-no recap}); write it there")
+  done <<<"$openev"
+fi
 
 if [ -n "$wrap" ] && [ -d "$so" ]; then   # W2
   lr=$(head -1 "$so/last-review-date.txt" 2>/dev/null | tr -d '[:space:]')
