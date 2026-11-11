@@ -3,13 +3,18 @@
     {
       "path": "plugins",
       "include_only": [
-        "aesops-enforcements",
         "nvaex-jev-core",
         "nvaex-memory",
         "nvaex-rea-forge",
         "nvaex-burn",
         "nvaex-ui-cockpit",
         "claw-mcp"
+      ]
+    },
+    {
+      "path": "../Aesop-Xi/plugins",
+      "include_only": [
+        "aesops-enforcements"
       ]
     }
   ]
