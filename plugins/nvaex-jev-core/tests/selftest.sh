@@ -50,11 +50,15 @@ o=$(run UserPromptSubmit "{\"cwd\":\"$PRJ\",\"prompt\":\"write a haiku about spr
 echo '{"mode":"confirm","blocked":["brainstorming"]}' > "$PRJ/.claude/skill-gate.json"
 o=$(run PreToolUse "{\"cwd\":\"$PRJ\",\"tool_name\":\"Skill\",\"tool_input\":{\"skill\":\"brainstorming\"}}"); has "$o" 'confirm list' && ! has "$o" '"decision"\|"deny"' && ok "gate nudges, does not block" || { bad gate; echo "$o"; }
 o=$(run PreToolUse "{\"cwd\":\"$PRJ\",\"tool_name\":\"Skill\",\"tool_input\":{\"skill\":\"other\"}}"); [ -z "$o" ] && ok "gate silent for unlisted" || bad "gate unlisted"
-# health: nudge on 5th call, repeat-edit loop
-for i in 1 2 3 4 5; do o=$(run PostToolUse '{"session_id":"s","tool_name":"Bash","tool_input":{}}'); done
-has "$o" 'Gate 3 health' && ok "gate3 every 5" || { bad gate3; echo "$o"; }
-for i in 1 2 3; do o=$(run PostToolUse '{"session_id":"e","tool_name":"Edit","tool_input":{"file_path":"/x/a.py"}}'); done
+# health: speaks only on a real repeat; the repair loop is said once, on the edit that makes it 3
+for i in 1 2 3 4 5; do o=$(run PostToolUse "{\"session_id\":\"s\",\"tool_name\":\"Bash\",\"tool_input\":{\"command\":\"echo $i\"}}"); [ -n "$o" ] && break; done
+[ -z "$o" ] && ok "gate3 silent on 5 different calls" || { bad "gate3 nags"; echo "$o"; }
+for i in 1 2 3; do o=$(run PostToolUse '{"session_id":"r","tool_name":"Bash","tool_input":{"command":"ls"}}'); done
+has "$o" 'Is a step repeating' && ok "gate3 flags the same call 3 times" || { bad "gate3 repeat"; echo "$o"; }
+for i in 1 2 3; do o=$(run PostToolUse '{"session_id":"e","tool_name":"Edit","tool_input":{"file_path":"/x/a.py","old_string":"'$i'"}}'); done
 has "$o" 'repair loop' && ok "repeat-edit loop flagged" || { bad "repeat edit"; echo "$o"; }
+o=$(run PostToolUse '{"session_id":"e","tool_name":"Read","tool_input":{"file_path":"/x/b.py"}}'); has "$o" 'repair loop' && bad "repair loop repeats on later calls" || ok "repair loop said once, not on later calls"
+o=$(run PostToolUseFailure '{"session_id":"h","tool_name":"Bash","tool_input":{"command":"grep -n nothing file.txt"},"error":"Exit code 1"}'); [ -z "$o" ] && ok "no-match grep is not a failure" || { bad "grep exit 1 nudged"; echo "$o"; }
 # failure research nudge: once, then debounced; Bash only
 o=$(run PostToolUseFailure '{"session_id":"f","tool_name":"Bash","tool_input":{"command":"npm i foo"},"error":"ERESOLVE"}'); has "$o" 'today is 20' && has "$o" 'npm i foo' && ok "failure nudge with date" || { bad "failure nudge"; echo "$o"; }
 o=$(run PostToolUseFailure '{"session_id":"f","tool_name":"Bash","tool_input":{"command":"npm i foo"},"error":"ERESOLVE"}'); [ -z "$o" ] && ok "failure nudge debounced" || bad debounce
