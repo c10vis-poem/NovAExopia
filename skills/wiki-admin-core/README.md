@@ -1,6 +1,6 @@
 # wiki-admin-core
 
-Skills the wiki-admin agent (NovusAExenti `executor-core/wiki-admin/`) loads. Text comes from the operator's `_02.wiki-admn-docs` Drive folder; each SKILL.md names its Drive id.
+Skills the wiki-admin agent (NovusAExenti `executor-core/file-administrator/`) loads. Text comes from the operator's `_02.wiki-admn-docs` Drive folder; each SKILL.md names its Drive id.
 
 | Skill | What it answers |
 |---|---|
