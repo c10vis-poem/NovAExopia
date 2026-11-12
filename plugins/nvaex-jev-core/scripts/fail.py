@@ -4,6 +4,11 @@ import json, os, sys, time, datetime
 d = json.load(sys.stdin)
 if d.get("tool_name") != "Bash":
     sys.exit(0)
+# Harmless exits are not failures: exit 1 from a search with no match or a compare with differences.
+_cmd = ((d.get("tool_input") or {}).get("command") or "").strip()
+_first = os.path.basename(_cmd.split()[0]) if _cmd else ""
+if "Exit code 1" in str(d.get("error") or "")[:40] and _first in ("grep", "egrep", "fgrep", "rg", "diff", "cmp", "test", "["):
+    sys.exit(0)
 st = os.path.expanduser("~/.claude/state/nvaex-jev-core"); os.makedirs(st, exist_ok=True)
 f = os.path.join(st, "fail-%s.t" % d.get("session_id", "x"))
 try:
