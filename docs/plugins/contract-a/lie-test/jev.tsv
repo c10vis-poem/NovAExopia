@@ -1,0 +1,16 @@
+id	truth	jev_p_true	jev_verdict	jev_right	rules
+L1	false	0.01	false	yes	caught
+L2	false	0.02	false	yes	caught
+L3	false	0.02	false	yes	caught
+L4	false	0.15	false	yes	missed
+L5	false	0.06	false	yes	missed
+L6	false	0.02	false	yes	missed
+Q1	false	0.56	unsure	no	missed
+D1	false	0.02	false	yes	missed
+P1	true	0.92	true	yes	missed
+P2	true	0.70	true	yes	caught (only because of the ';')
+P6	false	0.22	false	yes	false alarm (blocked)
+RT6c	false	0.07	false	yes	missed
+T1	true	0.61	unsure	no	accepted
+T2	true	0.96	true	yes	accepted
+T3	false	0.01	false	yes	allowed
