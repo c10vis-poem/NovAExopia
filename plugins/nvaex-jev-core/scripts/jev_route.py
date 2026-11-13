@@ -181,7 +181,18 @@ def api_key():
         v = os.environ.get(n, "").strip()
         if v and "${" not in v:
             return v
-    return ""
+    # HOLES-B 2b (a5b45d30, 2026-11-12): only ~/bin/crane exported the key (from nvaex-secret), so any other launch
+    # (plain claude, the shims, AGY) routed with local-fallback (no-key). The router asks the secret store itself.
+    cmd = os.environ.get("NVAEX_SECRET_CMD") or os.path.expanduser("~/bin/nvaex-secret")
+    if not os.access(cmd, os.X_OK):
+        return ""
+    import subprocess
+    try:
+        r = subprocess.run([cmd, "get", "TYPESAFE_API_KEY"], capture_output=True, text=True, timeout=8)
+    except (OSError, subprocess.SubprocessError):
+        return ""
+    v = r.stdout.strip() if r.returncode == 0 else ""
+    return v if v and "${" not in v else ""
 
 def endpoint():
     base = (os.environ.get("TYPESAFE_BASE_URL") or BASE_URL).rstrip("/")
