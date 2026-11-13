@@ -10,7 +10,8 @@ INSERT INTO nodes(kind,name,qualified_name,file_path,line_start) VALUES('Functio
 INSERT INTO edges(kind,source_qualified,target_qualified,file_path) VALUES('CALLS','b.py::mid','a.py::core','b.py'),('CALLS','c.py::top','b.py::mid','c.py');"
 echo '{"nodes":[{"id":"x","label":"CoreThing","community":1,"source_file":"a.py"}],"links":[]}' > "$T/g.json"
 export DUMBASS_CRG_DB="$T/crg.db" DUMBASS_GRAPHIFY_JSON="$T/g.json" NVAEX_STATE="$T/state" NVAEX_RECAPS="$T/recaps"
-export DUMBASS_SHARED_DIR="$T/shared"
+export DUMBASS_SHARED_DIR="$T/shared" NVAEX_SECRET_CLI="$T/no-secret-cli"  # tests never reach the real Supabase
+unset SUPABASE_URL SUPABASE_SERVICE_ROLE_KEY
 mkdir -p "$T/recaps/memory" "$T/repo/sub/deep" "$T/repo/memory"
 git -C "$T/repo" init -q .
 cat > "$T/repo/memory/decisions.md" <<'M'
@@ -50,12 +51,17 @@ names = sorted(t["name"] for t in rpc("tools/list")["result"]["tools"])
 ok(names == sorted(["memory.query", "memory.record_claim", "memory.ast_impact", "memory.cas_verify", "memory.scope_status",
                     "memory.snapshot", "memory.freeze", "memory.task", "memory.recap", "memory.export", "memory.map", "memory.lint",
                     "memory.save", "memory.session_summary", "memory.search", "memory.timeline", "memory.get_observations",
-                    "memory.session_context"]),
-   "tools/list has the 5 stream tools + 7 memory.py tools + 6 observation tools, no nudge")
+                    "memory.session_context", "memory.capture_thought", "memory.recall", "memory.review"]),
+   "tools/list has the 5 stream tools + 7 memory.py tools + 6 observation tools + 3 OB1 tools, no nudge")
+# OB1 tools with no Supabase keys: an error that names the missing keys, never a silent "nothing found"
+r = rpc("tools/call", {"name": "memory.recall", "arguments": {"query": "x"}})["result"]
+ok(r["isError"] and "no Supabase keys" in r["content"][0]["text"], "OB1 recall without keys is a clear error")
 # observation store (claude-mem port): JSONL in DUMBASS_SHARED_DIR is the source of truth, FTS5 index rebuilt from it
 sv = tool("memory.save", project="p", type="decision", title="Use stdlib sqlite for claude-mem", facts=["no bun"],
           text="password=hunter2xyz")
 ok(sv["saved"] and len(sv["id"]) == 64, "save writes a sha256-keyed record")
+ok(sv["supabase"] == "no-keys" and os.path.exists(os.environ["DUMBASS_DATA_DIR"] + "/supabase_pending.jsonl"),
+   "save with no Supabase keys queues the row for the next sync")
 ok(tool("memory.save", project="p", type="decision", title="Use stdlib sqlite for claude-mem", facts=["no bun"],
         text="password=hunter2xyz")["saved"] is False, "save refuses the same content twice")
 line = open(os.environ["DUMBASS_SHARED_DIR"] + "/p.jsonl").read()

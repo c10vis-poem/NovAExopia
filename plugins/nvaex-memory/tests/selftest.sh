@@ -5,6 +5,8 @@ P="$(cd "$(dirname "$0")/.." && pwd)"; V="python3 $P/scripts/memory.py"
 T="$(mktemp -d)"; trap 'rm -rf "$T"' EXIT
 export HOME="$T/home"; mkdir -p "$HOME" "$T/recaps/memory" "$T/repo"
 export NVAEX_RECAPS="$T/recaps" NVAEX_STATE="$T/state" CCFIND_CONFIG_DIR="$T/cc"
+export DUMBASS_SHARED_DIR="$T/shared" DUMBASS_DATA_DIR="$T/data" NVAEX_SECRET_CLI="$T/no-secret-cli"
+unset SUPABASE_URL SUPABASE_SERVICE_ROLE_KEY
 fail=0; ok(){ echo "PASS $1"; }; no(){ echo "FAIL $1"; fail=1; }
 chk(){ if eval "$2"; then ok "$1"; else no "$1"; fi; }
 
@@ -60,8 +62,15 @@ cat > "$T/tr.jsonl" <<J
 {"type":"user","message":{"role":"user","content":"set up the thing token=ghp_abcdefghijklmnopqrstuvwxyz0123"}}
 {"type":"assistant","message":{"role":"assistant","content":[{"type":"text","text":"Done, thing set up."}]}}
 J
+# capture: what the session read, edited and ran (the rules plugin calls `memory.py capture` after each tool call)
+echo '{"session_id":"sess-1234567","tool_name":"Read","tool_input":{"file_path":"'"$T/repo/a.txt"'"}}' | $V capture
+echo '{"session_id":"sess-1234567","tool_name":"Edit","tool_input":{"file_path":"'"$T/repo/b.txt"'"}}' | $V capture
+echo '{"session_id":"sess-1234567","tool_name":"Bash","tool_input":{"command":"ls -la"}}' | $V capture
+chk "capture logs each tool call" "[ \$(wc -l < $T/state/tooluse/sess-1234567.jsonl) = 3 ]"
 echo '{"transcript_path":"'"$T/tr.jsonl"'","session_id":"sess-1234567","cwd":"'"$T/repo"'"}' | $V recap
 echo '{"transcript_path":"'"$T/tr.jsonl"'","session_id":"sess-1234567","cwd":"'"$T/repo"'"}' | $V recap
+chk "session end writes one summary to the observation store" "[ \$(grep -c '\"kind\": \"summary\"' $T/shared/repo.jsonl) = 1 ] && grep -q 'b.txt' $T/shared/repo.jsonl && grep -q '1 shell commands' $T/shared/repo.jsonl && ! grep -q ghp_ $T/shared/repo.jsonl"
+chk "session start loads the project's memory" "echo '{\"cwd\":\"$T/repo\",\"source\":\"startup\"}' | $V snapshot | grep -q 'Project memory (1 records'"
 D="$T/recaps/memory/$(date +%Y-%m-%d).md"
 chk "daily recap written" "grep -q 'set up the thing' $D"
 chk "secret redacted" "! grep -q ghp_ $D"
