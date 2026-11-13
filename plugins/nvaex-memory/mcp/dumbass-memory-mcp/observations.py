@@ -105,8 +105,77 @@ def put(c, r):
     return True
 
 
+# ---- Supabase mirror on every save: never blocks a save; offline rows queue and go with the next save ------
+SECRET_CLI = os.path.expanduser(os.environ.get("NVAEX_SECRET_CLI", "~/bin/nvaex-secret"))
+PENDING = os.path.join(os.path.dirname(INDEX), "supabase_pending.jsonl")
+_CREDS = {}
+
+
+def creds():
+    if "v" not in _CREDS:
+        got = []
+        for name in ("SUPABASE_URL", "SUPABASE_SERVICE_ROLE_KEY"):
+            v = os.environ.get(name, "").strip()
+            if not v and os.path.exists(SECRET_CLI):
+                try:
+                    import subprocess
+                    v = subprocess.run([SECRET_CLI, "get", name], capture_output=True, text=True, timeout=20).stdout.strip()
+                except Exception:
+                    v = ""
+            got.append(v)
+        _CREDS["v"] = tuple(got) if all(got) else None
+    return _CREDS["v"]
+
+
+def supabase_rows(r):
+    return ({"id": r["id"], "kind": r.get("kind", "observation"), "project": r["project"], "session": r.get("session"),
+             "type": r.get("type"), "created_at": r["created_at"], "title": r.get("title"), "subtitle": r.get("subtitle"),
+             "narrative": r.get("narrative") or "\n".join("%s: %s" % (k, r[k]) for k in SUM_FIELDS if r.get(k)) or None,
+             "text": r.get("text"), "facts": as_list(r.get("facts")), "concepts": as_list(r.get("concepts")),
+             "files": as_list(r.get("files") or (r.get("files_read", []) + r.get("files_edited", []))),
+             "source": r.get("source"), "raw": r},
+            {"sha256": r["id"], "label": "observation:%s" % r["project"], "repo": r["project"], "bytes": len(json.dumps(r))})
+
+
+def supabase_post(table, rows, timeout=8):
+    import urllib.request
+    url, key = creds()
+    req = urllib.request.Request(
+        "%s/rest/v1/%s?on_conflict=%s" % (url.rstrip("/"), table, "id" if table == "mem_observations" else "sha256"),
+        data=json.dumps(rows).encode(), method="POST",
+        headers={"apikey": key, "Authorization": "Bearer " + key, "Content-Type": "application/json",
+                 "Prefer": "resolution=merge-duplicates,return=minimal"})
+    with urllib.request.urlopen(req, timeout=timeout) as r:
+        return r.status
+
+
+def mirror(record):
+    """Push this record plus anything queued while offline. Returns 'synced', 'queued' or 'no-keys'."""
+    queued = []
+    if os.path.exists(PENDING):
+        with open(PENDING, encoding="utf-8") as f:
+            queued = [json.loads(l) for l in f if l.strip()]
+    batch = queued + [record]
+    if not creds():
+        status = "no-keys"
+    else:
+        try:
+            obs, cas = zip(*[supabase_rows(r) for r in batch])
+            supabase_post("mem_observations", list(obs))
+            supabase_post("mem_cas", list(cas))
+            if os.path.exists(PENDING):
+                os.remove(PENDING)
+            return "synced"
+        except Exception:
+            status = "queued"
+    os.makedirs(os.path.dirname(PENDING), exist_ok=True)
+    with open(PENDING, "a", encoding="utf-8") as f:
+        f.write(json.dumps(record) + "\n")
+    return status
+
+
 def append(record):
-    """Write one record to its project's JSONL (the source of truth), then to the local index."""
+    """Write one record to its project's JSONL (the source of truth), then to the local index, then to Supabase."""
     body = {k: v for k, v in record.items() if k not in ("id", "created_at", "epoch")}
     record["id"] = hashlib.sha256(json.dumps(body, sort_keys=True).encode()).hexdigest()
     c = index()
@@ -120,7 +189,7 @@ def append(record):
     st = os.stat(p)
     c.execute("INSERT OR REPLACE INTO files_seen VALUES(?,?,?)", (p, st.st_mtime, st.st_size))
     c.commit()
-    return {"id": record["id"], "saved": True, "file": p}
+    return {"id": record["id"], "saved": True, "file": p, "supabase": mirror(record)}
 
 
 # ---- tools (claude-mem's names and three-step search) -----------------------------------------

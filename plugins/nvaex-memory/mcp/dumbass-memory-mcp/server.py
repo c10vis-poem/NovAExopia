@@ -291,6 +291,8 @@ TOOLS = {
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import observations  # noqa: E402  claude-mem's store and three-step search, ported (see its docstring)
 TOOLS.update(observations.TOOLS)
+import ob1  # noqa: E402  OB1 layer: governed semantic memory in Supabase (see its docstring)
+TOOLS.update(ob1.TOOLS)
 
 
 def call(name, args):  # no off switch: memory is never turned off (owner, 2026-11-12 and 2026-11-13)

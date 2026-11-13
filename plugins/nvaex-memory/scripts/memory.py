@@ -115,9 +115,72 @@ def snapshot():
                 out += [f"- [{b.kind}] {clean(b.entry_id, 60)}: {clean(b.detail, 120)}" for b in bad[:10]]
     except Exception:
         pass
+    try:  # the project's observation memory (vault JSONL, mirrored to Supabase): every session starts with it
+        cx = obs().t_context({"project": proj, "limit": 8})
+        if cx["recent"] or cx["last_summary"]:
+            out.append(f"Project memory ({cx['stored']} records; memory.search for more, memory.get_observations for full text):")
+            out += [f"- [{r['type']}] {clean(r['title'] or '', 110)} ({r['id']})" for r in cx["recent"]]
+            ls = cx["last_summary"]
+            if ls and ls.get("next_steps"):
+                out.append(f"Last session's next steps: {clean(ls['next_steps'], 240)}")
+    except Exception:
+        pass
     if len(out) > 1:
         txt = "\n".join(out[: cfg()["snapshotMaxLines"]])
         print(json.dumps({"hookSpecificOutput": {"hookEventName": "SessionStart", "additionalContext": txt}}))
+
+
+def obs():
+    """The observation store (claude-mem port) that lives beside the MCP server."""
+    p = str(HERE.parent / "mcp" / "dumbass-memory-mcp")
+    if p not in sys.path:
+        sys.path.insert(0, p)
+    import observations
+    return observations
+
+
+# ---- capture: every tool call, cheap and local (claude-mem's PostToolUse capture, no worker, no model) ---------
+def tooluse_file(sid):
+    return state_root() / "tooluse" / f"{re.sub(r'[^A-Za-z0-9_-]', '_', sid or 'unknown')}.jsonl"
+
+
+def capture():
+    d = hook_in()
+    ti = d.get("tool_input") or {}
+    path = ti.get("file_path") or ti.get("notebook_path") or ti.get("path") or ""
+    cmd = ti.get("command") or ""
+    rec = {"ts": round(time.time(), 1), "tool": d.get("tool_name", ""), "path": clean(str(path), 240),
+           "cmd": clean(str(cmd).splitlines()[0] if cmd else "", 160),
+           "failed": bool((d.get("tool_response") or {}).get("is_error")) if isinstance(d.get("tool_response"), dict) else False}
+    f = tooluse_file(d.get("session_id"))
+    f.parent.mkdir(parents=True, exist_ok=True)
+    with f.open("a") as fh:
+        fh.write(json.dumps(rec) + "\n")
+
+
+def session_summary(d, proj, prompts, last):
+    """SessionEnd: one session summary into the observation store (vault JSONL + Supabase), built from the tool log."""
+    reads, edits, cmds, fails = [], [], 0, 0
+    f = tooluse_file(d.get("session_id"))
+    if f.is_file():
+        for ln in f.read_text(errors="replace").splitlines():
+            try:
+                r = json.loads(ln)
+            except Exception:
+                continue
+            if r["tool"] in ("Read", "Grep", "Glob") and r["path"] and r["path"] not in reads:
+                reads.append(r["path"])
+            elif r["tool"] in ("Write", "Edit", "NotebookEdit") and r["path"] and r["path"] not in edits:
+                edits.append(r["path"])
+            elif r["tool"] == "Bash":
+                cmds += 1
+            fails += r.get("failed", False)
+    return obs().t_summary({"project": proj, "session": d.get("session_id"),
+                            "request": prompts[0] if prompts else "",
+                            "investigated": f"{len(reads)} files read, {cmds} shell commands, {fails} failed tool calls",
+                            "completed": clean(last, 600),
+                            "notes": "Prompts: " + " | ".join(prompts[1:12]),
+                            "files_read": reads[:60], "files_edited": edits[:60]})
 
 
 RESUME = ("Resume checklist: before acting restate goal, next step (verb-anchored), files, decisions and "
@@ -329,6 +392,10 @@ def recap():
         f.write(json.dumps({"ts": now.isoformat(timespec="seconds"), "session": sid, "project": proj,
                             "layer": "episodic", "file": day.name, "prompts": len(prompts),
                             "autoPromote": False}) + "\n")  # promotion to MEMORY.md is the auditor's job, never ours
+    try:
+        session_summary(d, proj, prompts, last)
+    except Exception as e:
+        (state_root() / "errors.log").open("a").write(f"{time.time()} session_summary: {e!r}\n")
     return day
 
 
@@ -382,6 +449,7 @@ def main():
     try:
         if cmd == "snapshot": snapshot()
         elif cmd == "nudge": nudge()
+        elif cmd == "capture": capture()
         elif cmd == "recap":
             day = recap(); rollup()
             if report: print(json.dumps({"written": str(day) if day else None}))
