@@ -1,12 +1,15 @@
 # DRAFT list, INCOMPLETE: what is still to do (2026-11-12 22:05 PST)
 
-NOT the master list: not everything has been read (owner, 21:59). Read so far: everything named below, plus the
-contracts a5b45d30-A1, A2, B, C1, C2 and a96eac98-A, and NovAExopia `docs/plugins/contract-a/owner-steps.md`,
-`recon.md`, `anthropic-guidance.md`. NOT read: the 2026-11-11 contracts of other sessions (Recaps
-`contracts/2026-11-11/*`), the Recaps `Security Breach-d1c1bec4.../` files, `audits/2026-11-10-device-inventory/`,
-the older handoffs (2026-11-06, -08, -10, -11 except cc782951-rules-live and 3c1dfa47 not read either), the Greedy-crane
-compilation (24 files), the owner's ~140-200 wiki-admin files, Recaps `session-logs/`, the transcripts of sessions
-a5b45d30, a96eac98, 7c7b204b. Files changed after 16:00 by a git checkout (not new writing) are not counted as read.
+Scope (owner, 22:06): everything written since this session started (16:11). All of it is read: sessions a5b45d30
+(handoff, WIKI-ADMIN-REPORT, contracts A1, A2, B, C1, C2) and a96eac98 (open-questions, contract A), NovAExopia
+HANDOFF.md (both sessions' pointer lines), Recaps memory/2026-11-12.md, and this session's own files. Files whose date
+changed only through a git checkout or pull (Recaps at 15:54, NovAExopia-main at the branch switch) were not written
+this session. Older material also read, for the backlog: handoffs 2026-11-11 (cc782951-rules-live, 3c1dfa47,
+82c90cba), 2026-11-10, 2026-11-08 (PLAN, PLAN-ORDER-2, -3, DELETED, NPU-FINDINGS, INCIDENT d1c1bec4), 2026-11-06
+(handoff, PENDING, TO-DO, RULES-DRAFT, NOTES, NEXT-JOB-claw-mcp); docs/plugins/contract-a/{owner-steps,recon,
+anthropic-guidance}.md. Their open items are not yet merged into the numbered list below.
+67. OPEN. Owner asked (a96eac98, 21:06): was branch `memory-trim-2026-11-11` (NovAExopia PR #28) the session that
+    turned off the agent memory? Not answered.
 
 Built by session b3e21f66 from: its own work and contracts A, A2, A3; session a5b45d30
 (NvAEx-Recaps `handoff/2026-11-12/handoff-a5b45d30-wiki-admin-report.md`, vault
