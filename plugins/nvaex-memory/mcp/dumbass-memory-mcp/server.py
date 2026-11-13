@@ -294,6 +294,11 @@ TOOLS = {
 }
 
 
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import observations  # noqa: E402  claude-mem's store and three-step search, ported (see its docstring)
+TOOLS.update(observations.TOOLS)
+
+
 def call(name, args):
     if disabled():
         return {"disabled": "kill switch active (~/.nvaex-hooks-off or ~/.claude/state/off/dumbass-memory-mcp); remove to revoke"}
