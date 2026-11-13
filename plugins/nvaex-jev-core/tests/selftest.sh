@@ -50,13 +50,19 @@ o=$(run UserPromptSubmit "{\"cwd\":\"$PRJ\",\"prompt\":\"write a haiku about spr
 echo '{"mode":"confirm","blocked":["brainstorming"]}' > "$PRJ/.claude/skill-gate.json"
 o=$(run PreToolUse "{\"cwd\":\"$PRJ\",\"tool_name\":\"Skill\",\"tool_input\":{\"skill\":\"brainstorming\"}}"); has "$o" 'confirm list' && ! has "$o" '"decision"\|"deny"' && ok "gate nudges, does not block" || { bad gate; echo "$o"; }
 o=$(run PreToolUse "{\"cwd\":\"$PRJ\",\"tool_name\":\"Skill\",\"tool_input\":{\"skill\":\"other\"}}"); [ -z "$o" ] && ok "gate silent for unlisted" || bad "gate unlisted"
-# health: speaks only on a real repeat; the repair loop is said once, on the edit that makes it 3
+# health: speaks only on a real repeat; the repair loop counts only edits right after a failure, said once on the 3rd
 for i in 1 2 3 4 5; do o=$(run PostToolUse "{\"session_id\":\"s\",\"tool_name\":\"Bash\",\"tool_input\":{\"command\":\"echo $i\"}}"); [ -n "$o" ] && break; done
 [ -z "$o" ] && ok "gate3 silent on 5 different calls" || { bad "gate3 nags"; echo "$o"; }
 for i in 1 2 3; do o=$(run PostToolUse '{"session_id":"r","tool_name":"Bash","tool_input":{"command":"ls"}}'); done
 has "$o" 'Is a step repeating' && ok "gate3 flags the same call 3 times" || { bad "gate3 repeat"; echo "$o"; }
-for i in 1 2 3; do o=$(run PostToolUse '{"session_id":"e","tool_name":"Edit","tool_input":{"file_path":"/x/a.py","old_string":"'$i'"}}'); done
-has "$o" 'repair loop' && ok "repeat-edit loop flagged" || { bad "repeat edit"; echo "$o"; }
+o=$(run PostToolUse '{"session_id":"w","tool_name":"Write","tool_input":{"file_path":"/x/n.md"}}'); a="$o"
+for i in 1 2; do o=$(run PostToolUse '{"session_id":"w","tool_name":"Edit","tool_input":{"file_path":"/x/n.md","old_string":"'$i'"}}'); a="$a$o"; done
+has "$a" 'repair loop' && { bad "gate3 flags Write + 2 different edits with no failure (2026-11-12 false alarm)"; echo "$a"; } || ok "gate3 silent on edits with no failure"
+for i in 1 2 3; do run PostToolUseFailure '{"session_id":"e","tool_name":"Bash","tool_input":{"command":"pytest -q"},"error":"Exit code 1"}' >/dev/null; o=$(run PostToolUse '{"session_id":"e","tool_name":"Edit","tool_input":{"file_path":"/x/a.py","old_string":"'$i'"}}'); done
+has "$o" 'repair loop' && ok "repair loop flagged: fail, edit x3" || { bad "repair loop after failures"; echo "$o"; }
+for i in 1 2 3; do run PostToolUseFailure '{"session_id":"m","tool_name":"Edit","tool_input":{"file_path":"/x/c.py"},"error":"String to replace not found"}' >/dev/null; o=$(run PostToolUse '{"session_id":"m","tool_name":"Edit","tool_input":{"file_path":"/x/c.py","old_string":"'$i'"}}'); done
+has "$o" 'repair loop' && ok "repair loop flagged after failed Edits" || { bad "edit-failure loop"; echo "$o"; }
+o=$(run PostToolUseFailure '{"session_id":"m2","tool_name":"Edit","tool_input":{"file_path":"/x/c.py"},"error":"String to replace not found"}'); [ -z "$o" ] && ok "failed Edit counted silently (nudge stays Bash only)" || { bad "edit failure nudged"; echo "$o"; }
 o=$(run PostToolUse '{"session_id":"e","tool_name":"Read","tool_input":{"file_path":"/x/b.py"}}'); has "$o" 'repair loop' && bad "repair loop repeats on later calls" || ok "repair loop said once, not on later calls"
 o=$(run PostToolUseFailure '{"session_id":"h","tool_name":"Bash","tool_input":{"command":"grep -n nothing file.txt"},"error":"Exit code 1"}'); [ -z "$o" ] && ok "no-match grep is not a failure" || { bad "grep exit 1 nudged"; echo "$o"; }
 # failure research nudge: once, then debounced; Bash only

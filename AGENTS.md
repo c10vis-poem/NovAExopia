@@ -55,21 +55,18 @@ The point of this workflow is that everything reaches `main` — a branch
 that never gets a PR opened, or a PR that never gets merged, is a failure
 of this rule, not a valid alternative to it. Don't let work sit stranded.
 
-## Memory — runtime infrastructure (references aesop-xi)
+## Memory (operator, 2026-10-23 and 2026-11-12)
 
-The whole stack's runtime memory infrastructure (mem0, terrestrial-brain,
-OmniRoute, reasoning-bank, continual-harness) lives canonically in
-**aesop-xi** — see `~/repos/aesop-xi/AGENTS.md` §Runtime memory stack.
-Not duplicated here.
+OmniRoute, mem0, Terrestrial Brain and Reasoning Bank are dropped (Aesop-Xi AGENTS.md "Runtime memory stack:
+DROPPED"): do not set them up, route through them or test them. Memory for every agent in this repo:
+- **Project memory:** the `nvaex-memory` plugin (`plugins/nvaex-memory/`, MCP server `dumbass-memory`): frozen
+  claims, task state and the session-start snapshot. It is on and used every session and is never turned off.
+- **Repo files:** MEMORY.md, RESUME.md, PENDING.md and HANDOFF.md at the repo root.
+- **Across projects:** NvAEx-Recaps `memory/` (`general.md`, `active/<project>.md`) and `handoff/<date>/`.
+- **Shared state:** the vault `c10vis-poem/NovAExorpus` (`AGENTS.md` "Start here", `RESUME.md`, `PENDING.md`).
 
-Every agent in this repo — regardless of harness (Claude Code, Codex, dsh,
-Prime Agent, Hermes) — reaches memory via one MCP endpoint:
-`http://localhost:20128/mcp` (OmniRoute). Never call mem0 or
-terrestrial-brain directly; that bypasses OmniRoute's async memory tap
-and the observation layer.
-
-**Bootstrap this repo**: `bash tools/bootstrap.sh` — thin wrapper that
-calls aesop-xi's canonical bootstrap first.
+`tools/bootstrap.sh` calls `~/repos/aesop-xi/tools/bootstrap.sh`, a path that does not exist on the phone (the
+clone is `~/repos/Aesop-Xi`), so it only prints a warning. Kept until the owner decides on it (PENDING.md).
 
 ## What loads in this repo, for every agent (operator, 2026-11-10)
 This file is the authority. `CLAUDE.md` only points here. Launch from the repo root (or `crane`).
