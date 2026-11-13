@@ -1,4 +1,12 @@
-# Master list: everything still to do (2026-11-12 22:00 PST)
+# DRAFT list, INCOMPLETE: what is still to do (2026-11-12 22:05 PST)
+
+NOT the master list: not everything has been read (owner, 21:59). Read so far: everything named below, plus the
+contracts a5b45d30-A1, A2, B, C1, C2 and a96eac98-A, and NovAExopia `docs/plugins/contract-a/owner-steps.md`,
+`recon.md`, `anthropic-guidance.md`. NOT read: the 2026-11-11 contracts of other sessions (Recaps
+`contracts/2026-11-11/*`), the Recaps `Security Breach-d1c1bec4.../` files, `audits/2026-11-10-device-inventory/`,
+the older handoffs (2026-11-06, -08, -10, -11 except cc782951-rules-live and 3c1dfa47 not read either), the Greedy-crane
+compilation (24 files), the owner's ~140-200 wiki-admin files, Recaps `session-logs/`, the transcripts of sessions
+a5b45d30, a96eac98, 7c7b204b. Files changed after 16:00 by a git checkout (not new writing) are not counted as read.
 
 Built by session b3e21f66 from: its own work and contracts A, A2, A3; session a5b45d30
 (NvAEx-Recaps `handoff/2026-11-12/handoff-a5b45d30-wiki-admin-report.md`, vault
@@ -142,6 +150,24 @@ owner's decision or hand. Every item that deletes anything lists the files by na
 59. OPEN. Task-observer: weekly review overdue since 2026-10-23; the session-start scan never ran this session;
     lost entry 0045; log this session's corrections.
 60. OPEN. Two parallel work orders (sessions A and B) once items 1-4 are live.
+
+## 7b. Added from the two sessions' contracts and the contract-a docs (2026-11-11)
+61. OPEN. Every agent this session and both parallel sessions added END limit time lines themselves (a5b45d30-A1 60m,
+    A2 20m, B 10m, C 5m; a96eac98-A 10m). Owner, 16:57: only the owner adds END lines. Rule written in 1.0.2
+    RULES.md; nothing enforces it yet: refuse to sign an agent-added END line, or strip it.
+62. OPEN. a96eac98-A: a signed STEP `cp <state>/notes.md ...` deadlocked (see item 18): signing must check STEP paths.
+63. OPEN. Recaps contracts folder and handoff files of today are not committed (item 40) and Recaps itself is behind:
+    commit + PR.
+64. CHECK. recon.md (2026-11-11) false alarms and gate defects, each to re-test against 1.0.2: `Server:` name forms
+    (both forms now matched in code: confirm live); question-form "read `X`" counted as a claim (NOT_A_CLAIM exists:
+    confirm); edit voids every read (line hashes now: confirm); lines over 2000 characters (truncated match: confirm);
+    non-text reads (binary record: confirm); `git -C <dir> push` hold (canonical_bash: confirm); `<root>/.contract/
+    opening.md` writable (CONTRACT_DIR protected: confirm); protected-file change froze the session (now warns:
+    confirm). 14,156 repeated stop items in one session (7c7b204b): the 1.0.2 "named once" fix: confirm live.
+65. OPEN. anthropic-guidance.md: repeating notices (Gate 3, JEV route, unmet lines, breach counts) belong in the
+    status line, not additionalContext. Not done. The JEV route line lists up to 19 skills every prompt.
+66. OWNER. owner-steps.md step 3: status bar, replace the synced plugin's `statusline.sh` with the contract status
+    line, or a wrapper that shows both.
 
 ## 8. Struck by the owner (do not do)
 - The ~515-plugin marketplace backlog; Frankenstein-Review. (The 73-plugin batch in `~/repos/NovAExopia` waits on
