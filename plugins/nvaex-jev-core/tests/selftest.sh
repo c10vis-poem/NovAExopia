@@ -156,6 +156,10 @@ o=$( ( export TYPESAFE_API_KEY=$K TYPESAFE_BASE_URL=http://example.com; run User
 o=$( ( export TYPESAFE_API_KEY="abc def-LEAK"; run UserPromptSubmit "$(Q 'add tests')" ) ); has "$o" 'local-fallback (bad-key-format)' && ! has "$o" LEAK && ok "malformed key: reason only, key not quoted" || { bad "bad key"; echo "$o"; }
 o=$( ( export CLAUDE_PLUGIN_OPTION_TYPESAFE_API_KEY=$K TYPESAFE_BASE_URL="$U/ok"; run UserPromptSubmit "$(Q 'add tests')" ) ); has "$o" 'via typesafe' && ok "FAKE key from plugin config works" || { bad "plugin option key"; echo "$o"; }
 o=$( ( export CLAUDE_PLUGIN_OPTION_TYPESAFE_API_KEY='${user_config.typesafe_api_key}'; run UserPromptSubmit "$(Q 'add tests')" ) ); has "$o" 'local-fallback (no-key)' && ok "unfilled placeholder is no key" || { bad placeholder; echo "$o"; }
+# HOLES-B 2b (a5b45d30): a launch without crane has no key in its environment; the router asks the secret store
+printf '#!/bin/sh\n[ "$1 $2" = "get TYPESAFE_API_KEY" ] && echo %s\n' "$K" > "$T/secret"; chmod +x "$T/secret"
+o=$( ( export NVAEX_SECRET_CMD="$T/secret" TYPESAFE_BASE_URL="$U/ok"; run UserPromptSubmit "$(Q 'add tests')" ) ); has "$o" 'via typesafe' && ! has "$o" "$K" && ok "FAKE key from the secret store (no crane)" || { bad "secret store key"; echo "$o"; }
+o=$( ( export NVAEX_SECRET_CMD="$T/no-such-secret"; run UserPromptSubmit "$(Q 'add tests')" ) ); has "$o" 'local-fallback (no-key)' && ok "no secret store -> no-key" || { bad "missing store"; echo "$o"; }
 mkdir -p "$T/.claude/state/off"; touch "$T/.claude/state/off/nvaex-jev-core.typesafe"; : > "$T/fake.log"
 o=$(jev ok "write a haiku about spring"); rm "$T/.claude/state/off/nvaex-jev-core.typesafe"; has "$o" 'local-fallback (typesafe-off)' && [ ! -s "$T/fake.log" ] && ok "off switch: nothing sent, stated" || { bad "off switch"; echo "$o"; }
 L="$T/.claude/state/nvaex-jev-core/route.jsonl"; [ -s "$L" ] && ! grep -q 'haiku' "$L" && py "import json;r=[json.loads(x) for x in open('$L')];assert {x['source'] for x in r}=={'typesafe','local-fallback'}" && ok "decision log has source, no prompt text" || bad "route log"
