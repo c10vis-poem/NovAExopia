@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# nvaex-memory selftest. Uses temp dirs only; never touches real NvAEx-Recaps or ~/.claude/state.
+# nvaex-memory selftest. Uses temp dirs only; never touches the real NvAEx-Recaps or Claude's state folder.
 set -u
 P="$(cd "$(dirname "$0")/.." && pwd)"; V="python3 $P/scripts/memory.py"
 T="$(mktemp -d)"; trap 'rm -rf "$T"' EXIT
@@ -72,13 +72,9 @@ mkdir -p "$T/tree/a/deep" "$T/tree/b"; echo "# Alpha docs" > "$T/tree/a/README.m
 $V map "$T/tree" >/dev/null
 chk "MAP.md tiered" "grep -q 'Alpha docs' $T/tree/MAP.md && [ -f $T/tree/a/MAP.md ]"
 
-# killswitch
-chk "killswitch off via file" "touch $HOME/.nvaex-hooks-off; sh $P/scripts/killswitch.sh nvaex-memory stop; r=\$?; rm $HOME/.nvaex-hooks-off; [ \$r = 0 ]"
-chk "killswitch on by default" "! sh $P/scripts/killswitch.sh nvaex-memory stop"
+# Stop hook command, as hooks.json runs it (no off switch: memory is never turned off)
 HK=$(python3 -c "import json;print(json.load(open('$P/hooks/hooks.json'))['hooks']['Stop'][0]['hooks'][0]['command'])" | sed "s#\${CLAUDE_PLUGIN_ROOT}#$P#g")
-chk "hook command runs through killswitch (off => silent)" "mkdir -p $HOME/.claude/state/off; touch $HOME/.claude/state/off/nvaex-memory.stop; [ -z \"\$(echo '{\"cwd\":\"$T/repo\",\"session_id\":\"s9\"}' | sh -c '$HK')\" ]"
-rm -f $HOME/.claude/state/off/nvaex-memory.stop
-chk "hook command runs (on => nudge)" "echo '{\"cwd\":\"$T/repo\",\"session_id\":\"s9\"}' | sh -c '$HK' | grep -q systemMessage"
+chk "hook command runs (nudge)" "echo '{\"cwd\":\"$T/repo\",\"session_id\":\"s9\"}' | sh -c '$HK' | grep -q systemMessage"
 
 # ccfind (needs node)
 if command -v node >/dev/null; then
@@ -92,16 +88,17 @@ mkdir -p "$T/cw"; echo x > "$T/cw/PLAN.md"
 chk "cut-weight inventory runs" "python3 $P/skills/cut-weight/scripts/inventory.py $T/cw --out $T/inv.json >/dev/null 2>&1 && [ -s $T/inv.json ]"
 
 
-# hooks: exactly the four events, kill switch first in every command
+# hooks: exactly the four events, each runs memory.py directly (no kill switch)
 if python3 - "$P/hooks/hooks.json" <<'PY'
 import json, re, sys
 h = json.load(open(sys.argv[1]))["hooks"]
 assert sorted(h) == ["PreCompact", "SessionEnd", "SessionStart", "Stop"], sorted(h)
 for ev, v in h.items():
     assert len(v) == 1 and len(v[0]["hooks"]) == 1, ev
-    assert re.match(r'^sh "\$\{CLAUDE_PLUGIN_ROOT\}/scripts/killswitch\.sh" nvaex-memory [a-z-]+ \|\| ', v[0]["hooks"][0]["command"]), ev
+    c = v[0]["hooks"][0]["command"]
+    assert c.startswith('python3 "${CLAUDE_PLUGIN_ROOT}/scripts/memory.py" ') and "killswitch" not in c, ev
 PY
-then ok "hooks = 4 events, one entry each, killswitch first"; else no "hooks = 4 events, one entry each, killswitch first"; fi
+then ok "hooks = 4 events, one entry each, no kill switch"; else no "hooks = 4 events, one entry each, no kill switch"; fi
 
 # commit so HEAD exists; then branch handoff note (handoff fold)
 git add -A >/dev/null; git commit -qm c; HEAD1=$(git rev-parse HEAD)
@@ -133,10 +130,6 @@ chk "finished task not re-injected" "! grep -q 'write test' $T/s6.json"
 
 # pre-compact export through the real hook command (chat-autoexporter fold)
 HP=$(python3 -c "import json;print(json.load(open('$P/hooks/hooks.json'))['hooks']['PreCompact'][0]['hooks'][0]['command'])" | sed "s#\${CLAUDE_PLUGIN_ROOT}#$P#g")
-touch $HOME/.claude/state/off/nvaex-memory.pre-compact
-echo '{"transcript_path":"'"$T/tr.jsonl"'","session_id":"sess-abcdefgh"}' | sh -c "$HP"
-chk "export silent when killswitch file present" "[ ! -d $T/state/exports ]"
-rm -f $HOME/.claude/state/off/nvaex-memory.pre-compact
 echo '{"transcript_path":"'"$T/tr.jsonl"'","session_id":"sess-abcdefgh"}' | sh -c "$HP"
 X=$(ls $T/state/exports/*.txt 2>/dev/null | head -1)
 chk "export wrote readable transcript, secret redacted" "[ -n \"$X\" ] && grep -q '^\[user\] set up the thing' $X && grep -q '^\[assistant\] Done' $X && ! grep -q ghp_ $X"

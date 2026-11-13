@@ -9,14 +9,8 @@ import hashlib, json, os, re, sqlite3, subprocess, sys, time
 
 HOME = os.path.expanduser("~")
 DATA = os.path.expanduser(os.environ.get("DUMBASS_DATA_DIR", "~/.nvaex/memory"))
-OFF = os.path.join(HOME, ".claude/state/off/dumbass-memory-mcp")
-OFF_PKG = os.path.join(HOME, ".claude/state/off/nvaex-memory")
 SCRIPT = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "../../scripts/memory.py"))
 VERSION = "0.2.0"
-
-
-def disabled():
-    return any(os.path.exists(p) for p in (os.path.join(HOME, ".nvaex-hooks-off"), OFF, OFF_PKG))
 
 
 def sha(b):
@@ -299,9 +293,7 @@ import observations  # noqa: E402  claude-mem's store and three-step search, por
 TOOLS.update(observations.TOOLS)
 
 
-def call(name, args):
-    if disabled():
-        return {"disabled": "kill switch active (~/.nvaex-hooks-off or ~/.claude/state/off/dumbass-memory-mcp); remove to revoke"}
+def call(name, args):  # no off switch: memory is never turned off (owner, 2026-11-12 and 2026-11-13)
     return TOOLS[name][0](args or {})
 
 
