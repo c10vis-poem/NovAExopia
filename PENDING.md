@@ -63,3 +63,8 @@ Durable cross-session backlog. Not rewritten each session — items persist unti
 - odometer and speedometer marketplace entries: operator decides (gas-gauge removed).
 - `plugins/nvaex-wiki-admin` duplicates greedy-crane: operator decides (the wiki pipeline is being redesigned).
 - Main-session agent audit (greedy-crane's skills and tools used, like the sub-agent gate): proposed, waiting on okay.
+
+## 2026-11-12 (session b3e21f66, contract A)
+- `tools/bootstrap.sh` calls `~/repos/aesop-xi/tools/bootstrap.sh` (no such folder; the clone is `~/repos/Aesop-Xi`),
+  and the stack it would start is dropped. Owner decides: delete it, or point it at something current.
+- Rule 8 read-only listing fix: patch and tests in `docs/audits/2026-11-12/rule8-find-fix.md`; owner applies.

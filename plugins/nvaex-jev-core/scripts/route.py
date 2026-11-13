@@ -3,7 +3,11 @@
 import datetime, glob, json, os, re, sys
 sys.dont_write_bytecode = True
 import jev_route
-d = json.load(sys.stdin)
+try:
+    d = json.load(sys.stdin)
+    assert isinstance(d, dict)
+except Exception:
+    sys.exit(0)  # empty or bad input: nothing to do, nothing on the owner's screen (2026-11-12)
 p = (d.get("prompt") or "").strip()
 if not p or "#skip-enforce" in p or p.startswith("/"):
     sys.exit(0)

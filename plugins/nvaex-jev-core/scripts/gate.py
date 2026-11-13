@@ -1,7 +1,11 @@
 #!/usr/bin/env python3
 """PreToolUse(Skill): nudge, never block, when a skill is on the project's confirm list (<project>/.claude/skill-gate.json)."""
 import json, os, sys
-d = json.load(sys.stdin)
+try:
+    d = json.load(sys.stdin)
+    assert isinstance(d, dict)
+except Exception:
+    sys.exit(0)  # empty or bad input: nothing to do, nothing on the owner's screen (2026-11-12)
 name = (d.get("tool_input") or {}).get("skill") or (d.get("tool_input") or {}).get("name") or ""
 try:
     c = json.load(open(os.path.join(d.get("cwd") or os.getcwd(), ".claude/skill-gate.json")))
