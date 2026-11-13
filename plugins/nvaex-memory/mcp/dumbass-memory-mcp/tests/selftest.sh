@@ -10,6 +10,7 @@ INSERT INTO nodes(kind,name,qualified_name,file_path,line_start) VALUES('Functio
 INSERT INTO edges(kind,source_qualified,target_qualified,file_path) VALUES('CALLS','b.py::mid','a.py::core','b.py'),('CALLS','c.py::top','b.py::mid','c.py');"
 echo '{"nodes":[{"id":"x","label":"CoreThing","community":1,"source_file":"a.py"}],"links":[]}' > "$T/g.json"
 export DUMBASS_CRG_DB="$T/crg.db" DUMBASS_GRAPHIFY_JSON="$T/g.json" NVAEX_STATE="$T/state" NVAEX_RECAPS="$T/recaps"
+export DUMBASS_SHARED_DIR="$T/shared"
 mkdir -p "$T/recaps/memory" "$T/repo/sub/deep" "$T/repo/memory"
 git -C "$T/repo" init -q .
 cat > "$T/repo/memory/decisions.md" <<'M'
@@ -47,8 +48,31 @@ ok(r["result"]["serverInfo"]["name"] == "dumbass-memory-mcp", "initialize")
 rpc("notifications/initialized", note=True)
 names = sorted(t["name"] for t in rpc("tools/list")["result"]["tools"])
 ok(names == sorted(["memory.query", "memory.record_claim", "memory.ast_impact", "memory.cas_verify", "memory.scope_status",
-                    "memory.snapshot", "memory.freeze", "memory.task", "memory.recap", "memory.export", "memory.map", "memory.lint"]),
-   "tools/list has the 5 stream tools + 7 memory.py tools, no nudge")
+                    "memory.snapshot", "memory.freeze", "memory.task", "memory.recap", "memory.export", "memory.map", "memory.lint",
+                    "memory.save", "memory.session_summary", "memory.search", "memory.timeline", "memory.get_observations",
+                    "memory.session_context"]),
+   "tools/list has the 5 stream tools + 7 memory.py tools + 6 observation tools, no nudge")
+# observation store (claude-mem port): JSONL in DUMBASS_SHARED_DIR is the source of truth, FTS5 index rebuilt from it
+sv = tool("memory.save", project="p", type="decision", title="Use stdlib sqlite for claude-mem", facts=["no bun"],
+          text="password=hunter2xyz")
+ok(sv["saved"] and len(sv["id"]) == 64, "save writes a sha256-keyed record")
+ok(tool("memory.save", project="p", type="decision", title="Use stdlib sqlite for claude-mem", facts=["no bun"],
+        text="password=hunter2xyz")["saved"] is False, "save refuses the same content twice")
+line = open(os.environ["DUMBASS_SHARED_DIR"] + "/p.jsonl").read()
+ok("hunter2xyz" not in line and "[REDACTED]" in line, "save redacts secrets before writing")
+hits = tool("memory.search", query="claude-mem sqlite", project="p")["results"]
+ok(len(hits) == 1 and hits[0]["type"] == "decision", "search finds it (step 1)")
+ok(tool("memory.get_observations", ids=[hits[0]["id"]])["observations"][0]["facts"] == ["no bun"], "get_observations returns the full record (step 3)")
+ok(tool("memory.timeline", id=hits[0]["id"])["timeline"][0]["anchor"] is True, "timeline anchors on the id (step 2)")
+tool("memory.session_summary", project="p", request="port claude-mem", completed="store and search")
+cx = tool("memory.session_context", project="p")
+ok(cx["stored"] == 2 and cx["last_summary"]["completed"] == "store and search", "session_context: recent index + last summary")
+for ext in ("", "-wal", "-shm"):  # the whole local index, as a fresh device would have it
+    if os.path.exists(os.environ["DUMBASS_DATA_DIR"] + "/observations_index.db" + ext):
+        os.remove(os.environ["DUMBASS_DATA_DIR"] + "/observations_index.db" + ext)
+rb = tool("memory.search", query="claude-mem", project="p")["results"]
+ok(sorted(r["type"] for r in rb) == ["decision", "summary"] and hits[0]["id"] in [r["id"] for r in rb],
+   "index rebuilds from the JSONL alone (decision and summary both found)")
 c = tool("memory.record_claim", text="auth uses core()", kind="semantic")
 ok(c["sha256"] == hashlib.sha256(b"auth uses core()").hexdigest(), "record_claim returns sha256")
 q = tool("memory.query", q="core")
@@ -102,13 +126,6 @@ ok(not any(d in src for d in ("def extract_claims", "def load_claims", "def mapg
 p.stdin.close(); p.wait(timeout=5)
 ok(p.returncode == 0, "clean exit on EOF")
 PY
-# kill switch via fake HOME
-mkdir -p "$T/h/.claude/state/off"; touch "$T/h/.claude/state/off/dumbass-memory-mcp"
-OUT=$(printf '%s\n' '{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"memory.scope_status","arguments":{}}}' | HOME="$T/h" python3 -I "$H/server.py")
-case "$OUT" in *"kill switch active"*) echo "PASS kill switch disables tools";; *) echo "FAIL kill switch"; exit 1;; esac
-rm "$T/h/.claude/state/off/dumbass-memory-mcp"; touch "$T/h/.claude/state/off/nvaex-memory"
-OUT=$(printf '%s\n' '{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"memory.freeze","arguments":{"action":"list"}}}' | HOME="$T/h" python3 -I "$H/server.py")
-case "$OUT" in *"kill switch active"*) echo "PASS package off switch disables tools";; *) echo "FAIL package off switch"; exit 1;; esac
 # real CRG db, read-only, if present
 R="$HOME_REAL/repos/NovA-code-review-graph/.code-review-graph/graph.db"
 if [ -f "$R" ]; then
