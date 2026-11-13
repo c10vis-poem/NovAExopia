@@ -26,7 +26,7 @@ claude plugin disable nvaex-memory@novaexopia
 ```
 Works with any other Frankenstein package disabled.
 
-## Hooks (one entry per event, kill switch first, all fail open, none block)
+## Hooks (one entry per event, all fail open, none block; no off switch: memory is never turned off)
 | Event | Hook name | Does |
 |---|---|---|
 | SessionStart | `session-start` | snapshot |
@@ -34,7 +34,7 @@ Works with any other Frankenstein package disabled.
 | Stop | `stop` | whydone nudge (systemMessage only) |
 | SessionEnd | `session-end` | daily recap + weekly rollup |
 
-Off for everything: `touch ~/.nvaex-hooks-off`. Off for this package: `touch ~/.claude/state/off/nvaex-memory`. One hook: `touch ~/.claude/state/off/nvaex-memory.<hook-name>`. Remove the file to turn back on.
+There is no kill switch (owner, 2026-11-13: memory is never turned off). Each hook runs `scripts/memory.py` directly.
 
 ## Paths
 Recaps repo: `$NVAEX_RECAPS` or `config.json` `recaps` (default `~/repos/NvAEx-Recaps`); writes under `memory/`. If the repo is missing it falls back to `~/.claude/state/nvaex-memory/memory/`. It never commits or pushes: that is the operator's step. Frozen claims: `<recaps>/memory/continuity/<project>.claims.jsonl`. Task state: `~/.claude/state/nvaex-memory/tasks/<project>.json`.
@@ -61,13 +61,10 @@ PASS daily recap written
 PASS secret redacted
 PASS layers.jsonl autoPromote false, one row
 PASS MAP.md tiered
-PASS killswitch off via file
-PASS killswitch on by default
-PASS hook command runs through killswitch (off => silent)
-PASS hook command runs (on => nudge)
+PASS hook command runs (nudge)
 PASS ccfind finds session
 PASS cut-weight inventory runs
-PASS hooks = 4 events, one entry each, killswitch first
+PASS hooks = 4 events, one entry each, no kill switch
 PASS branch note loaded at startup
 PASS branch note flagged STALE after HEAD moves
 PASS branch note not loaded on resume
@@ -76,7 +73,6 @@ PASS task patch sets and null deletes
 PASS compact snapshot: active task + resume checklist
 PASS task over cap rejected, state unchanged
 PASS finished task not re-injected
-PASS export silent when killswitch file present
 PASS export wrote readable transcript, secret redacted
 PASS export file is 0600
 PASS weekly file for finished week
