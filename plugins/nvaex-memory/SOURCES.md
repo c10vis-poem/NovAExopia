@@ -19,7 +19,6 @@ Size = source folder `du -sk` (FOLD-MAP) -> what landed here (bytes). Package to
 | scripts/memory.py `rollup` | remember | (tiering idea) | Community License (idea only, nothing copied) | 8606KB -> ~20 lines | finished ISO week -> `memory/weekly/<week>.md`; dailies kept; upstream node dist bundle, Haiku pipeline, hooks, commands not copied |
 | scripts/memory.py `task` (+ snapshot re-injection) | claude-context-optimizer (cco-task) | (fold) | MIT | 2121KB -> ~25 lines | bounded patchable task state, 4000-char cap. Not folded: cco report skills and context-analyzer agent (need the tracker.js hook; usage display is the operator's custom build) |
 | skills/memory-bank | Memory Bank | (fold) | Apache-2.0 (licenses/memory-bank.LICENSE) | 85KB -> 1.3KB | six-file structure and update rules; blocking Stop hook, CoC/PRIVACY/SECURITY/CONTRIBUTING docs dropped |
-| scripts/killswitch.sh | tools/plugin-shared/killswitch.sh | n/a | n/a | vendored copy | |
 | licenses/*.LICENSE, NOTICE-derived.md | upstream LICENSE files for copied/reimplemented-with-source-text plugins; copyright notices for the reworded ones (MIT); Memory Bank Apache-2.0 text | | | kept | |
 
 ## Missing / not folded

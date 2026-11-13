@@ -26,8 +26,8 @@ Streams: 1 `code_review_graph.db` (read-only, `DUMBASS_CRG_DB`, default `<data>/
 ## Swap in / out
 Ships inside `nvaex-memory`, beside the skills that use it. Installing that plugin starts it through the plugin's `.mcp.json`; `claude plugin enable|disable nvaex-memory@novaexopia` swaps it. It is no longer a plugin of its own.
 
-## Hooks and kill switches
-The server has no hooks; the package's are in its README. Kill switch: if `~/.nvaex-hooks-off`, `~/.claude/state/off/dumbass-memory-mcp` or `~/.claude/state/off/nvaex-memory` exists, every tool returns `{"disabled": ...}` and touches nothing. Revoke by removing the file.
+## Hooks
+The server has no hooks; the package's are in its README. There is no kill switch: every tool always answers (owner, 2026-11-13: memory is never turned off).
 
 ## Tested on device
 `bash tests/selftest.sh` (Termux, arm64, Python 3.14, real stdio round trip with fixtures, plus the real CRG db read-only):
@@ -60,8 +60,6 @@ PASS lint finds drift (drift is a result, not an error)
 PASS lint clean on ledgers with no drift
 PASS server copies no memory.py logic
 PASS clean exit on EOF
-PASS kill switch disables tools
-PASS package off switch disables tools
 PASS real CRG db read-only query
 SELFTEST OK
 ```
